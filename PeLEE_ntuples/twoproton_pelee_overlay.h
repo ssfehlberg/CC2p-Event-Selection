@@ -16,6 +16,8 @@
 #include "string"
 #include "map"
 #include "vector"
+#include "histogram_funcs.h"
+#include "helper_funcs.h"
 
 class twoproton_pelee_overlay {
 public :
@@ -1455,6 +1457,52 @@ public :
    virtual void     Loop();
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
+   virtual void     Fill_Histograms_Mine(int i, double wgt);
+   virtual void     Fill_Histograms_Raquel(int i, double wgt);
+   //virtual void     Fill_Histograms_Particles(int mu, int p1, int p2);
+   // virtual void     Fill_Histograms_Particles_Raquel(int mu, int p1, int p2);
+   virtual void     Fill_Mine(int i, int j, double wgt);
+   virtual void     Fill_Raquel(int i, int j, double wgt);
+   //virtual void     Fill_Particles(int j, int mu, int p1, int p2);
+   //virtual void     Fill_Particles_Raquel(int j, int mu, int p1, int p2);
+   //virtual void     Fill_Particle_Plots(int y, float value);
+   
+   //defining class stuff
+   histogram_funcs hist;
+   helper_funcs cuts; //helper_funcs.h 
+
+   //counters and stuff
+   int mc_n_threshold_muon;
+   int mc_n_threshold_proton;
+   int mc_n_threshold_pionpm;
+   int mc_n_threshold_pion0;
+   static const int number = 5;
+
+   //number of generated event/channel                                                                             
+   int cc0p0pi[number+1] = {0};
+   int cc1p0pi[number+1] = {0};
+   int cc2p0pi[number+1] = {0};
+   int ccNp0pi[number+1] = {0};
+   int ccNp1pi[number+1] = {0};
+   int ccNpNpi[number+1] = {0};
+   int ccnue[number+1] = {0};
+   int outfv[number+1] = {0};
+   int nc[number+1] = {0};
+   int other[number+1] = {0};
+   
+   //number of generated event/channel                                                                             
+   int qel[number+1] = {0};
+   int res[number+1] = {0};
+   int mec[number+1] = {0};
+   int coh[number+1] = {0};
+   int dis[number+1] = {0};
+   int ccnue_raquel[number+1] = {0};
+   int outfv_raquel[number+1] = {0};
+   int nc_raquel[number+1] = {0};
+   int other_raquel[number+1] = {0};
+
+   int res_count[4] = {0};
+
 };
 
 #endif
@@ -1482,6 +1530,233 @@ twoproton_pelee_overlay::~twoproton_pelee_overlay()
    delete fChain->GetCurrentFile();
 }
 
+void twoproton_pelee_overlay::Fill_Mine(int i, int j, double wgt){
+  //index i indicates at which point the histograms are being filled 
+  //index j represents what channel we are filling                                                                
+  //hist.h_vtx_x_overlay[i][j]->Fill(reco_nu_vtx_sce_x,wgt);
+  //hist.h_vtx_y_overlay[i][j]->Fill(reco_nu_vtx_sce_y,wgt);
+  //hist.h_vtx_z_overlay[i][j]->Fill(reco_nu_vtx_sce_z,wgt);
+  hist.h_vtx_x_mc[i][j]->Fill(true_nu_vtx_x,wgt);
+  hist.h_vtx_y_mc[i][j]->Fill(true_nu_vtx_y,wgt);
+  hist.h_vtx_z_mc[i][j]->Fill(true_nu_vtx_z,wgt);
+  hist.h_vtx_x_mc_sce[i][j]->Fill(true_nu_vtx_sce_x,wgt);
+  hist.h_vtx_y_mc_sce[i][j]->Fill(true_nu_vtx_sce_y,wgt);
+  hist.h_vtx_z_mc_sce[i][j]->Fill(true_nu_vtx_sce_z,wgt);
+  //hist.h_q2[i][j]->Fill(mc_q2,wgt);
+  //hist.h_X[i][j]->Fill(mc_X,wgt);
+  //hist.h_Y[i][j]->Fill(mc_Y,wgt);
+  //hist.h_Pt[i][j]->Fill(mc_Pt,wgt);
+ }
+
+void twoproton_pelee_overlay::Fill_Raquel(int i, int j, double wgt){
+  //index i indicates at which point the histograms are being filled                                                 
+  //index j represents what channel we are filling          
+  hist.h_vtx_x_raquel[i][j]->Fill(reco_nu_vtx_sce_x,wgt);
+  hist.h_vtx_y_raquel[i][j]->Fill(reco_nu_vtx_sce_y,wgt);
+  hist.h_vtx_z_raquel[i][j]->Fill(reco_nu_vtx_sce_z,wgt);
+  hist.h_vtx_x_mc_raquel[i][j]->Fill(true_nu_vtx_x,wgt);
+  hist.h_vtx_y_mc_raquel[i][j]->Fill(true_nu_vtx_y,wgt);
+  hist.h_vtx_z_mc_raquel[i][j]->Fill(true_nu_vtx_z,wgt);
+  hist.h_vtx_x_mc_sce_raquel[i][j]->Fill(true_nu_vtx_sce_x,wgt);
+  hist.h_vtx_y_mc_sce_raquel[i][j]->Fill(true_nu_vtx_sce_y,wgt);
+  hist.h_vtx_z_mc_sce_raquel[i][j]->Fill(true_nu_vtx_sce_z,wgt);
+  //hist.h_q2_raquel[i][j]->Fill(mc_q2,wgt);
+  //hist.h_X_raquel[i][j]->Fill(mc_X,wgt);
+  //hist.h_Y_raquel[i][j]->Fill(mc_Y,wgt);
+  //hist.h_Pt_raquel[i][j]->Fill(mc_Pt,wgt);
+ }
+
+void twoproton_pelee_overlay::Fill_Histograms_Mine(int i, double wgt){
+  Fill_Mine(i,0,wgt);
+  //cc0p0pi                                                                                                                                  
+  if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton == 0 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && cuts.fv == true){
+    Fill_Mine(i,1, wgt);
+    cc0p0pi[i]++;
+    //cc1p0pi                                                                                                                                  
+  } else if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 &&mc_n_threshold_proton == 1 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && cuts.fv == true){
+    Fill_Mine(i,2, wgt);
+    cc1p0pi[i]++;
+    //cc2p0pi                                                                                                                                    
+  } else if (ccnc == 0 && nu_pdg == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton == 2 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && cuts.fv == true){
+    Fill_Mine(i,3, wgt);
+    cc2p0pi[i]++;
+    //ccNp0pi                                                                                                                                  
+  } else if (ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton > 2 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && cuts.fv == true){
+    Fill_Mine(i,4, wgt);
+    ccNp0pi[i]++;
+    //ccNp1pi                                                                                                                                   
+  } else if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton >= 0 && (mc_n_threshold_pion0 == 1 || mc_n_threshold_pionpm == 1) && cuts.fv == true){
+    Fill_Mine(i,5, wgt);
+    ccNp1pi[i]++;
+    //ccNpNpi                                                                                                                                   
+  } else if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton >= 0 && (mc_n_threshold_pion0 > 1 || mc_n_threshold_pionpm > 1) && cuts.fv == true){
+    Fill_Mine(i,6, wgt);
+    ccNpNpi[i]++;
+    //CC NUE                                                                                                                                   
+  } else if(ccnc == 0 && abs(nu_pdg) == 12 && cuts.fv == true){
+    Fill_Mine(i,7, wgt);
+    ccnue[i]++;
+  //OUT OF CUTS.FV                                                                                                                                
+  } else if(cuts.fv == false){                                                                                                                  
+    Fill_Mine(i,8, wgt);
+    outfv[i]++;
+    //NC                                                                                                                                       
+  } else if(ccnc == 1 && cuts.fv == true){
+    Fill_Mine(i,0, wgt);
+    nc[i]++;
+    //else                                                                                                                                     
+  } else{
+    Fill_Mine(i,10, wgt);
+    other[i]++;
+  }
+}
+
+void twoproton_pelee_overlay::Fill_Histograms_Raquel(int i, double wgt){
+  Fill_Raquel(i,0, wgt);
+  //CCQE
+  if(ccnc == 0 && interaction == 0 && cuts.fv==true){
+    Fill_Raquel(i,1, wgt);
+    qel[i]++;
+    //CCCoh                                                                                                                                                                                             
+  } else if(ccnc == 0 && interaction == 3 && cuts.fv == true){
+    Fill_Raquel(i,2, wgt);
+    coh[i]++;
+    //CCMEC                                                                                                                                                                                             
+  } else if(ccnc == 0 && interaction == 10 && cuts.fv==true){
+    Fill_Raquel(i,3, wgt);
+    mec[i]++;
+    //CCRES                                                                                                                                                                                             
+  } else if(ccnc == 0 && interaction == 1 && cuts.fv==true){
+    if(mc_n_threshold_muon == 1 && mc_n_threshold_proton == 2){
+      res_count[0]++;
+    }else if (mc_n_threshold_muon == 1 && mc_n_threshold_proton == 1 && (mc_n_threshold_pion0 == 1 || mc_n_threshold_pionpm == 1)){
+      res_count[1]++;
+    }else if(mc_n_threshold_muon == 1 && mc_n_threshold_proton > 2){
+      res_count[2]++;
+    }else{
+      res_count[3]++;
+    }
+    Fill_Raquel(i,4,wgt);
+  res[i]++;
+    //CCDIS                                                                                                                                                                                             
+} else if(ccnc == 0 && interaction == 2 && cuts.fv==true){
+  Fill_Raquel(i,5,wgt);
+    dis[i]++;
+    //CCNue                                                                                                                                                                                             
+  } else if(ccnc == 0  && abs(nu_pdg) == 12 && cuts.fv ==true){
+  Fill_Raquel(i,6, wgt);
+    ccnue_raquel[i]++;
+    //NC                                                                                                                                                                                                
+  } else if(ccnc == 1 && cuts.fv == true){
+  Fill_Raquel(i,7, wgt);
+    nc_raquel[i]++;
+    //OUT OF FV                                                                                                                                                                                          
+  } else if(cuts.fv == false){
+  Fill_Raquel(i,8, wgt);
+  outfv_raquel[i]++;
+    //Other                                                                                                                                                                                             
+  }else{
+  Fill_Raquel(i,9, wgt);
+    other_raquel[i]++;
+  } 
+}
+/*
+void twoproton_pelee_overlay::Fill_Histograms_Particles(int mu, int p1, int p2){
+  Fill_Particles(0, mu, p1, p2);
+
+  //cc0p0pi                                                                                                                               
+  if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_proton == 0 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && cuts.fv == true){
+    Fill_Particles(1, mu, p1, p2);
+    cc0p0pi[number]++;
+    //cc1p0pi                                                                                                                            
+  } else if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_proton == 1 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && cuts.fv == true){
+    Fill_Particles(2, mu, p1, p2);
+    cc1p0pi[number]++;
+    //cc2p0pi                                                                                                                            
+  } else if (ccnc == 0 && nu_pdg == 14 && mc_n_threshold_proton == 2 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && cuts.fv == true){
+    Fill_Particles(3, mu, p1, p2);
+    cc2p0pi[number]++;
+    //ccNp0pi                                                                                                                            
+  } else if (ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_proton > 2 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && cuts.fv == true){
+    Fill_Particles(4, mu, p1, p2);
+    ccNp0pi[number]++;
+    //ccNp1pi                                                                                                                            
+  } else if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_proton >= 0 && (mc_n_threshold_pion0 == 1 || mc_n_threshold_pionpm == 1) && cuts.fv == true){
+    Fill_Particles(5, mu, p1, p2);
+    ccNp1pi[number]++;
+    //ccNpNpi                                                                                                                            
+  } else if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_proton >= 0 && (mc_n_threshold_pion0 > 1 || mc_n_threshold_pionpm > 1) && cuts.fv == true){
+    Fill_Particles(6, mu, p1, p2);
+    ccNpNpi[number]++;
+    //CC NUE                                                                                                                             
+  } else if(ccnc == 0 && abs(nu_pdg) == 12 && cuts.fv == true){
+    Fill_Particles(7, mu, p1, p2);
+    ccnue[number]++;
+  //OUT OF CUTS.FV                                                                                                                            
+  } else if(cuts.fv == false){                                                                                                                     
+  Fill_Particles(8, mu, p1, p2);
+    outfv[number]++;
+    //NC                                                                                                                                 
+  } else if(ccnc == 1 && cuts.fv == true){
+    Fill_Particles(9, mu, p1, p2);
+    nc[number]++;    
+    //else                                                                                                                               
+  } else{
+    Fill_Particles(10, mu, p1, p2);
+    other[number]++;
+  }
+}
+
+void twoproton_pelee_overlay::Fill_Histograms_Particles_Raquel(int mu, int p1, int p2){
+  Fill_Particles_Raquel(0, mu, p1, p2);
+
+  //CCQE
+  if(ccnc == 0 && interaction == 0 && cuts.fv==true){
+    Fill_Particles_Raquel(1, mu, p1, p2);
+    qel[number]++;
+
+  //CCCoh                                                                                                                                                                                             
+  } else if(ccnc == 0 && interaction == 3 && cuts.fv == true){
+    Fill_Particles_Raquel(2, mu, p1, p2);
+    coh[number]++;
+
+    //CCMEC                                                                                                                                                                                             
+  } else if(ccnc == 0 && interaction == 10 && cuts.fv==true){
+    Fill_Particles_Raquel(3, mu, p1, p2);
+    mec[number]++;
+
+    //CCRES                                                                                                                                                                                             
+  } else if(ccnc == 0 && interaction == 1 && cuts.fv==true){
+    Fill_Particles_Raquel(4, mu, p1, p2);
+    res[number]++;
+
+    //CCDIS                                                                                                                                                                                             
+  } else if(ccnc == 0 && interaction == 2 && cuts.fv==true){
+    Fill_Particles_Raquel(5, mu, p1, p2);
+    dis[number]++;
+
+    //CCNue                                                                                                                                                                                             
+  } else if(ccnc == 0 && abs(nu_pdg) == 12 && cuts.fv ==true){
+    Fill_Particles_Raquel(6, mu, p1, p2);
+    ccnue_raquel[number]++;
+
+    //NC                                                                                                                                                                                                
+  } else if(ccnc == 1 && cuts.fv == true){
+    Fill_Particles_Raquel(7, mu, p1, p2);
+    nc_raquel[number]++;
+
+    //OUT OF FV                                                                                                                                                                                          
+  } else if(cuts.fv == false){
+    Fill_Particles_Raquel(8, mu, p1, p2);
+    outfv_raquel[number]++;
+
+    //Other                                                                                                                                                                                             
+  }else{
+    Fill_Particles_Raquel(9, mu, p1, p2);
+    other_raquel[number]++;
+  } 
+}
+*/
 Int_t twoproton_pelee_overlay::GetEntry(Long64_t entry)
 {
 // Read contents of entry.

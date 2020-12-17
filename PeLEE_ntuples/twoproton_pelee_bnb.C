@@ -28,6 +28,9 @@ void twoproton_pelee_bnb::Loop()
   //////////////////////////////                                                                                  
   bool _debug = false; //debug statements                                                                         
   double pot_wgt = 1; //POT weight
+  double MASS_PROTON = 0.93827208;
+  double MASS_MUON = 0.10565837;
+
 
   //Counters                                                                                                      
   int fvcntr = 0; //Number of events with reconstructed vertex within the FV                                      
@@ -72,6 +75,7 @@ void twoproton_pelee_bnb::Loop()
     //Filling histograms before any selection is made
     ////////////////////////////////////////////////
     hist.Fill_Histograms(0, TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z), pot_wgt);
+    //hist.Fill_Histograms(0, pot_wgt);
     hist.h_topological_score->Fill(topological_score,pot_wgt); //filling topologicaal score before any cuts
     hist.h_cosmic_impact_parameter->Fill(CosmicIP,pot_wgt); //filling cosmic impact parameter before any cuts
     
@@ -99,6 +103,7 @@ void twoproton_pelee_bnb::Loop()
 
     //Fill Histograms
     hist.Fill_Histograms(1, TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z), pot_wgt);
+    //hist.Fill_Histograms(1, pot_wgt);
 
     //2) The start point of every pfp is within the FV
     ///////////////////////////////////////////////////
@@ -125,6 +130,7 @@ void twoproton_pelee_bnb::Loop()
 
     //Fill Histograms
     hist.Fill_Histograms(2,TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z), pot_wgt);
+    //hist.Fill_Histograms(2, pot_wgt);
 
     //3) The topoloogical score of every neutrino slice is above 0.1
     ///////////////////////////////////////////////////////
@@ -133,6 +139,7 @@ void twoproton_pelee_bnb::Loop()
 
     //Fill Histograms  
     hist.Fill_Histograms(3, TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z), pot_wgt);
+    //hist.Fill_Histograms(3, pot_wgt);
 
     //4) The cosmic impact parameter is greater than 10 cm for every neutrino slice. Honestly a dumb cut. Will remove later
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -141,6 +148,7 @@ void twoproton_pelee_bnb::Loop()
 
     //Fill Histograms  
     hist.Fill_Histograms(4, TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z), pot_wgt);
+    //hist.Fill_Histograms(4, pot_wgt);
 
     //Now to apply the ve and NC rejection cuts. These are slightly modified to match our 1mu2p needs 
     /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -148,6 +156,32 @@ void twoproton_pelee_bnb::Loop()
     //Next: The Muon Selection
     //////////////////////////
 
+    float muon_id;
+    float leading_proton_id;
+    float recoil_proton_id;
+
+    //Finally. Let's define some stuff then fill some variables!
+    ////////////////////////////////////////////////////////////
+
+    /*
+    //TVector3 vMuon(1,1,1);
+    //double EMuon = std::sqrt(std::pow(reco_mom_muon->at(muon_id),2)+std::pow(MASS_MUON,2));
+    //vMuon.SetMag(Muon);
+    //vMuon.SetTheta(reco_theta->at(muon_id));
+    //vMuon.SetPhi(reco_phi->at(muon_id));
+    //TLorentzVector muon(vMuon[0],vMuon[1],vMuon[2],EMuon); //Recoil proton TLorentzVector    
+    
+    TVector3 vLead(backtracked_px->at(leading_proton_id),backtracked_py->at(leading_proton_id),backtracked_pz->at(leading_proton_id));
+    double ELead = std::sqrt(vLead.Mag2() + std::pow(MASS_PROTON,2));
+    vLead.SetTheta(trk_theta_v->at(leading_proton_id));
+    vLead.SetPhi(trk_phi_v->at(leading_proton_id));
+    TLorentzVector lead(vLead[0],vLead[1],vLead[2],ELead);//leading proton TLorentzVector    
+		  
+    TVector3 vRec(backtracked_px->at(recoil_proton_id),backtracked_py->at(recoil_proton_id),backtracked_pz->at(recoil_proton_id));
+    double ERec = std::sqrt(vRec.Mag2() + std::pow(MASS_PROTON,2));
+    vRec.SetTheta(trk_theta_v->at(recoil_proton_id));
+    vRec.SetPhi(trk_phi_v->at(recoil_proton_id));
+    */
 
 } //end of Loop over events
 

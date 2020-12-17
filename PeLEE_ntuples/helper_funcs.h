@@ -6,6 +6,7 @@ class helper_funcs{
   double TRACK_SCORE_CUT = 0.5;
   double TOPO_SCORE_CUT = 0.1;
   double COSMIC_IP_CUT = 10.0;
+  bool fv;
 
 };//end of class definition
 
@@ -19,8 +20,10 @@ bool helper_funcs::In_FV(float x_low_edge, float x_up_edge, float y_low_edge, fl
   float_t zmax = 1036.8 - z_up_edge;
 
   if((x <= xmin || x >= xmax) || (y <= ymin || y >= ymax) || (z <= zmin || z >= zmax)){
+    fv = false;
     return false;
   } else{
+    fv = true;
     return true;
   } 
 } //end of In_FV

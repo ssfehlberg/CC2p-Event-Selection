@@ -11,7 +11,8 @@ class histogram_funcs
  public:
   virtual void Define_Histograms(const char* sample); //defines histograms. works for all samples
   virtual void Fill_Histograms(int i, TVector3 reco_nu_vertex, double wgt); //only fills the bnb, ext, & dirt. i indicates cut
-  //virtual void Fill_Particles(int mu, int p1, int p2, double wgt); //only fills the bnb, ext, & dirt. Muon ID, Leding ID, Recoil ID
+  //virtual void Fill_Particles(TVector4 muon, TVector4 p1, TVector4 p2, double wgt); //only fills the bnb, ext, & dirt. Muon ID, Leding ID, Recoil ID
+  virtual void Fill_Particles(TVector3 vMuon, TLorentzVector muon, TVector3 vLead, TLorentzVector lead, TVector3 vRec, TLorentzVector rec, double wgt);
   virtual void Write_Histograms(bool truth); //writes histograms. works for all samples
 
   //Total Histograms                                                                                                                
@@ -140,6 +141,11 @@ class histogram_funcs
   TH1D* h_cos_gamma_cm_raquel[number3];
    
   vector<TH1*> h_list; //list of all the 1D histograms
+
+  //Numbers useful for later:
+  double MASS_PROTON = 0.93827208;
+  double MASS_MUON = 0.10565837;
+
 
 }; //end of class
 
@@ -394,60 +400,31 @@ void histogram_funcs::Define_Histograms(const char* sample){
   } //else loop for bnb, dirt, ext
 } //end of define histograms
 
-void histogram_funcs::Fill_Histograms(int i, TVector3 reco_nu_vertex, double wgt){ // which cut, reco vertex, wgt to apply
+void histogram_funcs::Fill_Histograms(int i, TVector3 reco_nu_vertex,double wgt){ // which cut, reco vertex, wgt to apply
   h_vtx_x[i]->Fill(reco_nu_vertex[0],wgt);
   h_vtx_y[i]->Fill(reco_nu_vertex[1],wgt);
   h_vtx_z[i]->Fill(reco_nu_vertex[2],wgt);
 }
 
-/*void twoproton_filtered_bnb::Fill_Particles(int mu, int p1, int p2){
-  //first index indicates which variable is being filled: mom, energy, theta, phi                                                        
-  h_muon[0]->Fill(reco_mom_muon->at(mu),wgt);
-  h_leading[0]->Fill(reco_mom_proton->at(p1),wgt);
-  h_recoil[0]->Fill(reco_mom_proton->at(p2),wgt);
+void histogram_funcs::Fill_Particles(TVector3 vMuon, TLorentzVector muon, TVector3 vLead, TLorentzVector lead, TVector3 vRec, TLorentzVector rec, double wgt){
 
-  h_muon[1]->Fill(std::sqrt(std::pow(reco_mom_muon->at(mu),2)+std::pow(0.10565837,2))-0.10565837,wgt);
-  h_leading[1]->Fill(std::sqrt(std::pow(reco_mom_proton->at(p1),2)+std::pow(0.93827208,2))-0.93827208,wgt);
-  h_recoil[1]->Fill(std::sqrt(std::pow(reco_mom_proton->at(p2),2)+std::pow(0.93827208,2))-0.93827208,wgt);
+  //first index indicates which variable is being filled: mom, energy, theta, phi                                  
+  h_muon[0]->Fill(vMuon.Mag(),wgt);
+  h_leading[0]->Fill(vLead.Mag(),wgt);
+  h_recoil[0]->Fill(vRec.Mag(),wgt);
 
-  h_muon[2]->Fill(cos(reco_theta->at(mu)),wgt);
-  h_leading[2]->Fill(cos(reco_theta->at(p1)),wgt);
-  h_recoil[2]->Fill(cos(reco_theta->at(p2)),wgt);
+  h_muon[1]->Fill(std::sqrt(vMuon.Mag2() + std::pow(MASS_MUON,2))-MASS_MUON,wgt);
+  h_leading[1]->Fill(std::sqrt( vLead.Mag2() + std::pow(MASS_PROTON,2))-MASS_PROTON,wgt);
+  h_recoil[1]->Fill(std::sqrt( vRec.Mag2() + std::pow(MASS_PROTON,2))-MASS_PROTON,wgt);
 
-  h_muon[3]->Fill(reco_phi->at(mu),wgt);
-  h_leading[3]->Fill(reco_phi->at(p1),wgt);
-  h_recoil[3]->Fill(reco_phi->at(p2),wgt);
+  h_muon[2]->Fill(cos(vMuon.Theta()),wgt);
+  h_leading[2]->Fill(cos(vLead.Theta()),wgt);
+  h_recoil[2]->Fill(cos(vRec.Theta()),wgt);
 
-  //if((cos(reco_theta->at(p1)) <= -0.72 && cos(reco_theta->at(p1)) >= -0.78) ||(cos(reco_theta->at(p2)) <= -0.72 && cos(reco_theta->at(p2)) >= -0.78)){
-    //if(cos(reco_theta->at(p2)) == cos(reco_theta->at(p1))){
-      //std::cout<<"RSE: "<<run<<" ,  "<<subrun<<" , "<<event<<std::endl;
-      //} 
-    //}
-
-
-  //Specific parameters
-  ////////////////////////////////
-  TVector3 vMuon(1,1,1);
-  double EMuon = std::sqrt(std::pow(reco_mom_muon->at(mu),2)+std::pow(0.10565837,2));
-  vMuon.SetMag(reco_mom_muon->at(mu));
-  vMuon.SetTheta(reco_theta->at(mu));
-  vMuon.SetPhi(reco_phi->at(mu));
-  TLorentzVector muon(vMuon[0],vMuon[1],vMuon[2],EMuon); //Recoil proton TLorentzVector    
-
-  TVector3 vLead(1,1,1);
-  double ELead = std::sqrt(std::pow(reco_mom_proton->at(p1),2)+std::pow(0.93827208,2));
-  vLead.SetMag(reco_mom_proton->at(p1));
-  vLead.SetTheta(reco_theta->at(p1));
-  vLead.SetPhi(reco_phi->at(p1));
-  TLorentzVector lead(vLead[0],vLead[1],vLead[2],ELead);//leading proton TLorentzVector    
-		  
-  TVector3 vRec(1,1,1);
-  double ERec = std::sqrt(std::pow(reco_mom_proton->at(p2),2)+std::pow(0.93827208,2));
-  vRec.SetMag(reco_mom_proton->at(p2));
-  vRec.SetTheta(reco_theta->at(p2));
-  vRec.SetPhi(reco_phi->at(p2));
-  TLorentzVector rec(vRec[0],vRec[1],vRec[2],ERec); //Recoil proton TLorentzVector   
-
+  h_muon[3]->Fill(vMuon.Phi(),wgt);
+  h_leading[3]->Fill(vLead.Phi(),wgt);
+  h_recoil[3]->Fill(vRec.Phi(),wgt);
+  /*			  
   //Beam Stuff
   double PT_miss = vMuon.Perp() + vRec.Perp() + vLead.Perp();
   double Eneutrino = EMuon + (ELead-0.93827208) + (ERec-0.93827208) +(std::pow(PT_miss,2)/(2*353.7)) + 0.304;
@@ -507,9 +484,9 @@ void histogram_funcs::Fill_Histograms(int i, TVector3 reco_nu_vertex, double wgt
   h_cos_gamma_cm->Fill(cos_gamma_cm,wgt);
   h_mom_struck_nuc->Fill(p_struck_nuc,wgt);
   h_tot_pz->Fill(pz_tot,wgt);
-
+  */
 } //end of Fill Particles
-*/
+
 void histogram_funcs::Write_Histograms(bool truth){ 
   if(truth == true){
     for(int i=0; i< num2d; i++){
