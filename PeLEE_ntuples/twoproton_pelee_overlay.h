@@ -13,14 +13,8 @@
 #include <TFile.h>
 
 // Header file for the classes stored in the TTree if any.
-#include "vector"
-#include "vector"
-#include "vector"
-#include "vector"
-#include "vector"
 #include "string"
 #include "map"
-#include "vector"
 #include "vector"
 
 class twoproton_pelee_overlay {

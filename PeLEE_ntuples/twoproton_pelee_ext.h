@@ -1050,7 +1050,7 @@ public :
    TBranch        *b_X_SpcPts_v;   //!
    TBranch        *b_Y_SpcPts_v;   //!
    TBranch        *b_Z_SpcPts_v;   //!
-   TBranch        *b_shr_pfp_id;   //!
+   //TBranch        *b_shr_pfp_id;   //!
    TBranch        *b_shr_hits_max_MCStool;   //!
    TBranch        *b_n_showers_contained_MCStool;   //!
    TBranch        *b_trkshrscore_v;   //!
@@ -1365,7 +1365,7 @@ public :
    TBranch        *b_bdt_ext;   //!
    TBranch        *b_bdt_cosmic;   //!
    TBranch        *b_bdt_global;   //!
-   TBranch        *b_bdt_global;   //!
+   //TBranch        *b_bdt_global;   //!
    TBranch        *b_bdt_pi0_np;   //!
    TBranch        *b_bdt_nonpi0_np;   //!
    TBranch        *b_bdt_bkg_0p;   //!
