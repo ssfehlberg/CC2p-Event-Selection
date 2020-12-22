@@ -26,13 +26,21 @@ void twoproton_pelee_overlay::Loop()
 
   //Define all the histograms I am going to fill                                
   ////////////////////////////////////////////
-  hist.Define_Histograms("overlay");
+  Define_Histograms();
 
   //Defining all the constans we will use later
   //////////////////////////////
   bool _debug = false; //debug statements
   double pot_wgt = 0.0347; //POT weight
-
+  double MUON_MOM_CUT = 0.1;
+  double PROTON_MOM_CUT = 0.25;
+  double CHARGED_PI_MOM_CUT = 0.065;
+  double PION0_MOM_CUT = 0.065;
+  double MASS_PROTON = 0.93827208;
+  double MASS_MUON = 0.10565837;
+  double MASS_PION0 = 0.13497666;
+  double MASS_PIONPM =0.13957000;
+ 
   //Counters
   int fvcntr = 0; //Number of events with reconstructed vertex within the FV                                      
   int pfp_starts_contained = 0; //how many pfp's start within the FV                                      
@@ -69,15 +77,6 @@ void twoproton_pelee_overlay::Loop()
   int a = 0;
   int b = 0;
 
-  //FV Stuff
-  float_t FV_edge = 10.0;
-  float_t xmin = 0.0 + FV_edge;
-  float_t xmax = 256.35 - FV_edge;
-  float_t ymin = -116.5 + FV_edge;
-  float_t ymax = 116.5 - FV_edge;
-  float_t zmin = 0.0 + FV_edge;
-  float_t zmax = 1036.8 - FV_edge;
-
   if (fChain == 0) return;
   Long64_t nentries = fChain->GetEntriesFast();
   std::cout<<"Total Number of Entries: "<<nentries<<std::endl;
@@ -100,18 +99,60 @@ void twoproton_pelee_overlay::Loop()
       neutrinos_else++;
     }
 
+    int mc_n_threshold_muon = 0;
+    int mc_n_threshold_proton = 0;
+    int mc_n_threshold_pion0 = 0;
+    int mc_n_threshold_pionpm = 0;
+
+    std::cout<<"Value of mc_n_threshold_muon: "<<mc_n_threshold_muon<<std::endl;
+    std::cout<<"Value of mc_n_threshold_proton: "<<mc_n_threshold_proton<<std::endl;
+    std::cout<<"Value of mc_n_threshold_pion0: "<<mc_n_threshold_pion0<<std::endl;
+    std::cout<<"Value of mc_n_threshold_pionnpm: "<<mc_n_threshold_pionpm<<std::endl;
+
+
     //ugh we have to fill the damn mc values:
-    mc_n_threshold_muon = nmuon;
-    mc_n_threshold_proton = nproton;
-    mc_n_threshold_pionpm = npi0;
-    mc_n_threshold_pion0 = npion;
+    for ( size_t p = 0u; p < mc_pdg->size(); ++p ) {
+      int pdg = mc_pdg->at( p );
+      float energy = mc_E->at( p );
+      if ( pdg == 13) {
+	double mom = cuts.real_sqrt( std::pow(energy, 2) - std::pow(MASS_MUON, 2) );
+	if ( mom > MUON_MOM_CUT ) {
+	  mc_n_threshold_muon++;
+	}
+      }
+      else if ( pdg == 2212 ) {
+	double mom = cuts.real_sqrt( std::pow(energy, 2) - std::pow(MASS_PROTON, 2) );
+	if ( mom > PROTON_MOM_CUT ) 
+	  mc_n_threshold_proton++;
+      }
+      else if ( pdg == 111 ) {
+	double mom = cuts.real_sqrt( std::pow(energy, 2) - std::pow(MASS_PION0, 2) );
+	if ( mom > PION0_MOM_CUT) 
+	mc_n_threshold_pion0++;
+      }
+      else if ( std::abs(pdg) == 211 ) {
+	double mom = cuts.real_sqrt( std::pow(energy, 2) - std::pow(MASS_PIONPM, 2) );
+	if ( mom > CHARGED_PI_MOM_CUT ) {
+	  mc_n_threshold_pionpm++;
+	}
+      }
+    }
+
+    std::cout<<"Value of mc_n_threshold_muon after: "<<mc_n_threshold_muon<<std::endl;
+    std::cout<<"Value of mc_n_threshold_proton after: "<<mc_n_threshold_proton<<std::endl;
+    std::cout<<"Value of mc_n_threshold_pion0 after: "<<mc_n_threshold_pion0<<std::endl;
+    std::cout<<"Value of mc_n_threshold_pionnpm after: "<<mc_n_threshold_pionpm<<std::endl;
+
+
+
 
     //Filling histograms before any selection is made
     ////////////////////////////////////////////////
-    //Fill_Histograms_Mine(0, pot_wgt); //need to fix the weight
-    Fill_Histograms_Raquel(0, pot_wgt);
-    hist.h_topological_score_overlay[0]->Fill(topological_score,pot_wgt); //remember to add POT weight
-    hist.h_cosmic_impact_parameter_overlay[0]->Fill(CosmicIP,pot_wgt); //remember to add POT weight
+    cuts.Overlay_In_FV(10,10,10,10,10,50,reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z);  // to fill the fv bool
+
+    std::cout<<"Value of FV: "<<cuts.fv<<std::endl;
+    Fill_Histograms_Mine(0, pot_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv); //need to fix the weight
+    Fill_Histograms_Raquel(0, pot_wgt,cuts.fv);
 
     //Okay. The CCInclusive Selection requires the following things:
     // 1) The reconstructed neutrino vertex is inside the FV 
@@ -120,15 +161,14 @@ void twoproton_pelee_overlay::Loop()
     // 4) The cosmic impact parameter is greater than 10 cm for each PFP (filled per event): CosmicIP > 10 
     // We are now goinnng to make plots of those cut variables
 
-
     //1) Check that the event is in the FV
     //////////////////////////////////////
     if(cuts.In_FV(10,10,10,10,10,50,reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z) == false) continue; //10 cm border except from backend of detector
     fvcntr++;
 
     //Fill Histograms
-    Fill_Histograms_Mine(1, pot_wgt); //need to fix the weight
-    Fill_Histograms_Raquel(1, pot_wgt);
+    Fill_Histograms_Mine(1, pot_wgt,mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv); //need to fix the weight
+    Fill_Histograms_Raquel(1, pot_wgt,cuts.fv);
 
     //2) The start point of every pfp is within the FV
     ///////////////////////////////////////////////////
@@ -154,8 +194,8 @@ void twoproton_pelee_overlay::Loop()
     pfp_starts_contained++; 
 
     //Fill Histograms
-    Fill_Histograms_Mine(2, pot_wgt); //need to fix the weight
-    Fill_Histograms_Raquel(2, pot_wgt);
+    Fill_Histograms_Mine(2, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,pot_wgt,cuts.fv); //need to fix the weight
+    Fill_Histograms_Raquel(2, pot_wgt,cuts.fv);
 
     //3) The topoloogical score of every neutrino slice is above 0.1
     ///////////////////////////////////////////////////////
@@ -163,8 +203,8 @@ void twoproton_pelee_overlay::Loop()
     toposcore++;
 
     //Fill Histograms  
-    Fill_Histograms_Mine(3, pot_wgt); //need to fix the weight
-    Fill_Histograms_Raquel(3, pot_wgt);
+    Fill_Histograms_Mine(3, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,pot_wgt,cuts.fv); //need to fix the weight
+    Fill_Histograms_Raquel(3, pot_wgt,cuts.fv);
     
     //4) The cosmic impact parameter is greater than 10 cm for every neutrino slice. Honestly a dumb cut. Will remove later
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -172,8 +212,8 @@ void twoproton_pelee_overlay::Loop()
     cosmicip++;
 
     //Fill Histograms  
-    Fill_Histograms_Mine(4, pot_wgt); //need to fix the weight
-    Fill_Histograms_Raquel(4, pot_wgt);
+    Fill_Histograms_Mine(4, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,pot_wgt,cuts.fv); //need to fix the weight
+    Fill_Histograms_Raquel(4, pot_wgt,cuts.fv);
 
     //Now to apply the ve and NC rejection cuts. These are slightly modified to match our 1mu2p needs 
     /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -202,7 +242,7 @@ void twoproton_pelee_overlay::Loop()
   std::cout << "[ANALYZER] Sanity Check of the Total Number of Events Remaining: "<<events_remaining<<std::endl;
   std::cout <<"-----CLOSING TIME. YOU DON'T HAVE TO GO HOME, BUT YOU CAN'T STAY HERE-----"<<std::endl;
   
-/* 
+ 
   std::cout<<"-----MC GENERATED SUMMARY: RAQUEL-----"<<std::endl;
   std::cout << "[MC_RAQUEL] Initial Number of Events: "<<nentries<<std::endl;
   std::cout << "[MC_RAQUEL] Number of CCQEL Events: "<<qel[0]<<" Fraction of the Total: "<<float(100.*(float(qel[0])/float(nentries)))<<"%"<<std::endl;
@@ -271,11 +311,11 @@ void twoproton_pelee_overlay::Loop()
   std::cout<<"1mu1p1pi"<<res_count[1]<<std::endl;
   std::cout<<"1muNp"<<res_count[2]<<std::endl;
   std::cout<<"else"<<res_count[3]<<std::endl;
-*/
+
   //Don't forget to write all of your histograms before you leave!                                                                       
   ///////////////////////////////////////////////////////////////                                                                 
   tfile->cd();
-  hist.Write_Histograms(true); //function that writes all our histograms                                                      
+  Write_Histograms(); //function that writes all our histograms                                                      
   tfile->Close(); //write the root file that contains our histograms                                                         
   myfile.close(); //Write the file that contains the RSE of good events                                                     
   cc2p.close(); //Write the file that contains the RSE of good 1mu2p events

@@ -72,9 +72,7 @@ void twoproton_pelee_ext::Loop()
 
     //Filling histograms before any selection is made
     ////////////////////////////////////////////////
-    hist.Fill_Histograms(0, TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z), pot_wgt);
-    hist.h_topological_score->Fill(topological_score,pot_wgt); //filling topologicaal score before any cuts
-    hist.h_cosmic_impact_parameter->Fill(CosmicIP,pot_wgt); //filling cosmic impact parameter before any cuts
+    hist.Fill_Histograms(0, TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z), CosmicIP, topological_score,pot_wgt);
     
     //Just casually checking how many neutrino slices we have
     if(nslice == 0){
@@ -99,7 +97,7 @@ void twoproton_pelee_ext::Loop()
     fvcntr++;
 
     //Fill Histograms
-    hist.Fill_Histograms(1, TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z), pot_wgt);
+    hist.Fill_Histograms(1, TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z), CosmicIP, topological_score,pot_wgt);
 
     //2) The start point of every pfp is within the FV
     ///////////////////////////////////////////////////
@@ -125,7 +123,7 @@ void twoproton_pelee_ext::Loop()
     pfp_starts_contained++; 
 
     //Fill Histograms
-    hist.Fill_Histograms(2,TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z), pot_wgt);
+    hist.Fill_Histograms(2,TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z), CosmicIP, topological_score,pot_wgt);
 
     //3) The topoloogical score of every neutrino slice is above 0.1
     ///////////////////////////////////////////////////////
@@ -133,7 +131,7 @@ void twoproton_pelee_ext::Loop()
     toposcore++;
 
     //Fill Histograms  
-    hist.Fill_Histograms(3, TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z), pot_wgt);
+    hist.Fill_Histograms(3, TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z), CosmicIP, topological_score,pot_wgt);
 
     //4) The cosmic impact parameter is greater than 10 cm for every neutrino slice. Honestly a dumb cut. Will remove later
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -141,7 +139,7 @@ void twoproton_pelee_ext::Loop()
     cosmicip++;
 
     //Fill Histograms  
-    hist.Fill_Histograms(4, TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z), pot_wgt);
+    hist.Fill_Histograms(4, TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z), CosmicIP, topological_score,pot_wgt);
 
     //Now to apply the ve and NC rejection cuts. These are slightly modified to match our 1mu2p needs 
     /////////////////////////////////////////////////////////////////////////////////////////////////
