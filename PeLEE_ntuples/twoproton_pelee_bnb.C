@@ -31,7 +31,6 @@ void twoproton_pelee_bnb::Loop()
   double MASS_PROTON = 0.93827208;
   double MASS_MUON = 0.10565837;
 
-
   //Counters                                                                                                      
   int fvcntr = 0; //Number of events with reconstructed vertex within the FV                                      
   int pfp_starts_contained = 0; //how many pfp's start within the FV                                      
@@ -115,8 +114,7 @@ void twoproton_pelee_bnb::Loop()
 	x = trk_sce_start_x_v->at( p );
 	y = trk_sce_start_y_v->at( p );
 	z = trk_sce_start_z_v->at( p );
-      }
-      else {
+      } else {
 	x = shr_start_x_v->at( p );
 	y = shr_start_y_v->at( p );
 	z = shr_start_z_v->at( p );

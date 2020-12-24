@@ -15,8 +15,7 @@ void twoproton_pelee_overlay::Loop()
   //Files with RSE's in them                                                                            
   ofstream myfile;//File that will contain RSE of good events                                          
   ofstream cc2p; //File that will contain good cc2p events                                                                          
-  //ofstream ccNp0pi_file;
-                     
+  //ofstream ccNp0pi_file;     
   myfile.open("lists/files_filtered_wgt.list");
   cc2p.open("lists/files_filtered_wgt_cc2p.list");
   //ccNp0pi_file.open("lists/files_filtered_wgt_ccNp0pi.list"); 
@@ -32,6 +31,9 @@ void twoproton_pelee_overlay::Loop()
   //////////////////////////////
   bool _debug = false; //debug statements
   double pot_wgt = 0.0347; //POT weight
+  double TRACK_SCORE_CUT = 0.5;
+  double TOPO_SCORE_CUT = 0.1;
+  double COSMIC_IP_CUT = 10.0;
   double MUON_MOM_CUT = 0.1;
   double PROTON_MOM_CUT = 0.25;
   double CHARGED_PI_MOM_CUT = 0.065;
@@ -104,12 +106,6 @@ void twoproton_pelee_overlay::Loop()
     int mc_n_threshold_pion0 = 0;
     int mc_n_threshold_pionpm = 0;
 
-    std::cout<<"Value of mc_n_threshold_muon: "<<mc_n_threshold_muon<<std::endl;
-    std::cout<<"Value of mc_n_threshold_proton: "<<mc_n_threshold_proton<<std::endl;
-    std::cout<<"Value of mc_n_threshold_pion0: "<<mc_n_threshold_pion0<<std::endl;
-    std::cout<<"Value of mc_n_threshold_pionnpm: "<<mc_n_threshold_pionpm<<std::endl;
-
-
     //ugh we have to fill the damn mc values:
     for ( size_t p = 0u; p < mc_pdg->size(); ++p ) {
       int pdg = mc_pdg->at( p );
@@ -138,19 +134,10 @@ void twoproton_pelee_overlay::Loop()
       }
     }
 
-    std::cout<<"Value of mc_n_threshold_muon after: "<<mc_n_threshold_muon<<std::endl;
-    std::cout<<"Value of mc_n_threshold_proton after: "<<mc_n_threshold_proton<<std::endl;
-    std::cout<<"Value of mc_n_threshold_pion0 after: "<<mc_n_threshold_pion0<<std::endl;
-    std::cout<<"Value of mc_n_threshold_pionnpm after: "<<mc_n_threshold_pionpm<<std::endl;
-
-
-
-
     //Filling histograms before any selection is made
     ////////////////////////////////////////////////
     cuts.Overlay_In_FV(10,10,10,10,10,50,reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z);  // to fill the fv bool
 
-    std::cout<<"Value of FV: "<<cuts.fv<<std::endl;
     Fill_Histograms_Mine(0, pot_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv); //need to fix the weight
     Fill_Histograms_Raquel(0, pot_wgt,cuts.fv);
 
@@ -166,8 +153,14 @@ void twoproton_pelee_overlay::Loop()
     if(cuts.In_FV(10,10,10,10,10,50,reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z) == false) continue; //10 cm border except from backend of detector
     fvcntr++;
 
+    std::cout<<"Value of Spline Weight: "<<weightSpline<<std::endl;
+    std::cout<<"Value of Spline Weight: "<<weightTune<<std::endl;
+    std::cout<<"Value of Spline Weight: "<<weightSplineTimesTune<<std::endl;
+    std::cout<<"Value of Above times POT: "<<pot_wgt <<std::endl;
+
+
     //Fill Histograms
-    Fill_Histograms_Mine(1, pot_wgt,mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv); //need to fix the weight
+    Fill_Histograms_Mine(1, pot_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv); //need to fix the weight
     Fill_Histograms_Raquel(1, pot_wgt,cuts.fv);
 
     //2) The start point of every pfp is within the FV
@@ -194,7 +187,7 @@ void twoproton_pelee_overlay::Loop()
     pfp_starts_contained++; 
 
     //Fill Histograms
-    Fill_Histograms_Mine(2, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,pot_wgt,cuts.fv); //need to fix the weight
+    Fill_Histograms_Mine(2, pot_wgt,mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv); //need to fix the weight
     Fill_Histograms_Raquel(2, pot_wgt,cuts.fv);
 
     //3) The topoloogical score of every neutrino slice is above 0.1
@@ -203,7 +196,7 @@ void twoproton_pelee_overlay::Loop()
     toposcore++;
 
     //Fill Histograms  
-    Fill_Histograms_Mine(3, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,pot_wgt,cuts.fv); //need to fix the weight
+    Fill_Histograms_Mine(3, pot_wgt,mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv); //need to fix the weight
     Fill_Histograms_Raquel(3, pot_wgt,cuts.fv);
     
     //4) The cosmic impact parameter is greater than 10 cm for every neutrino slice. Honestly a dumb cut. Will remove later
@@ -212,7 +205,7 @@ void twoproton_pelee_overlay::Loop()
     cosmicip++;
 
     //Fill Histograms  
-    Fill_Histograms_Mine(4, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,pot_wgt,cuts.fv); //need to fix the weight
+    Fill_Histograms_Mine(4, pot_wgt,mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv); //need to fix the weight
     Fill_Histograms_Raquel(4, pot_wgt,cuts.fv);
 
     //Now to apply the ve and NC rejection cuts. These are slightly modified to match our 1mu2p needs 

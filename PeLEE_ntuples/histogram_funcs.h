@@ -50,8 +50,6 @@ class histogram_funcs
   TH1D* h_vtx_y[number]; //reco y: bnb, ext, dirt                                                                                  
   TH1D* h_vtx_z[number]; //reco z: bnb, ext, dirt   
 
-  TH1D* h_topological_score_overlay[number2]; //overlay
-  TH1D* h_topological_score_raquel[number3]; //raquel
   TH1D* h_topological_score[number]; //bnb,ext,dirt
   TH1D* h_cosmic_impact_parameter_overlay[number2]; //overlay
   TH1D* h_cosmic_impact_parameter_raquel[number3]; //raquel
@@ -228,8 +226,8 @@ void histogram_funcs::Fill_Histograms(int i, TVector3 reco_nu_vertex,double Cosm
   h_vtx_x[i]->Fill(reco_nu_vertex[0],wgt);
   h_vtx_y[i]->Fill(reco_nu_vertex[1],wgt);
   h_vtx_z[i]->Fill(reco_nu_vertex[2],wgt);
-  h_topological_score[i]->Fill(CosmicIP,wgt);
-  h_cosmic_impact_parameter[i]->Fill(topological_score,wgt);
+  h_topological_score[i]->Fill(topological_score,wgt);
+  h_cosmic_impact_parameter[i]->Fill(CosmicIP,wgt);
 
 }
 

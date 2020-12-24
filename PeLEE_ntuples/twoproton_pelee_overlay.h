@@ -1486,7 +1486,7 @@ public :
   const char * labely[num2d] = {"reco y","true y","true y + sce"};
   TH2D *h_correlation_overlay[num2d];
       
-  static const int  number=5; //number cuts                                                                        
+  static const int  number = 5; //number cuts                                                                        
   static const int  number2 = 11; //categories I defined                                                            
   static const int  number3 = 10; //categories raquel defined
   const char * point[number] ={"_before_selection","_after_fv","_after_pfp_containment","_after_topo","_after_cosmicIP"}; //this defines histograms before and after the selection                        
@@ -1688,8 +1688,8 @@ void twoproton_pelee_overlay::Define_Histograms(){
       }
 
       for(int j=0; j < number3; j++){//raquel's stuff
-	h_vtx_x_raquel[i][j]=new TH1D(Form("h_vtx_x_raquel%s%s",point[i],channel2[j]),Form("h_vtx_x_raquel%s%s",point[i],channel2[j]),40,0,275);
-	h_vtx_y_raquel[i][j]=new TH1D(Form("h_vtx_y_raquel%s%s",point[i],channel2[j]),Form("h_vtx_y_raquel%s%s",point[i],channel2[j]),40,-125,125);
+	h_vtx_x_raquel[i][j]=new TH1D(Form("h_vtx_x_raquel%s%s",point[i],channel2[j]),Form("h_vtx_x_raquel%s%s",point[i],channel2[j]),50,0,250);
+	h_vtx_y_raquel[i][j]=new TH1D(Form("h_vtx_y_raquel%s%s",point[i],channel2[j]),Form("h_vtx_y_raquel%s%s",point[i],channel2[j]),50,-125,125);
 	h_vtx_z_raquel[i][j]=new TH1D(Form("h_vtx_z_raquel%s%s",point[i],channel2[j]),Form("h_vtx_z_raquel%s%s",point[i],channel2[j]),50,0,1050);
 	h_vtx_x_mc_raquel[i][j]=new TH1D(Form("h_vtx_x_m_raquel%s%s",point[i],channel2[j]),Form("h_vtx_x_mc_raquel%s%s",point[i],channel2[j]),40,0,275);
 	h_vtx_y_mc_raquel[i][j]=new TH1D(Form("h_vtx_y_mc_raquel%s%s",point[i],channel2[j]),Form("h_vtx_y_mc_raquel%s%s",point[i],channel2[j]),40,-125,125);
@@ -1701,8 +1701,8 @@ void twoproton_pelee_overlay::Define_Histograms(){
 	h_X_raquel[i][j] = new TH1D(Form("h_X_raquel%s%s",point[i],channel2[j]),Form("h_X_raquel%s%s",point[i],channel2[j]),20,0,2);
 	h_Y_raquel[i][j] = new TH1D(Form("h_Y_raquel%s%s",point[i],channel2[j]),Form("h_Y_raquel%s%s",point[i],channel2[j]),10,0,1);
 	h_Pt_raquel[i][j] = new TH1D(Form("h_Pt_raquel%s%s",point[i],channel2[j]),Form("h_Pt_raquel%s%s",point[i],channel2[j]),20,0,2);
-	h_cosmic_impact_parameter_raquel[i][j] = new TH1D(Form("h_cosmic_impact_parameter_raquel%s%s",point[i],channel2[j]),Form("h_cosmic_impact_parameter_raquel%s%s; Cosmic Impact Distance (cm); No. Events",point[i],channel2[j]),100,0,300);
-	h_topological_score_raquel[i][j] = new TH1D(Form("h_topological_score_raquel%s%s",point[i],channel2[j]),Form("h_topological_score_raquel%s%s; Topological Score; No. Events",point[i],channel2[j]),100,0.0,1.0);
+	h_cosmic_impact_parameter_raquel[i][j] = new TH1D(Form("h_cosmic_impact_parameter_raquel%s%s",point[i],channel2[j]),Form("h_cosmic_impact_parameter_raquel%s%s; Cosmic Impact Distance (cm); No. Events",point[i],channel2[j]),20,0,200);
+	h_topological_score_raquel[i][j] = new TH1D(Form("h_topological_score_raquel%s%s",point[i],channel2[j]),Form("h_topological_score_raquel%s%s; Topological Score; No. Events",point[i],channel2[j]),30,0.0,1.0);
 
 	h_list.push_back(h_topological_score_raquel[i][j]);
 	h_list.push_back(h_cosmic_impact_parameter_raquel[i][j]);
@@ -1816,12 +1816,15 @@ void twoproton_pelee_overlay::Fill_Mine(int i, int j, double wgt){
   h_vtx_x_overlay[i][j]->Fill(reco_nu_vtx_sce_x,wgt);
   h_vtx_y_overlay[i][j]->Fill(reco_nu_vtx_sce_y,wgt);
   h_vtx_z_overlay[i][j]->Fill(reco_nu_vtx_sce_z,wgt);
+
   h_vtx_x_mc[i][j]->Fill(true_nu_vtx_x,wgt);
   h_vtx_y_mc[i][j]->Fill(true_nu_vtx_y,wgt);
   h_vtx_z_mc[i][j]->Fill(true_nu_vtx_z,wgt);
+
   h_vtx_x_mc_sce[i][j]->Fill(true_nu_vtx_sce_x,wgt);
   h_vtx_y_mc_sce[i][j]->Fill(true_nu_vtx_sce_y,wgt);
   h_vtx_z_mc_sce[i][j]->Fill(true_nu_vtx_sce_z,wgt);
+
   h_topological_score_overlay[i][j]->Fill(topological_score,wgt); //remember to add POT weight
   h_cosmic_impact_parameter_overlay[i][j]->Fill(CosmicIP,wgt); //remember to add POT weight
   //h_q2[i][j]->Fill(mc_q2,wgt);
@@ -1836,12 +1839,15 @@ void twoproton_pelee_overlay::Fill_Raquel(int i, int j, double wgt){
   h_vtx_x_raquel[i][j]->Fill(reco_nu_vtx_sce_x,wgt);
   h_vtx_y_raquel[i][j]->Fill(reco_nu_vtx_sce_y,wgt);
   h_vtx_z_raquel[i][j]->Fill(reco_nu_vtx_sce_z,wgt);
+
   h_vtx_x_mc_raquel[i][j]->Fill(true_nu_vtx_x,wgt);
   h_vtx_y_mc_raquel[i][j]->Fill(true_nu_vtx_y,wgt);
   h_vtx_z_mc_raquel[i][j]->Fill(true_nu_vtx_z,wgt);
+
   h_vtx_x_mc_sce_raquel[i][j]->Fill(true_nu_vtx_sce_x,wgt);
   h_vtx_y_mc_sce_raquel[i][j]->Fill(true_nu_vtx_sce_y,wgt);
   h_vtx_z_mc_sce_raquel[i][j]->Fill(true_nu_vtx_sce_z,wgt);
+
   h_topological_score_raquel[i][j]->Fill(topological_score,wgt); //remember to add POT weight
   h_cosmic_impact_parameter_raquel[i][j]->Fill(CosmicIP,wgt); //remember to add POT weight
   //h_q2_raquel[i][j]->Fill(mc_q2,wgt);
@@ -1854,43 +1860,43 @@ void twoproton_pelee_overlay::Fill_Histograms_Mine(int i, double wgt, int mc_n_t
   Fill_Mine(i,0,wgt);
   //cc0p0pi                                                                                                                                  
   if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton == 0 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
-    Fill_Mine(i,1, wgt);
+    Fill_Mine(i,1,wgt);
     cc0p0pi[i]++;
     //cc1p0pi                                                                                                                                  
   } else if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 &&mc_n_threshold_proton == 1 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
-    Fill_Mine(i,2, wgt);
+    Fill_Mine(i,2,wgt);
     cc1p0pi[i]++;
     //cc2p0pi                                                                                                                                    
   } else if (ccnc == 0 && nu_pdg == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton == 2 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
-    Fill_Mine(i,3, wgt);
+    Fill_Mine(i,3,wgt);
     cc2p0pi[i]++;
     //ccNp0pi                                                                                                                                  
   } else if (ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton > 2 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
-    Fill_Mine(i,4, wgt);
+    Fill_Mine(i,4,wgt);
     ccNp0pi[i]++;
     //ccNp1pi                                                                                                                                   
   } else if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton >= 0 && (mc_n_threshold_pion0 == 1 || mc_n_threshold_pionpm == 1) && fv == true){
-    Fill_Mine(i,5, wgt);
+    Fill_Mine(i,5,wgt);
     ccNp1pi[i]++;
     //ccNpNpi                                                                                                                                   
   } else if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton >= 0 && (mc_n_threshold_pion0 > 1 || mc_n_threshold_pionpm > 1) && fv == true){
-    Fill_Mine(i,6, wgt);
+    Fill_Mine(i,6,wgt);
     ccNpNpi[i]++;
     //CC NUE                                                                                                                                   
   } else if(ccnc == 0 && abs(nu_pdg) == 12 && fv == true){
-    Fill_Mine(i,7, wgt);
+    Fill_Mine(i,7,wgt);
     ccnue[i]++;
   //OUT OF FV                                                                                                                                
   } else if(fv == false){                                                                                                                  
-    Fill_Mine(i,8, wgt);
+    Fill_Mine(i,8,wgt);
     outfv[i]++;
     //NC                                                                                                                                       
   } else if(ccnc == 1 && fv == true){
-    Fill_Mine(i,0, wgt);
+    Fill_Mine(i,9,wgt);
     nc[i]++;
     //else                                                                                                                                     
   } else{
-    Fill_Mine(i,10, wgt);
+    Fill_Mine(i,10,wgt);
     other[i]++;
   }
 }
@@ -1921,7 +1927,7 @@ void twoproton_pelee_overlay::Fill_Histograms_Raquel(int i, double wgt, bool fv)
     //  res_count[3]++;
     //}
     Fill_Raquel(i,4,wgt);
-  res[i]++;
+    res[i]++;
     //CCDIS                                                                                                                                                                                             
 } else if(ccnc == 0 && interaction == 2 && fv==true){
   Fill_Raquel(i,5,wgt);
@@ -1936,11 +1942,11 @@ void twoproton_pelee_overlay::Fill_Histograms_Raquel(int i, double wgt, bool fv)
     nc_raquel[i]++;
     //OUT OF FV                                                                                                                                                                                          
   } else if(fv == false){
-  Fill_Raquel(i,8, wgt);
-  outfv_raquel[i]++;
+    Fill_Raquel(i,8, wgt);
+    outfv_raquel[i]++;
     //Other                                                                                                                                                                                             
   }else{
-  Fill_Raquel(i,9, wgt);
+    Fill_Raquel(i,9, wgt);
     other_raquel[i]++;
   } 
 }
