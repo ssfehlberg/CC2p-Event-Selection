@@ -31,6 +31,7 @@ void twoproton_pelee_overlay::Loop()
   //////////////////////////////
   bool _debug = false; //debug statements
   double pot_wgt = 0.0347; //POT weight
+  double mc_wgt;
   double TRACK_SCORE_CUT = 0.5;
   double TOPO_SCORE_CUT = 0.1;
   double COSMIC_IP_CUT = 10.0;
@@ -92,6 +93,14 @@ void twoproton_pelee_overlay::Loop()
     std::cout<<"BEGINNING TO PROCESS RUN: " <<run << "  SUBRUN: "<< sub << "  EVENT: " << evt <<std::endl;
     std::cout<<"-----------------------------------"<<std::endl;
 
+    //Defining the MC Weight cause it is dumb                                                                                                                                                                                                        
+    /////////////////////////////                                                                                                                                                                                                                    
+    if(std::isfinite(weightTune) && weightTune <= 100.) {
+      mc_wgt = weightSplineTimesTune;
+    } else {
+      mc_wgt = 1 * weightSpline;
+    }
+
     //Just casually checking how many neutrino slices we have
     if(nslice == 0){
       neutrinos_0++;
@@ -138,8 +147,8 @@ void twoproton_pelee_overlay::Loop()
     ////////////////////////////////////////////////
     cuts.Overlay_In_FV(10,10,10,10,10,50,reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z);  // to fill the fv bool
 
-    Fill_Histograms_Mine(0, pot_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv); //need to fix the weight
-    Fill_Histograms_Raquel(0, pot_wgt,cuts.fv);
+    Fill_Histograms_Mine(0, pot_wgt*mc_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv); //need to fix the weight
+    Fill_Histograms_Raquel(0, pot_wgt*mc_wgt,cuts.fv);
 
     //Okay. The CCInclusive Selection requires the following things:
     // 1) The reconstructed neutrino vertex is inside the FV 
@@ -154,14 +163,14 @@ void twoproton_pelee_overlay::Loop()
     fvcntr++;
 
     std::cout<<"Value of Spline Weight: "<<weightSpline<<std::endl;
-    std::cout<<"Value of Spline Weight: "<<weightTune<<std::endl;
+    std::cout<<"Value of Spline Weight: "<<mc_wgt<<std::endl;
     std::cout<<"Value of Spline Weight: "<<weightSplineTimesTune<<std::endl;
     std::cout<<"Value of Above times POT: "<<pot_wgt <<std::endl;
 
 
     //Fill Histograms
-    Fill_Histograms_Mine(1, pot_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv); //need to fix the weight
-    Fill_Histograms_Raquel(1, pot_wgt,cuts.fv);
+    Fill_Histograms_Mine(1, pot_wgt*mc_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv); //need to fix the weight
+    Fill_Histograms_Raquel(1, pot_wgt*mc_wgt,cuts.fv);
 
     //2) The start point of every pfp is within the FV
     ///////////////////////////////////////////////////
@@ -187,8 +196,8 @@ void twoproton_pelee_overlay::Loop()
     pfp_starts_contained++; 
 
     //Fill Histograms
-    Fill_Histograms_Mine(2, pot_wgt,mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv); //need to fix the weight
-    Fill_Histograms_Raquel(2, pot_wgt,cuts.fv);
+    Fill_Histograms_Mine(2, pot_wgt*mc_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv); //need to fix the weight
+    Fill_Histograms_Raquel(2, pot_wgt*mc_wgt, cuts.fv);
 
     //3) The topoloogical score of every neutrino slice is above 0.1
     ///////////////////////////////////////////////////////
@@ -196,8 +205,8 @@ void twoproton_pelee_overlay::Loop()
     toposcore++;
 
     //Fill Histograms  
-    Fill_Histograms_Mine(3, pot_wgt,mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv); //need to fix the weight
-    Fill_Histograms_Raquel(3, pot_wgt,cuts.fv);
+    Fill_Histograms_Mine(3, pot_wgt*mc_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv); //need to fix the weight
+    Fill_Histograms_Raquel(3, pot_wgt*mc_wgt, cuts.fv);
     
     //4) The cosmic impact parameter is greater than 10 cm for every neutrino slice. Honestly a dumb cut. Will remove later
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -205,8 +214,8 @@ void twoproton_pelee_overlay::Loop()
     cosmicip++;
 
     //Fill Histograms  
-    Fill_Histograms_Mine(4, pot_wgt,mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv); //need to fix the weight
-    Fill_Histograms_Raquel(4, pot_wgt,cuts.fv);
+    Fill_Histograms_Mine(4, pot_wgt*mc_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv); //need to fix the weight
+    Fill_Histograms_Raquel(4, pot_wgt*mc_wgt, cuts.fv);
 
     //Now to apply the ve and NC rejection cuts. These are slightly modified to match our 1mu2p needs 
     /////////////////////////////////////////////////////////////////////////////////////////////////

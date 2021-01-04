@@ -26,7 +26,7 @@ void twoproton_pelee_ext::Loop()
   //Defining all the constans we will use later                                                                                          
   //////////////////////////////                                                                                                      
   bool _debug = false; //debug statements                                                                         
-  double pot_wgt = 0.2993; //POT weight                                    
+  double pot_wgt = 0.154; //POT weight                                    
   
   
   //Counters                                                                                                       

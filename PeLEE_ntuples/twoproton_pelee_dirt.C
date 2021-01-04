@@ -28,7 +28,8 @@ void twoproton_pelee_dirt::Loop()
   //////////////////////////////                                                                                                      
   bool _debug = false; //debug statements                                                                        
   double pot_wgt = 0.141; //POT weight
-                                        
+  double mc_wgt; //spline times tuned cv weight
+                     
   //Counters                                                                                                       
   int fvcntr = 0; //Number of events with reconstructed vertex within the FV                                      
   int pfp_starts_contained = 0; //how many pfp's start within the FV                                      
@@ -68,13 +69,21 @@ void twoproton_pelee_dirt::Loop()
       if (ientry < 0) break;
       nb = fChain->GetEntry(jentry);   nbytes += nb;
   
-     std::cout<<"-----------------------------------"<<std::endl;
-    std::cout<<"BEGINNING TO PROCESS RUN: " <<run << "  SUBRUN: "<< sub << "  EVENT: " << evt <<std::endl;
-    std::cout<<"-----------------------------------"<<std::endl;
+      std::cout<<"-----------------------------------"<<std::endl;
+      std::cout<<"BEGINNING TO PROCESS RUN: " <<run << "  SUBRUN: "<< sub << "  EVENT: " << evt <<std::endl;
+      std::cout<<"-----------------------------------"<<std::endl;
+
+      //Defining the MC Weight cause it is dumb
+      /////////////////////////////
+      if(std::isfinite(weightTune) && weightTune <= 100.) {
+	mc_wgt = weightSplineTimesTune;
+      } else {
+	mc_wgt = 1 * weightSpline;
+      }
 
     //Filling histograms before any selection is made
     ////////////////////////////////////////////////
-    hist.Fill_Histograms(0, TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z), CosmicIP, topological_score,pot_wgt);
+    hist.Fill_Histograms(0, TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z), CosmicIP, topological_score,pot_wgt*mc_wgt);
    
     //Just casually checking how many neutrino slices we have
     if(nslice == 0){
@@ -99,7 +108,7 @@ void twoproton_pelee_dirt::Loop()
     fvcntr++;
 
     //Fill Histograms
-    hist.Fill_Histograms(1, TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z), CosmicIP, topological_score,pot_wgt);
+    hist.Fill_Histograms(1, TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z), CosmicIP, topological_score,pot_wgt*mc_wgt);
 
     //2) The start point of every pfp is within the FV
     ///////////////////////////////////////////////////
@@ -125,7 +134,7 @@ void twoproton_pelee_dirt::Loop()
     pfp_starts_contained++; 
 
     //Fill Histograms
-    hist.Fill_Histograms(2,TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z), CosmicIP, topological_score,pot_wgt);
+    hist.Fill_Histograms(2,TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z), CosmicIP, topological_score,pot_wgt*mc_wgt);
 
     //3) The topoloogical score of every neutrino slice is above 0.1
     ///////////////////////////////////////////////////////
@@ -133,7 +142,7 @@ void twoproton_pelee_dirt::Loop()
     toposcore++;
 
     //Fill Histograms  
-    hist.Fill_Histograms(3, TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z), CosmicIP, topological_score,pot_wgt);
+    hist.Fill_Histograms(3, TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z), CosmicIP, topological_score,pot_wgt*mc_wgt);
 
     //4) The cosmic impact parameter is greater than 10 cm for every neutrino slice. Honestly a dumb cut. Will remove later
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -141,7 +150,7 @@ void twoproton_pelee_dirt::Loop()
     cosmicip++;
 
     //Fill Histograms  
-    hist.Fill_Histograms(4, TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z), CosmicIP, topological_score,pot_wgt);
+    hist.Fill_Histograms(4, TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z), CosmicIP, topological_score,pot_wgt*mc_wgt);
 
     //Now to apply the ve and NC rejection cuts. These are slightly modified to match our 1mu2p needs 
     /////////////////////////////////////////////////////////////////////////////////////////////////
