@@ -31,10 +31,10 @@ class histogram_funcs
   //Now to define all the specific channels and their histograms                                                                   
   //Since I am basically a plot factory now, I am going to try and do this the smart way                                           
   ///////////////////////////////////////////////////////////////////////////////////////                                          
-  static const int  number=5; //number cuts                                                                        
+  static const int  number=4; //number cuts                                                                        
   static const int  number2 = 11; //categories I defined                                                            
   static const int  number3 = 10; //categories raquel defined
-  const char * point[number] ={"_before_selection","_after_fv","_after_pfp_containment","_after_topo","_after_cosmicIP"}; //this defines histograms before and after the selection                        
+  const char * point[number] ={"_before_selection","_after_fv","_after_topo","_after_cosmicIP"}; //this defines histograms before and after the selection. got rid of pfp cut                        
   const char * channel[number2]={"_total","_cc0p0pi","_cc1p0pi","_cc2p0pi","_ccNp0pi",
 				 "_ccNp1pi","_ccNpNpi","_ccnue","_outfv","_nc","_other"}; //these are the channels I defined        
   const char * channel2[number3] = {"_total","_ccQE","_ccCOH","_ccMEC","_ccRES","_ccDIS",
@@ -163,7 +163,7 @@ void histogram_funcs::Define_Histograms(const char* sample){
     h_vtx_y[i]=new TH1D(Form("h_vtx_y%s_%s",point[i],sample),Form("h_vtx_y%s_%s",point[i],sample),50,-125,125);
     h_vtx_z[i]=new TH1D(Form("h_vtx_z%s_%s",point[i],sample),Form("h_vtx_z%s_%s",point[i],sample),50,0,1050);
     h_cosmic_impact_parameter[i] = new TH1D(Form("h_cosmic_impact_parameter%s_%s",point[i],sample),Form("h_cosmic_impact_parameter%s_%s; Cosmic Impact Distance (cm); No. Events",point[i],sample),20,0,200);
-    h_topological_score[i] = new TH1D(Form("h_topological_score%s_%s",point[i],sample),Form("h_topological_score%s_%s; Topological Score; No. Events",point[i],sample),30,0.0,1.0);
+    h_topological_score[i] = new TH1D(Form("h_topological_score%s_%s",point[i],sample),Form("h_topological_score%s_%s; Topological Score; No. Events",point[i],sample),50,0.0,1.0); //30 for Wouter, 50 for steven
 
     h_list.push_back(h_cosmic_impact_parameter[i]);
     h_list.push_back(h_topological_score[i]);

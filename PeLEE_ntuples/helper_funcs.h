@@ -8,7 +8,7 @@ class helper_funcs{
 
 
   double TRACK_SCORE_CUT = 0.5;
-  double TOPO_SCORE_CUT = 0.1;
+  double TOPO_SCORE_CUT = 0.3;
   double COSMIC_IP_CUT = 10.0;
   bool fv;
 

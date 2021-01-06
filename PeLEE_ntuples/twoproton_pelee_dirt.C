@@ -104,7 +104,7 @@ void twoproton_pelee_dirt::Loop()
 
     //1) Check that the event is in the FV
     //////////////////////////////////////
-    if(cuts.In_FV(10,10,10,10,10,50,reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z) == false) continue; //10 cm border except from backend of detector
+    if(cuts.In_FV(10,10,10,10,10,10,reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z) == false) continue; //10 cm border except from backend of detector
     fvcntr++;
 
     //Fill Histograms
@@ -112,7 +112,7 @@ void twoproton_pelee_dirt::Loop()
 
     //2) The start point of every pfp is within the FV
     ///////////////////////////////////////////////////
-    for(int p = 0; p < n_pfps; p++){
+    /* for(int p = 0; p < n_pfps; p++){
       unsigned int generation = pfp_generation_v->at( p ); //only check direct neutrino daughters (gen ==2)
       if ( generation != 2u ) continue;
       float tscore = trk_score_v->at( p ); //get the track score for the current PFParticle
@@ -129,20 +129,20 @@ void twoproton_pelee_dirt::Loop()
 	y = shr_start_y_v->at( p );
 	z = shr_start_z_v->at( p );
       }
-      if(cuts.In_FV(10,10,10,10,10,50,x,y,z) == false) continue;
+      if(cuts.In_FV(10,10,10,10,10,10,x,y,z) == false) continue;
     } //end of Loop through PFP's
     pfp_starts_contained++; 
-
+    
     //Fill Histograms
     hist.Fill_Histograms(2,TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z), CosmicIP, topological_score,pot_wgt*mc_wgt);
-
+    */
     //3) The topoloogical score of every neutrino slice is above 0.1
     ///////////////////////////////////////////////////////
     if(topological_score < cuts.TOPO_SCORE_CUT) continue;
     toposcore++;
 
     //Fill Histograms  
-    hist.Fill_Histograms(3, TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z), CosmicIP, topological_score,pot_wgt*mc_wgt);
+    hist.Fill_Histograms(2, TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z), CosmicIP, topological_score,pot_wgt*mc_wgt);
 
     //4) The cosmic impact parameter is greater than 10 cm for every neutrino slice. Honestly a dumb cut. Will remove later
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -150,7 +150,7 @@ void twoproton_pelee_dirt::Loop()
     cosmicip++;
 
     //Fill Histograms  
-    hist.Fill_Histograms(4, TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z), CosmicIP, topological_score,pot_wgt*mc_wgt);
+    hist.Fill_Histograms(3, TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z), CosmicIP, topological_score,pot_wgt*mc_wgt);
 
     //Now to apply the ve and NC rejection cuts. These are slightly modified to match our 1mu2p needs 
     /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -163,7 +163,7 @@ void twoproton_pelee_dirt::Loop()
    std::cout<<"-----MODULE SUMMARY-----"<<std::endl;
    std::cout << "[ANALYZER] Initial Number of Events: "<<nentries<<std::endl;
    std::cout << "[ANALYZER] Number of Events with Vertex in FV: "<<fvcntr<<std::endl;
-   std::cout << "[ANALYZER] How Many Events with All PFP Starts within the FV: "<<pfp_starts_contained<<std::endl;
+   //std::cout << "[ANALYZER] How Many Events with All PFP Starts within the FV: "<<pfp_starts_contained<<std::endl;
    std::cout << "[ANALYZER] How Many Events with Topological Score above 0.1: "<<toposcore<<std::endl;
    std::cout << "[ANALYZER] Number of Events with CosmicIP above 10cm: "<<cosmicip<<std::endl;
    std::cout << "[ANALYZER] Number of Events with 3 Tracks: "<<threetrkcntr/3<<std::endl;

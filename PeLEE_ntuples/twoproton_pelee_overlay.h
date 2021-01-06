@@ -1486,10 +1486,10 @@ public :
   const char * labely[num2d] = {"reco y","true y","true y + sce"};
   TH2D *h_correlation_overlay[num2d];
       
-  static const int  number = 5; //number cuts                                                                        
+  static const int  number = 4; //number cuts                                                                        
   static const int  number2 = 11; //categories I defined                                                            
   static const int  number3 = 10; //categories raquel defined
-  const char * point[number] ={"_before_selection","_after_fv","_after_pfp_containment","_after_topo","_after_cosmicIP"}; //this defines histograms before and after the selection                        
+  const char * point[number] ={"_before_selection","_after_fv","_after_topo","_after_cosmicIP"}; //this defines histograms before and after the selection. Removed topological cut                        
   const char * channel[number2]={"_total","_cc0p0pi","_cc1p0pi","_cc2p0pi","_ccNp0pi",
 				 "_ccNp1pi","_ccNpNpi","_ccnue","_outfv","_nc","_other"}; //these are the channels I defined        
   const char * channel2[number3] = {"_total","_ccQE","_ccCOH","_ccMEC","_ccRES","_ccDIS",
@@ -1527,6 +1527,9 @@ public :
   TH1D* h_X_raquel[number][number3]; //mc x                                                                                          
   TH1D* h_Y_raquel[number][number3]; //mc y                                                                                          
   TH1D* h_Pt_raquel[number][number3]; //mc Pt   
+  
+  TGraph* eff_graph = new TGraph(number);
+  TGraph* pur_graph = new TGraph(number);
 
   //Chi2 Plots
   static const int num_plane = 3;
@@ -1586,28 +1589,27 @@ public :
    //int mc_n_threshold_pion0;
 
    //number of generated event/channel                                                                             
-   int cc0p0pi[number+1] = {0};
-   int cc1p0pi[number+1] = {0};
-   int cc2p0pi[number+1] = {0};
-   int ccNp0pi[number+1] = {0};
-   int ccNp1pi[number+1] = {0};
-   int ccNpNpi[number+1] = {0};
-   int ccnue[number+1] = {0};
-   int outfv[number+1] = {0};
-   int nc[number+1] = {0};
-   int other[number+1] = {0};
+   int cc0p0pi[number] = {0};
+   int cc1p0pi[number] = {0};
+   int cc2p0pi[number] = {0};
+   int ccNp0pi[number] = {0};
+   int ccNp1pi[number] = {0};
+   int ccNpNpi[number] = {0};
+   int ccnue[number] = {0};
+   int outfv[number] = {0};
+   int nc[number] = {0};
+   int other[number] = {0};
    
    //number of generated event/channel                                                                             
-   int qel[number+1] = {0};
-   int res[number+1] = {0};
-   int mec[number+1] = {0};
-   int coh[number+1] = {0};
-   int dis[number+1] = {0};
-   int ccnue_raquel[number+1] = {0};
-   int outfv_raquel[number+1] = {0};
-   int nc_raquel[number+1] = {0};
-   int other_raquel[number+1] = {0};
-
+   int qel[number] = {0};
+   int res[number] = {0};
+   int mec[number] = {0};
+   int coh[number] = {0};
+   int dis[number] = {0};
+   int ccnue_raquel[number] = {0};
+   int outfv_raquel[number] = {0};
+   int nc_raquel[number] = {0};
+   int other_raquel[number] = {0};
    int res_count[4] = {0};
 
 };
@@ -1667,7 +1669,7 @@ void twoproton_pelee_overlay::Define_Histograms(){
 	h_Y[i][j] = new TH1D(Form("h_Y%s%s",point[i],channel[j]),Form("h_Y_x%s%s",point[i],channel[j]),10,0,1);
 	h_Pt[i][j] = new TH1D(Form("h_Pt%s%s",point[i],channel[j]),Form("h_Pt_x%s%s",point[i],channel[j]),20,0,2);
 	h_cosmic_impact_parameter_overlay[i][j] = new TH1D(Form("h_cosmic_impact_parameter%s%s",point[i],channel[j]),Form("h_cosmic_impact_parameter%s%s; Cosmic Impact Distance (cm); No. Events",point[i],channel[j]),20,0,200);
-	h_topological_score_overlay[i][j] = new TH1D(Form("h_topological_score%s%s",point[i],channel[j]),Form("h_topological_score%s%s; Topological Score; No. Events",point[i],channel[j]),30,0.0,1.0);
+	h_topological_score_overlay[i][j] = new TH1D(Form("h_topological_score%s%s",point[i],channel[j]),Form("h_topological_score%s%s; Topological Score; No. Events",point[i],channel[j]),50,0.0,1.0); //30 for wouter, 50 for steven
 
 	h_list.push_back(h_topological_score_overlay[i][j]);
 	h_list.push_back(h_cosmic_impact_parameter_overlay[i][j]);
@@ -1702,7 +1704,7 @@ void twoproton_pelee_overlay::Define_Histograms(){
 	h_Y_raquel[i][j] = new TH1D(Form("h_Y_raquel%s%s",point[i],channel2[j]),Form("h_Y_raquel%s%s",point[i],channel2[j]),10,0,1);
 	h_Pt_raquel[i][j] = new TH1D(Form("h_Pt_raquel%s%s",point[i],channel2[j]),Form("h_Pt_raquel%s%s",point[i],channel2[j]),20,0,2);
 	h_cosmic_impact_parameter_raquel[i][j] = new TH1D(Form("h_cosmic_impact_parameter_raquel%s%s",point[i],channel2[j]),Form("h_cosmic_impact_parameter_raquel%s%s; Cosmic Impact Distance (cm); No. Events",point[i],channel2[j]),20,0,200);
-	h_topological_score_raquel[i][j] = new TH1D(Form("h_topological_score_raquel%s%s",point[i],channel2[j]),Form("h_topological_score_raquel%s%s; Topological Score; No. Events",point[i],channel2[j]),30,0.0,1.0);
+	h_topological_score_raquel[i][j] = new TH1D(Form("h_topological_score_raquel%s%s",point[i],channel2[j]),Form("h_topological_score_raquel%s%s; Topological Score; No. Events",point[i],channel2[j]),50,0.0,1.0); //30 wouter/50 steven
 
 	h_list.push_back(h_topological_score_raquel[i][j]);
 	h_list.push_back(h_cosmic_impact_parameter_raquel[i][j]);
