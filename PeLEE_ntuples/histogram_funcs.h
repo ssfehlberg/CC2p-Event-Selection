@@ -31,10 +31,10 @@ class histogram_funcs
   //Now to define all the specific channels and their histograms                                                                   
   //Since I am basically a plot factory now, I am going to try and do this the smart way                                           
   ///////////////////////////////////////////////////////////////////////////////////////                                          
-  static const int  number=4; //number cuts                                                                        
+  static const int  number=3; //number cuts                                                                        
   static const int  number2 = 11; //categories I defined                                                            
   static const int  number3 = 10; //categories raquel defined
-  const char * point[number] ={"_before_selection","_after_fv","_after_topo","_after_cosmicIP"}; //this defines histograms before and after the selection. got rid of pfp cut                        
+  const char * point[number] ={"_before_selection","_after_fv","_after_topo"};//,"_after_cosmicIP"}; //this defines histograms before and after the selection. got rid of pfp cut and cosmicip cut                        
   const char * channel[number2]={"_total","_cc0p0pi","_cc1p0pi","_cc2p0pi","_ccNp0pi",
 				 "_ccNp1pi","_ccNpNpi","_ccnue","_outfv","_nc","_other"}; //these are the channels I defined        
   const char * channel2[number3] = {"_total","_ccQE","_ccCOH","_ccMEC","_ccRES","_ccDIS",
@@ -98,6 +98,14 @@ class histogram_funcs
   TH1D* h_chi2p_3D[num_3D]; //3D PID                                                                                                                                                                                                                
   TH1D* h_chi2mu_3D[num_3D]; //3D PID                                                                                                                                                                                                             
   TH1D* h_chi2pi_3D[num_3D];
+
+  //Track related variables
+  static const int num_track = 4;
+  const char* variable[num_track] = {"_track_score","_track_vertex_distance","_track_length","_track_pid"};
+  TH1D* h_track[num_track]; //bnb, ext, dirt
+  int num_bins_track[num_track] = {100,10,50,50};
+  double xlim_low_track[num_track] = {0.0,0.0,0.0,-1.0};
+  double xlim_high_track[num_track] = {1.0,10.0,50.0,1.0};
 
   //All the single particle plots
   static const int num_var = 4;
@@ -188,6 +196,11 @@ void histogram_funcs::Define_Histograms(const char* sample){
     h_list.push_back(h_chi2p_3D[j]);
     h_list.push_back(h_chi2mu_3D[j]);
     h_list.push_back(h_chi2pi_3D[j]);
+  }
+
+  for(int j=0; j < num_track; j++){
+    h_track[j] = new TH1D(Form("h_track%s",variable[j]),Form("h_track%s",variable[j]),num_bins_track[j],xlim_low_track[j],xlim_high_track[j]);
+    h_list.push_back(h_track[j]);
   }
 
   for(int j = 0; j < num_var; j++){

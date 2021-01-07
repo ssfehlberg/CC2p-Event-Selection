@@ -1460,6 +1460,7 @@ public :
    virtual void     Define_Histograms(); //defines histograms. works for all samples
    virtual void     Fill_Histograms_Mine(int i, double wgt, int mc_n_threshold_muon, int mc_n_threshold_proton, int mc_n_threshold_pion0, double mc_n_threshold_pionpm, bool fv);
    virtual void     Fill_Histograms_Raquel(int i, double wgt, bool fv);
+   virtual void     Fill_Track_Plots(float value, double wgt); //fills the track variables 
    //virtual void     Fill_Histograms_Particles(int mu, int p1, int p2);
    // virtual void    Fill_Histograms_Particles_Raquel(int mu, int p1, int p2);
    virtual void     Fill_Mine(int i, int j, double wgt);
@@ -1486,10 +1487,10 @@ public :
   const char * labely[num2d] = {"reco y","true y","true y + sce"};
   TH2D *h_correlation_overlay[num2d];
       
-  static const int  number = 4; //number cuts                                                                        
+  static const int  number = 3; //number cuts                                                                        
   static const int  number2 = 11; //categories I defined                                                            
   static const int  number3 = 10; //categories raquel defined
-  const char * point[number] ={"_before_selection","_after_fv","_after_topo","_after_cosmicIP"}; //this defines histograms before and after the selection. Removed topological cut                        
+  const char * point[number] ={"_before_selection","_after_fv","_after_topo"};//,"_after_cosmicIP"}; //this defines histograms before and after the selection. Removed topological cut and cosmicip cut                        
   const char * channel[number2]={"_total","_cc0p0pi","_cc1p0pi","_cc2p0pi","_ccNp0pi",
 				 "_ccNp1pi","_ccNpNpi","_ccnue","_outfv","_nc","_other"}; //these are the channels I defined        
   const char * channel2[number3] = {"_total","_ccQE","_ccCOH","_ccMEC","_ccRES","_ccDIS",
@@ -1546,6 +1547,14 @@ public :
   TH1D* h_chi2p_3D_overlay[num_3D][num_part]; //3D PID
   TH1D* h_chi2mu_3D_overlay[num_3D][num_part]; //3D PID
   TH1D* h_chi2pi_3D_overlay[num_3D][num_part];
+
+  //Track related variables
+  static const int num_track = 4;
+  const char* variable[num_track] = {"_track_score","_track_vertex_distance","_track_length","_track_pid"};
+  TH1D* h_track_overlay[num_track][num_part]; //overlay
+  int num_bins_track[num_track] = {100,10,50,50};
+  double xlim_low_track[num_track] = {0.0,0.0,0.0,-1.0};
+  double xlim_high_track[num_track] = {1.0,10.0,50.0,1.0};
 
   //All the single particle plots
   static const int num_var = 4;
@@ -1747,6 +1756,14 @@ void twoproton_pelee_overlay::Define_Histograms(){
       }
     }
 
+    for(int j=0; j < num_track; j++){
+      for(int i=0; i < num_part; i++){
+	h_track_overlay[j][i] = new TH1D(Form("h_track%s%s",variable[j],particle[i]),Form("h_track%s%s",variable[j],particle[i]),num_bins_track[j],xlim_low_track[j],xlim_high_track[j]);
+	h_list.push_back(h_track_overlay[j][i]);
+      }
+    }
+
+
     //particle specific plots
     for(int j = 0; j < num_var; j++){
       for(int k = 0; k < number2; k++){
@@ -1810,6 +1827,46 @@ void twoproton_pelee_overlay::Define_Histograms(){
     // h_list_2D[i]->Sumw2();
     // }
 }
+
+void twoproton_pelee_overlay::Fill_Track_Plots(float value, double wgt){
+
+  h_track_overlay[0][0]->Fill(trk_score_v->at(value),wgt); //fills the total
+  h_track_overlay[1][0]->Fill(trk_distance_v->at(value),wgt);
+  h_track_overlay[2][0]->Fill(trk_len_v->at(value),wgt);
+  h_track_overlay[3][0]->Fill(trk_llr_pid_score_v->at(value),wgt);  
+
+  if(mc_pdg->at(value) == 2212 || mc_pdg->at(value) == -2212){
+    h_track_overlay[0][1]->Fill(trk_score_v->at(value),wgt); //fills the proton
+    h_track_overlay[1][1]->Fill(trk_distance_v->at(value),wgt);
+    h_track_overlay[2][1]->Fill(trk_len_v->at(value),wgt);
+    h_track_overlay[3][1]->Fill(trk_llr_pid_score_v->at(value),wgt);  
+
+  } else if(mc_pdg->at(value) == 211 || mc_pdg->at(value) == -211 || mc_pdg->at(value) == 111) {
+    h_track_overlay[0][2]->Fill(trk_score_v->at(value),wgt); //fills the pion
+    h_track_overlay[1][2]->Fill(trk_distance_v->at(value),wgt);
+    h_track_overlay[2][2]->Fill(trk_len_v->at(value),wgt);
+    h_track_overlay[3][2]->Fill(trk_llr_pid_score_v->at(value),wgt);  
+
+  } else if(mc_pdg->at(value) == 13 || mc_pdg->at(value) == -13){
+    h_track_overlay[0][3]->Fill(trk_score_v->at(value),wgt); //fills the muon
+    h_track_overlay[1][3]->Fill(trk_distance_v->at(value),wgt);
+    h_track_overlay[2][3]->Fill(trk_len_v->at(value),wgt);
+    h_track_overlay[3][3]->Fill(trk_llr_pid_score_v->at(value),wgt);  
+
+  } else if(mc_pdg->at(value) == 11 || mc_pdg->at(value) == -11){
+    h_track_overlay[0][4]->Fill(trk_score_v->at(value),wgt); //fills the electron
+    h_track_overlay[1][4]->Fill(trk_distance_v->at(value),wgt);
+    h_track_overlay[2][4]->Fill(trk_len_v->at(value),wgt);
+    h_track_overlay[3][4]->Fill(trk_llr_pid_score_v->at(value),wgt);  
+
+  } else {
+    h_track_overlay[0][5]->Fill(trk_score_v->at(value),wgt); //fills the else
+    h_track_overlay[1][5]->Fill(trk_distance_v->at(value),wgt);
+    h_track_overlay[2][5]->Fill(trk_len_v->at(value),wgt);
+    h_track_overlay[3][5]->Fill(trk_llr_pid_score_v->at(value),wgt);  
+  }
+}
+
 
 
 void twoproton_pelee_overlay::Fill_Mine(int i, int j, double wgt){

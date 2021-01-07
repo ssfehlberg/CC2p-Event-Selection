@@ -46,9 +46,9 @@ void twoproton_pelee_overlay::Loop()
  
   //Counters
   int fvcntr = 0; //Number of events with reconstructed vertex within the FV                                      
-  int pfp_starts_contained = 0; //how many pfp's start within the FV                                      
+  //int pfp_starts_contained = 0; //how many pfp's start within the FV                                      
   int toposcore = 0; //how many events have topological score above 0.1                                           
-  int cosmicip = 0;//how many events with cosmic IP above 10cm                                                    
+  //int cosmicip = 0;//how many events with cosmic IP above 10cm                                                    
 
   int isfromnucntr = 0; //how many pfp's are from the neutrino slice
   int has3pfp = 0; //how many events have exactly 3 pfps
@@ -204,19 +204,26 @@ void twoproton_pelee_overlay::Loop()
     
     //4) The cosmic impact parameter is greater than 10 cm for every neutrino slice. Honestly a dumb cut. Will remove later
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    if(CosmicIP < cuts.COSMIC_IP_CUT) continue;
+    /*    if(CosmicIP < cuts.COSMIC_IP_CUT) continue;
     cosmicip++;
 
     //Fill Histograms  
     Fill_Histograms_Mine(3, pot_wgt*mc_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv); //need to fix the weight
     Fill_Histograms_Raquel(3, pot_wgt*mc_wgt, cuts.fv);
+    */
 
-    //Now to apply the ve and NC rejection cuts. These are slightly modified to match our 1mu2p needs 
-    /////////////////////////////////////////////////////////////////////////////////////////////////
+    //Filling Some Cut Variables to be Used in Optimizing Cuts
+    ///////////////////////////////////////////////////////////
+    std::cout<<"Size of MC array: "<<mc_pdg->size()<<std::endl;
+    std::cout<<"Number of PFPs: "<<n_pfps<<std::endl;
+
+    for(int i = 0; i < n_pfps; i++){
+      int track_pdg = mc_pdg->at(i);
+      Fill_Track_Plots(track_pdg,pot_wgt*mc_wgt);
+    }
 
     //Next: The Muon Selection
     //////////////////////////
-
 
     events_remaining++;
 
@@ -224,7 +231,7 @@ void twoproton_pelee_overlay::Loop()
 
   //Before we finish, we need to make the efficiency and purity plots:
   ///////////////////////////////////////////////////////////////////
-  std::vector<int> cut_values = {static_cast<int>(nentries),fvcntr,toposcore,cosmicip};
+  std::vector<int> cut_values = {static_cast<int>(nentries),fvcntr,toposcore};
   for(int i = 0; i < number; i++){
     double eff = double(cc2p0pi[i]) / double(cc2p0pi[0]);
     double purity = double(cc2p0pi[i]) / double(cut_values[i]);
@@ -238,8 +245,8 @@ void twoproton_pelee_overlay::Loop()
   std::cout << "[ANALYZER] Initial Number of Events: "<<nentries<<std::endl;
   std::cout << "[ANALYZER] Number of Events with Vertex in FV: "<<fvcntr<<std::endl;
   //std::cout << "[ANALYZER] How Many Events with All PFP Starts within the FV: "<<pfp_starts_contained<<std::endl;
-  std::cout << "[ANALYZER] How Many Events with Topological Score above 0.1: "<<toposcore<<std::endl;
-  std::cout << "[ANALYZER] Number of Events with CosmicIP above 10cm: "<<cosmicip<<std::endl;
+  std::cout << "[ANALYZER] How Many Events with Topological Score above 0.3: "<<toposcore<<std::endl;
+  //std::cout << "[ANALYZER] Number of Events with CosmicIP above 10cm: "<<cosmicip<<std::endl;
   std::cout << "[ANALYZER] Number of Events with 3 Tracks: "<<threetrkcntr/3<<std::endl;
   std::cout<<  "[ANALYZER] Number of Events with the Second Shortest Track Contained: "<<secondtrkgood<<std::endl;
   std::cout<<  "[ANALYZER] Number of Events with the Shortest Track Contained: "<<shortesttrkgood<<std::endl;
@@ -282,29 +289,29 @@ void twoproton_pelee_overlay::Loop()
 
   std::cout<<"-----MC RECO'D SUMMARY: RAQUEL-----"<<std::endl;
   std::cout << "[MC_RECO_RAQUEL] Initial Number of Events That were Reconstructed: "<<events_remaining<<std::endl;
-  std::cout << "[MC_RECO_RAQUEL] Number of CCQEL Events: "<<qel[3]<<" Fraction of the Total: "<<float(100.*(float(qel[3])/float(events_remaining)))<<"%"<<std::endl;
-  std::cout << "[MC_RECO_RAQUEL] Number of CCRES Events: "<<res[3]<<" Fraction of the Total: "<<float(100.*(float(res[3])/float(events_remaining)))<<"%"<<std::endl;
-  std::cout << "[MC_RECO_RAQUEL] Number of CCMEC Events: "<<mec[3]<<" Fraction of the Total: "<<float(100.*(float(mec[3])/float(events_remaining)))<<"%"<<std::endl;
-  std::cout << "[MC_RECO_RAQUEL] Number of CCCOH Events: "<<coh[3]<<" Fraction of the Total: "<<float(100.*(float(coh[3])/float(events_remaining)))<<"%"<<std::endl;
-  std::cout << "[MC_RECO_RAQUEL] Number of CCDIS Events: "<<dis[3]<<" Fraction of the Total: "<<float(100.*(float(dis[3])/float(events_remaining)))<<"%"<<std::endl;
-  std::cout << "[MC_RECO_RAQUEL] Number of CCNue Events: "<<ccnue_raquel[3]<<" Fraction of the Total: "<<float(100.*(float(ccnue_raquel[3])/float(events_remaining)))<<"%"<<std::endl;
-  std::cout << "[MC_RECO_RAQUEL] Number of OUTFV Events: "<<outfv_raquel[3]<<" Fraction of the Total: "<<float(100.*(float(outfv_raquel[3])/float(events_remaining)))<<"%"<<std::endl;
-  std::cout << "[MC_RECO_RAQUEL] Number of NC Events: "<<nc_raquel[3]<<" Fraction of the Total: "<<float(100.*(float(nc_raquel[3])/float(events_remaining)))<<"%"<<std::endl;
-  std::cout << "[MC_RECO_RAQUEL] Number of Else Events: "<<other_raquel[3]<<" Fraction of the Total: "<<float(100.*(float(other_raquel[3])/float(events_remaining)))<<"%"<<std::endl;
+  std::cout << "[MC_RECO_RAQUEL] Number of CCQEL Events: "<<qel[number-1]<<" Fraction of the Total: "<<float(100.*(float(qel[number-1])/float(events_remaining)))<<"%"<<std::endl;
+  std::cout << "[MC_RECO_RAQUEL] Number of CCRES Events: "<<res[number-1]<<" Fraction of the Total: "<<float(100.*(float(res[number-1])/float(events_remaining)))<<"%"<<std::endl;
+  std::cout << "[MC_RECO_RAQUEL] Number of CCMEC Events: "<<mec[number-1]<<" Fraction of the Total: "<<float(100.*(float(mec[number-1])/float(events_remaining)))<<"%"<<std::endl;
+  std::cout << "[MC_RECO_RAQUEL] Number of CCCOH Events: "<<coh[number-1]<<" Fraction of the Total: "<<float(100.*(float(coh[number-1])/float(events_remaining)))<<"%"<<std::endl;
+  std::cout << "[MC_RECO_RAQUEL] Number of CCDIS Events: "<<dis[number-1]<<" Fraction of the Total: "<<float(100.*(float(dis[number-1])/float(events_remaining)))<<"%"<<std::endl;
+  std::cout << "[MC_RECO_RAQUEL] Number of CCNue Events: "<<ccnue_raquel[number-1]<<" Fraction of the Total: "<<float(100.*(float(ccnue_raquel[number-1])/float(events_remaining)))<<"%"<<std::endl;
+  std::cout << "[MC_RECO_RAQUEL] Number of OUTFV Events: "<<outfv_raquel[number-1]<<" Fraction of the Total: "<<float(100.*(float(outfv_raquel[number-1])/float(events_remaining)))<<"%"<<std::endl;
+  std::cout << "[MC_RECO_RAQUEL] Number of NC Events: "<<nc_raquel[number-1]<<" Fraction of the Total: "<<float(100.*(float(nc_raquel[number-1])/float(events_remaining)))<<"%"<<std::endl;
+  std::cout << "[MC_RECO_RAQUEL] Number of Else Events: "<<other_raquel[number-1]<<" Fraction of the Total: "<<float(100.*(float(other_raquel[number-1])/float(events_remaining)))<<"%"<<std::endl;
   std::cout <<"-----ONE FOR THE DAGGER, AND ONE FOR THE ONE YOU BELIEVE!!-----"<<std::endl;
 
   std::cout<<"-----MC RECO'D SUMMARY-----"<<std::endl;
   std::cout << "[MC_RECO] Initial Number of Events That were Reconstructed: "<<events_remaining<<std::endl;
-  std::cout << "[MC_RECO] Number of CCOpOpi Events: "<<cc0p0pi[3]<<" Fraction of the Total: "<<float(100.*(float(cc0p0pi[3])/float(events_remaining)))<<"%"<<std::endl;
-  std::cout << "[MC_RECO] Number of CC1p0pi Events: "<<cc1p0pi[3]<<" Fraction of the Total: "<<float(100.*(float(cc1p0pi[3])/float(events_remaining)))<<"%"<<std::endl;
-  std::cout << "[MC_RECO] Number of CC2p0pi Events: "<<cc2p0pi[3]<<" Fraction of the Total: "<<float(100.*(float(cc2p0pi[3])/float(events_remaining)))<<"%"<<std::endl;
-  std::cout << "[MC_RECO] Number of CCNp0pi Events: "<<ccNp0pi[3]<<" Fraction of the Total: "<<float(100.*(float(ccNp0pi[3])/float(events_remaining)))<<"%"<<std::endl;
-  std::cout << "[MC_RECO] Number of CCNp1pi Events: "<<ccNp1pi[3]<<" Fraction of the Total: "<<float(100.*(float(ccNp1pi[3])/float(events_remaining)))<<"%"<<std::endl;
-  std::cout << "[MC_RECO] Number of CCNpNpi Events: "<<ccNpNpi[3]<<" Fraction of the Total: "<<float(100.*(float(ccNpNpi[3])/float(events_remaining)))<<"%"<<std::endl;
-  std::cout << "[MC_RECO] Number of CCNue Events: "<<ccnue[3]<<" Fraction of the Total: "<<float(100.*(float(ccnue[3])/float(events_remaining)))<<"%"<<std::endl;
-  std::cout << "[MC_RECO] Number of OUTFV Events: "<<outfv[3]<<" Fraction of the Total: "<<float(100.*(float(outfv[3])/float(events_remaining)))<<"%"<<std::endl;
-  std::cout << "[MC_RECO] Number of NC Events: "<<nc[3]<<" Fraction of the Total: "<<float(100.*(float(nc[3])/float(events_remaining)))<<"%"<<std::endl;
-  std::cout << "[MC_RECO] Number of Else Events: "<<other[3]<<" Fraction of the Total: "<<float(100.*(float(other[3])/float(events_remaining)))<<"%"<<std::endl;
+  std::cout << "[MC_RECO] Number of CCOpOpi Events: "<<cc0p0pi[number-1]<<" Fraction of the Total: "<<float(100.*(float(cc0p0pi[number-1])/float(events_remaining)))<<"%"<<std::endl;
+  std::cout << "[MC_RECO] Number of CC1p0pi Events: "<<cc1p0pi[number-1]<<" Fraction of the Total: "<<float(100.*(float(cc1p0pi[number-1])/float(events_remaining)))<<"%"<<std::endl;
+  std::cout << "[MC_RECO] Number of CC2p0pi Events: "<<cc2p0pi[number-1]<<" Fraction of the Total: "<<float(100.*(float(cc2p0pi[number-1])/float(events_remaining)))<<"%"<<std::endl;
+  std::cout << "[MC_RECO] Number of CCNp0pi Events: "<<ccNp0pi[number-1]<<" Fraction of the Total: "<<float(100.*(float(ccNp0pi[number-1])/float(events_remaining)))<<"%"<<std::endl;
+  std::cout << "[MC_RECO] Number of CCNp1pi Events: "<<ccNp1pi[number-1]<<" Fraction of the Total: "<<float(100.*(float(ccNp1pi[number-1])/float(events_remaining)))<<"%"<<std::endl;
+  std::cout << "[MC_RECO] Number of CCNpNpi Events: "<<ccNpNpi[number-1]<<" Fraction of the Total: "<<float(100.*(float(ccNpNpi[number-1])/float(events_remaining)))<<"%"<<std::endl;
+  std::cout << "[MC_RECO] Number of CCNue Events: "<<ccnue[number-1]<<" Fraction of the Total: "<<float(100.*(float(ccnue[number-1])/float(events_remaining)))<<"%"<<std::endl;
+  std::cout << "[MC_RECO] Number of OUTFV Events: "<<outfv[number-1]<<" Fraction of the Total: "<<float(100.*(float(outfv[number-1])/float(events_remaining)))<<"%"<<std::endl;
+  std::cout << "[MC_RECO] Number of NC Events: "<<nc[number-1]<<" Fraction of the Total: "<<float(100.*(float(nc[number-1])/float(events_remaining)))<<"%"<<std::endl;
+  std::cout << "[MC_RECO] Number of Else Events: "<<other[number-1]<<" Fraction of the Total: "<<float(100.*(float(other[number-1])/float(events_remaining)))<<"%"<<std::endl;
   std::cout <<"-----NOTHING REALLY MATTERS. ANYONE CAN SEE. NOTHING REALLY MATTERS. NOTHING REALLY MATTERS TO ME-----"<<std::endl;
 
   std::cout<<"Neutrinos 0: "<<neutrinos_0<<std::endl;
@@ -318,12 +325,11 @@ void twoproton_pelee_overlay::Loop()
   std::cout<<"1mu2p"<<res_count[0]<<std::endl;
   std::cout<<"1mu1p1pi"<<res_count[1]<<std::endl;
   std::cout<<"1muNp"<<res_count[2]<<std::endl;
-  std::cout<<"else"<<res_count[3]<<std::endl;
+  std::cout<<"else"<<res_count[number-1]<<std::endl;
 
   std::cout<<"cc2p0pi 0: "<<cc2p0pi[0]<<std::endl;
   std::cout<<"cc2p0pi 1: "<<cc2p0pi[1]<<std::endl;
   std::cout<<"cc2p0pi 2: "<<cc2p0pi[2]<<std::endl;
-  std::cout<<"cc2p0pi 3: "<<cc2p0pi[3]<<std::endl;
 
   //Don't forget to write all of your histograms before you leave!                                                                       
   ///////////////////////////////////////////////////////////////                                                                 
