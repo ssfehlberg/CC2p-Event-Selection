@@ -214,17 +214,22 @@ void twoproton_pelee_overlay::Loop()
 
     //Filling Some Cut Variables to be Used in Optimizing Cuts
     ///////////////////////////////////////////////////////////
-    std::cout<<"Size of MC array: "<<mc_pdg->size()<<std::endl;
-    std::cout<<"Number of PFPs: "<<n_pfps<<std::endl;
-
-    for(int i = 0; i < n_pfps; i++){
-      int track_pdg = mc_pdg->at(i);
-      Fill_Track_Plots(track_pdg,pot_wgt*mc_wgt);
+    std::vector<int> testVector;
+    for(int i = 0; i < mc_pdg->size(); i++){
+      testVector.push_back(mc_pdg->at(i));
     }
+    for(int i = 0; i < n_pfps; i++){
+      if(i >= mc_pdg->size()){
+	testVector.resize(i+1);
+      }
+      int track_pdg = testVector.at(i);
+      Fill_Track_Plots(i,track_pdg,pot_wgt*mc_wgt);
+    }
+    testVector.clear();
 
     //Next: The Muon Selection
     //////////////////////////
-
+   
     events_remaining++;
 
   } //end of Loop over events

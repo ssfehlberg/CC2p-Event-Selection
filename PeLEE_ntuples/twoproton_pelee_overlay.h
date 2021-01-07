@@ -1460,7 +1460,7 @@ public :
    virtual void     Define_Histograms(); //defines histograms. works for all samples
    virtual void     Fill_Histograms_Mine(int i, double wgt, int mc_n_threshold_muon, int mc_n_threshold_proton, int mc_n_threshold_pion0, double mc_n_threshold_pionpm, bool fv);
    virtual void     Fill_Histograms_Raquel(int i, double wgt, bool fv);
-   virtual void     Fill_Track_Plots(float value, double wgt); //fills the track variables 
+   virtual void     Fill_Track_Plots(float value, int pdg, double wgt); //fills the track variables 
    //virtual void     Fill_Histograms_Particles(int mu, int p1, int p2);
    // virtual void    Fill_Histograms_Particles_Raquel(int mu, int p1, int p2);
    virtual void     Fill_Mine(int i, int j, double wgt);
@@ -1828,32 +1828,32 @@ void twoproton_pelee_overlay::Define_Histograms(){
     // }
 }
 
-void twoproton_pelee_overlay::Fill_Track_Plots(float value, double wgt){
+void twoproton_pelee_overlay::Fill_Track_Plots(float value, int pdg, double wgt){
 
   h_track_overlay[0][0]->Fill(trk_score_v->at(value),wgt); //fills the total
   h_track_overlay[1][0]->Fill(trk_distance_v->at(value),wgt);
   h_track_overlay[2][0]->Fill(trk_len_v->at(value),wgt);
   h_track_overlay[3][0]->Fill(trk_llr_pid_score_v->at(value),wgt);  
 
-  if(mc_pdg->at(value) == 2212 || mc_pdg->at(value) == -2212){
+  if(pdg == 2212 || pdg == -2212){
     h_track_overlay[0][1]->Fill(trk_score_v->at(value),wgt); //fills the proton
     h_track_overlay[1][1]->Fill(trk_distance_v->at(value),wgt);
     h_track_overlay[2][1]->Fill(trk_len_v->at(value),wgt);
     h_track_overlay[3][1]->Fill(trk_llr_pid_score_v->at(value),wgt);  
 
-  } else if(mc_pdg->at(value) == 211 || mc_pdg->at(value) == -211 || mc_pdg->at(value) == 111) {
+  } else if(pdg == 211 || pdg == -211 || pdg == 111) {
     h_track_overlay[0][2]->Fill(trk_score_v->at(value),wgt); //fills the pion
     h_track_overlay[1][2]->Fill(trk_distance_v->at(value),wgt);
     h_track_overlay[2][2]->Fill(trk_len_v->at(value),wgt);
     h_track_overlay[3][2]->Fill(trk_llr_pid_score_v->at(value),wgt);  
 
-  } else if(mc_pdg->at(value) == 13 || mc_pdg->at(value) == -13){
+  } else if(pdg == 13 || pdg == -13){
     h_track_overlay[0][3]->Fill(trk_score_v->at(value),wgt); //fills the muon
     h_track_overlay[1][3]->Fill(trk_distance_v->at(value),wgt);
     h_track_overlay[2][3]->Fill(trk_len_v->at(value),wgt);
     h_track_overlay[3][3]->Fill(trk_llr_pid_score_v->at(value),wgt);  
 
-  } else if(mc_pdg->at(value) == 11 || mc_pdg->at(value) == -11){
+  } else if(pdg == 11 || pdg == -11){
     h_track_overlay[0][4]->Fill(trk_score_v->at(value),wgt); //fills the electron
     h_track_overlay[1][4]->Fill(trk_distance_v->at(value),wgt);
     h_track_overlay[2][4]->Fill(trk_len_v->at(value),wgt);
