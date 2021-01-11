@@ -33,12 +33,13 @@ void twoproton_pelee_bnb::Loop()
 
   //Counters                                                                                                      
   int fvcntr = 0; //Number of events with reconstructed vertex within the FV                                      
-  //int pfp_starts_contained = 0; //how many pfp's start within the FV                                      
-  int toposcore = 0; //how many events have topological score above 0.1                                           
-  //int cosmicip = 0;//how many events with cosmic IP above 10cm                                                    
-  
-  int threetrkcntr = 0; //Number of events with three tracks                                                                          
-  int vectorsize3 = 0; //Number of events with 3 tracks whose start is < 5cm from the reco vertex                                     
+  int threepfps = 0; //Number of Events with Three PFPs
+  int threetrkcntr = 0; //Number of events with Three Tracks
+
+
+
+                   
+  int vectorsize3 = 0; //Number of events with 3 tracks whose start is < 5cm from the reco vertex                 
   int secondtrkgood = 0; //Number of events where the second shortest/longest track is contained
   int shortesttrkgood=0; //Number of events where the shortest track is contained
   int pid_cut0 = 0; //sanity pid cut
@@ -85,13 +86,11 @@ void twoproton_pelee_bnb::Loop()
       neutrinos_else++;
     }
 
-    //Okay. The CCInclusive Selection requires the following things:
+    //Okay. This Selection requires the following things:
     // 1) The reconstructed neutrino vertex is inside the FV 
-    // 2) The start point of every pfp is within the FV (i.e. contained)
-    // 3) The topological score of every pfp is above 0.1 (filled per event): topological_score > 0.1
-    // 4) The cosmic impact parameter is greater than 10 cm for each PFP (filled per event): CosmicIP > 10 
-    // We are now goinnng to make plots of those cut variables
-
+    // 2) There are exactly 3 PFP's in the event
+    // 3) The 3 PFP's are track like objects i.e they all have a track score > 0.8
+    // We are now going to make plots of those cut variables
 
     //1) Check that the event is in the FV
     //////////////////////////////////////
@@ -101,47 +100,14 @@ void twoproton_pelee_bnb::Loop()
     //Fill Histograms
     hist.Fill_Histograms(1, TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z),CosmicIP, topological_score ,pot_wgt);
 
-    //2) The start point of every pfp is within the FV
-    ///////////////////////////////////////////////////
-    /*    for(int p = 0; p < n_pfps; p++){
-      unsigned int generation = pfp_generation_v->at( p ); //only check direct neutrino daughters (gen ==2)
-      if ( generation != 2u ) continue;
-      float tscore = trk_score_v->at( p ); //get the track score for the current PFParticle
-      // A PFParticle is considered a track if its score is above the track score
-      // cut. Get the track or shower start coordinates as appropriate.
-      float x, y, z;
-      if ( tscore > cuts.TRACK_SCORE_CUT ) {
-	x = trk_sce_start_x_v->at( p );
-	y = trk_sce_start_y_v->at( p );
-	z = trk_sce_start_z_v->at( p );
-      } else {
-	x = shr_start_x_v->at( p );
-	y = shr_start_y_v->at( p );
-	z = shr_start_z_v->at( p );
-      }
-      if(cuts.In_FV(10,10,10,10,10,10,x,y,z) == false) continue;
-    } //end of Loop through PFP's
-    pfp_starts_contained++; 
-    
-    //Fill Histograms
-    hist.Fill_Histograms(2,TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z), CosmicIP, topological_score, pot_wgt);
-    */
-    //3) The topoloogical score of every neutrino slice is above 0.1
+
+    //2) There are exactly 3 PFP's in the Event 
     ///////////////////////////////////////////////////////
-    if(topological_score < cuts.TOPO_SCORE_CUT) continue;
-    toposcore++;
+    if(n_pfps != 3) continue;
+    threepfps++;
 
     //Fill Histograms  
     hist.Fill_Histograms(2, TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z),CosmicIP, topological_score, pot_wgt);
-
-    //4) The cosmic impact parameter is greater than 10 cm for every neutrino slice. Honestly a dumb cut. Will remove later
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    /* if(CosmicIP < cuts.COSMIC_IP_CUT) continue;
-    cosmicip++;
-
-    //Fill Histograms  
-    hist.Fill_Histograms(3, TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z),CosmicIP, topological_score, pot_wgt);
-    */
 
     //Filling Some Cut Variables to be Used in Optimizing Cuts
     ///////////////////////////////////////////////////////////
@@ -187,10 +153,11 @@ void twoproton_pelee_bnb::Loop()
    std::cout<<"-----MODULE SUMMARY-----"<<std::endl;
    std::cout << "[ANALYZER] Initial Number of Events: "<<nentries<<std::endl;
    std::cout << "[ANALYZER] Number of Events with Vertex in FV: "<<fvcntr<<std::endl;
-   //std::cout << "[ANALYZER] How Many Events with All PFP Starts within the FV: "<<pfp_starts_contained<<std::endl;
-   std::cout << "[ANALYZER] How Many Events with Topological Score above 0.3: "<<toposcore<<std::endl;
-   //std::cout << "[ANALYZER] Number of Events with CosmicIP above 10cm: "<<cosmicip<<std::endl;
+   std::cout << "[ANALYZER] Number of Events with 3 PFPs: "<<threepfps<<std::endl;
    std::cout << "[ANALYZER] Number of Events with 3 Tracks: "<<threetrkcntr/3<<std::endl;
+
+
+
    std::cout<<  "[ANALYZER] Number of Events with the Second Shortest Track Contained: "<<secondtrkgood<<std::endl;
    std::cout<<  "[ANALYZER] Number of Events with the Shortest Track Contained: "<<shortesttrkgood<<std::endl;
    std::cout<<  "[ANALYZER] Number of Events with The Other Vector Larger than 0: "<<pid_cut0<<std::endl;

@@ -1490,7 +1490,7 @@ public :
   static const int  number = 3; //number cuts                                                                        
   static const int  number2 = 11; //categories I defined                                                            
   static const int  number3 = 10; //categories raquel defined
-  const char * point[number] ={"_before_selection","_after_fv","_after_topo"};//,"_after_cosmicIP"}; //this defines histograms before and after the selection. Removed topological cut and cosmicip cut                        
+ const char * point[number] ={"_before_selection","_after_fv","_after_three_pfps"}; //this defines histograms after each cut    
   const char * channel[number2]={"_total","_cc0p0pi","_cc1p0pi","_cc2p0pi","_ccNp0pi",
 				 "_ccNp1pi","_ccNpNpi","_ccnue","_outfv","_nc","_other"}; //these are the channels I defined        
   const char * channel2[number3] = {"_total","_ccQE","_ccCOH","_ccMEC","_ccRES","_ccDIS",
@@ -1842,16 +1842,16 @@ void twoproton_pelee_overlay::Fill_Track_Plots(float value, int pdg, double wgt)
     h_track_overlay[3][1]->Fill(trk_llr_pid_score_v->at(value),wgt);  
 
   } else if(pdg == 211 || pdg == -211 || pdg == 111) {
-    h_track_overlay[0][2]->Fill(trk_score_v->at(value),wgt); //fills the pion
-    h_track_overlay[1][2]->Fill(trk_distance_v->at(value),wgt);
-    h_track_overlay[2][2]->Fill(trk_len_v->at(value),wgt);
-    h_track_overlay[3][2]->Fill(trk_llr_pid_score_v->at(value),wgt);  
-
-  } else if(pdg == 13 || pdg == -13){
-    h_track_overlay[0][3]->Fill(trk_score_v->at(value),wgt); //fills the muon
+    h_track_overlay[0][3]->Fill(trk_score_v->at(value),wgt); //fills the pion
     h_track_overlay[1][3]->Fill(trk_distance_v->at(value),wgt);
     h_track_overlay[2][3]->Fill(trk_len_v->at(value),wgt);
     h_track_overlay[3][3]->Fill(trk_llr_pid_score_v->at(value),wgt);  
+
+  } else if(pdg == 13 || pdg == -13){
+    h_track_overlay[0][2]->Fill(trk_score_v->at(value),wgt); //fills the muon
+    h_track_overlay[1][2]->Fill(trk_distance_v->at(value),wgt);
+    h_track_overlay[2][2]->Fill(trk_len_v->at(value),wgt);
+    h_track_overlay[3][2]->Fill(trk_llr_pid_score_v->at(value),wgt);  
 
   } else if(pdg == 11 || pdg == -11){
     h_track_overlay[0][4]->Fill(trk_score_v->at(value),wgt); //fills the electron
@@ -1866,8 +1866,6 @@ void twoproton_pelee_overlay::Fill_Track_Plots(float value, int pdg, double wgt)
     h_track_overlay[3][5]->Fill(trk_llr_pid_score_v->at(value),wgt);  
   }
 }
-
-
 
 void twoproton_pelee_overlay::Fill_Mine(int i, int j, double wgt){
   //index i indicates at which point the histograms are being filled 
@@ -1963,19 +1961,19 @@ void twoproton_pelee_overlay::Fill_Histograms_Mine(int i, double wgt, int mc_n_t
 void twoproton_pelee_overlay::Fill_Histograms_Raquel(int i, double wgt, bool fv){
   Fill_Raquel(i,0, wgt);
   //CCQE
-  if(ccnc == 0 && interaction == 0 && fv==true){
+  if(ccnc == 0 && interaction == 0 && abs(nu_pdg) == 14 && fv==true){
     Fill_Raquel(i,1, wgt);
     qel[i]++;
     //CCCoh                                                                                                                                                                                             
-  } else if(ccnc == 0 && interaction == 3 && fv == true){
+  } else if(ccnc == 0 && interaction == 3 && abs(nu_pdg) == 14 && fv == true){
     Fill_Raquel(i,2, wgt);
     coh[i]++;
     //CCMEC                                                                                                                                                                                             
-  } else if(ccnc == 0 && interaction == 10 && fv==true){
+  } else if(ccnc == 0 && interaction == 10 && abs(nu_pdg) == 14 && fv==true){
     Fill_Raquel(i,3, wgt);
     mec[i]++;
     //CCRES                                                                                                                                                                                             
-  } else if(ccnc == 0 && interaction == 1 && fv==true){
+  } else if(ccnc == 0 && interaction == 1 && abs(nu_pdg) == 14 && fv==true){
     //if(mc_n_threshold_muon == 1 && mc_n_threshold_proton == 2){
     //  res_count[0]++;
     //}else if (mc_n_threshold_muon == 1 && mc_n_threshold_proton == 1 && (mc_n_threshold_pion0 == 1 || mc_n_threshold_pionpm == 1)){
@@ -1988,7 +1986,7 @@ void twoproton_pelee_overlay::Fill_Histograms_Raquel(int i, double wgt, bool fv)
     Fill_Raquel(i,4,wgt);
     res[i]++;
     //CCDIS                                                                                                                                                                                             
-} else if(ccnc == 0 && interaction == 2 && fv==true){
+  } else if(ccnc == 0 && interaction == 2 && abs(nu_pdg) == 14 && fv==true){
   Fill_Raquel(i,5,wgt);
     dis[i]++;
     //CCNue                                                                                                                                                                                             
@@ -1996,7 +1994,7 @@ void twoproton_pelee_overlay::Fill_Histograms_Raquel(int i, double wgt, bool fv)
   Fill_Raquel(i,6, wgt);
     ccnue_raquel[i]++;
     //NC                                                                                                                                                                                                
-  } else if(ccnc == 1 && fv == true){
+  } else if(ccnc == 1 && abs(nu_pdg) == 14 && fv == true){
   Fill_Raquel(i,7, wgt);
     nc_raquel[i]++;
     //OUT OF FV                                                                                                                                                                                          
