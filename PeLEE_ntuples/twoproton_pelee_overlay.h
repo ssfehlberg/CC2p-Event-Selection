@@ -1487,10 +1487,10 @@ public :
   const char * labely[num2d] = {"reco y","true y","true y + sce"};
   TH2D *h_correlation_overlay[num2d];
       
-  static const int  number = 3; //number cuts                                                                        
+  static const int  number = 5; //number cuts                                                                        
   static const int  number2 = 11; //categories I defined                                                            
   static const int  number3 = 10; //categories raquel defined
- const char * point[number] ={"_before_selection","_after_fv","_after_three_pfps"}; //this defines histograms after each cut    
+  const char * point[number] ={"_before_selection","_after_fv","_after_three_pfps","_after_track_cut","_after_connection_cut"}; //this defines histograms after each cut    
   const char * channel[number2]={"_total","_cc0p0pi","_cc1p0pi","_cc2p0pi","_ccNp0pi",
 				 "_ccNp1pi","_ccNpNpi","_ccnue","_outfv","_nc","_other"}; //these are the channels I defined        
   const char * channel2[number3] = {"_total","_ccQE","_ccCOH","_ccMEC","_ccRES","_ccDIS",
@@ -1552,7 +1552,7 @@ public :
   static const int num_track = 4;
   const char* variable[num_track] = {"_track_score","_track_vertex_distance","_track_length","_track_pid"};
   TH1D* h_track_overlay[num_track][num_part]; //overlay
-  int num_bins_track[num_track] = {100,10,50,50};
+  int num_bins_track[num_track] = {30,10,50,50};
   double xlim_low_track[num_track] = {0.0,0.0,0.0,-1.0};
   double xlim_high_track[num_track] = {1.0,10.0,50.0,1.0};
 

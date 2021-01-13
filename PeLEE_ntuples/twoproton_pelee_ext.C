@@ -32,7 +32,7 @@ void twoproton_pelee_ext::Loop()
   int fvcntr = 0; //Number of events with reconstructed vertex within the FV                                      
   int threepfps = 0; //Number of Events with Three PFPs
   int threetrkcntr = 0; //Number of events with Three Tracks
-  
+  int threetrk_connected = 0; //Number of events with Three Tracks attached to vertex   
 
 
   int vectorsize3 = 0; //Number of events with 3 tracks whose start is < 5cm from the reco vertex                                     
@@ -103,8 +103,33 @@ void twoproton_pelee_ext::Loop()
     //Fill Histograms  
     hist.Fill_Histograms(2, TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z), CosmicIP, topological_score,pot_wgt);
 
+    //3) Require that the 3 PFP's are tracks. Defined to have a track Score above 0.8
+    /////////////////////////////////////////////////////////////////////////////////
+    int y = 0;
+    int y1 = 0;
+    for(int i = 0; i < n_pfps; i ++){    
+      float track_score = trk_score_v->at(i); 
+      float track_distance = trk_distance_v->at(i); 
+      if(track_score >= 0.8){
+	y++;                                                                                            
+      }        
+      if(track_distance <= 4){
+	y1++;
+      }                                                                                                                 }                                                                                                              
+
+    if(y != 3) continue;
+    threetrkcntr++;
+
+    //Fill Histograms
+    hist.Fill_Histograms(3, TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z),CosmicIP, topological_score, pot_wgt);
+
+    if(y1 != 3) continue;//three tracks connected to vertex
+    threetrk_connected++;
+      
+    //Fill Histograms
+    hist.Fill_Histograms(4, TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z),CosmicIP, topological_score, pot_wgt);
+
     //Filling Some Cut Variables to be Used in Optimizing Cuts
-    ///////////////////////////////////////////////////////////
     for(int i = 0; i < n_pfps; i++){
       hist.h_track[0]->Fill(trk_score_v->at(i),pot_wgt);
       hist.h_track[1]->Fill(trk_distance_v->at(i),pot_wgt);
@@ -112,9 +137,6 @@ void twoproton_pelee_ext::Loop()
       hist.h_track[3]->Fill(trk_llr_pid_score_v->at(i),pot_wgt);
     }
 
-    //3) Require that the 3 PFP's are tracks. Defined to have a track Score above 0.8
-    /////////////////////////////////////////////////////////////////////////////////
-    
     //Next: The Muon Selection
     //////////////////////////
 
@@ -124,9 +146,9 @@ void twoproton_pelee_ext::Loop()
    std::cout << "[ANALYZER] Initial Number of Events: "<<nentries<<std::endl;
    std::cout << "[ANALYZER] Number of Events with Vertex in FV: "<<fvcntr<<std::endl;
    std::cout << "[ANALYZER] Number of Events with 3 PFPs: "<<threepfps<<std::endl;
+   std::cout << "[ANALYZER] Number of Events with 3 Tracks: "<<threetrkcntr<<std::endl;
+   std::cout << "[ANALYZER] Number of Events with 3 Tracks Connected to Vertex: "<<threetrk_connected<<std::endl;
 
-
-   std::cout << "[ANALYZER] Number of Events with 3 Tracks: "<<threetrkcntr/3<<std::endl;
    std::cout<<  "[ANALYZER] Number of Events with the Second Shortest Track Contained: "<<secondtrkgood<<std::endl;
    std::cout<<  "[ANALYZER] Number of Events with the Shortest Track Contained: "<<shortesttrkgood<<std::endl;
    std::cout<<  "[ANALYZER] Number of Events with The Other Vector Larger than 0: "<<pid_cut0<<std::endl;
