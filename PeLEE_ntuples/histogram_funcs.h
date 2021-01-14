@@ -31,10 +31,10 @@ class histogram_funcs
   //Now to define all the specific channels and their histograms                                                                   
   //Since I am basically a plot factory now, I am going to try and do this the smart way                                           
   ///////////////////////////////////////////////////////////////////////////////////////                                          
-  static const int  number=5; //number cuts                                                                        
+  static const int  number=6; //number cuts                                                                        
   static const int  number2 = 11; //categories I defined                                                            
   static const int  number3 = 10; //categories raquel defined
-  const char * point[number] ={"_before_selection","_after_fv","_after_three_pfps","_after_track_cut","_after_connection_cut"}; //this defines histograms after each cut    
+  const char * point[number] ={"_before_selection","_after_fv","_after_three_pfps","_after_track_cut","_after_connection_cut","_after_pid"}; //this defines histograms after each cut    
   const char * channel[number2]={"_total","_cc0p0pi","_cc1p0pi","_cc2p0pi","_ccNp0pi",
 				 "_ccNp1pi","_ccNpNpi","_ccnue","_outfv","_nc","_other"}; //these are the channels I defined        
   const char * channel2[number3] = {"_total","_ccQE","_ccCOH","_ccMEC","_ccRES","_ccDIS",

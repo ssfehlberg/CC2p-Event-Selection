@@ -31,10 +31,14 @@ void twoproton_pelee_overlay::Loop()
   //////////////////////////////
   bool _debug = false; //debug statements
   double pot_wgt = 0.0347; //POT weight
-  double mc_wgt;
-  double TRACK_SCORE_CUT = 0.5;
-  double TOPO_SCORE_CUT = 0.3;
-  double COSMIC_IP_CUT = 10.0;
+  double mc_wgt; //mc cv weight
+
+  //cut values
+  double TRACK_SCORE_CUT = 0.8;
+  double TRACK_DIST_CUT = 4;
+  double PID_CUT = 0.6;
+
+  //momentum cut values & masses
   double MUON_MOM_CUT = 0.1;
   double PROTON_MOM_CUT = 0.25;
   double CHARGED_PI_MOM_CUT = 0.065;
@@ -49,27 +53,18 @@ void twoproton_pelee_overlay::Loop()
   int threepfps = 0; //Number of Events with Three PFPs
   int threetrkcntr = 0; //Number of events with three tracks    
   int threetrk_connected = 0; //Number of Events with three tracks attached to the vertex
+  int pid = 0; //Number of events with 1 track with PID > 0.6 and 2 tracks with PID < 0.6
 
-
-
-  int vectorsize3 = 0; //Number of events with 3 tracks whose start is < 5cm from the reco vertex
+  /* don't know if we need these counters yet
   int secondtrkgood = 0; //Number of events where the second shortest/longest track is contained
   int shortesttrkgood=0; //Number of events where the shortest track is contained
+  int n_mom_mu = 0; //number of events after muon momentum cut
+  int n_mom_p1 = 0; //number of events after leading proton momentum cut
+  int n_mom_p2 = 0;//number of events after recoil proton momentum cut
+  */
   int events_remaining = 0; //sanity check for number of events remaining
-  int pid_cut0 = 0; //sanity pid cut
-  int pid_cut1 = 0; //sannity pid cut
-  int proton_cut = 0; //number of events with 2 protons in final state
-  int muon_cut = 0; //number of events with 1 muon in final state
-  int events_chi2p = 0; //sanity checks on chi2
-  int events_chi2mu = 0; //sanity cheks on chi2
-  int events_mc = 0; //sanity checks o chi2
-  int events_2mu = 0; //events with two muons
-  int events_2other = 0; //events with 2 others
-  int n_mom_mu = 0;
-  int n_mom_p1 = 0;
-  int n_mom_p2 = 0;
 
-  //neutrino counters
+  //neutrino slice counters
   int neutrinos_0 = 0;
   int neutrinos_1 = 0;
   int neutrinos_else = 0;
@@ -152,7 +147,8 @@ void twoproton_pelee_overlay::Loop()
     // 1) The reconstructed neutrino vertex is inside the FV 
     // 2) There are exactly 3 PFP's in the event
     // 3) The 3 PFP's are track like objects i.e they all have a track score > 0.8
-    // We are now going to make plots of those cut variables
+    // 4) The 3 PFP's are within 4 cm of the Vertex
+    // 5) PID
 
     //1) Check that the event is in the FV
     //////////////////////////////////////
@@ -176,16 +172,25 @@ void twoproton_pelee_overlay::Loop()
     /////////////////////////////////////////////////////////////////////////////////////////////
     int y = 0;
     int y1 = 0;
+    int muons = 0;
+    int protons = 0;
     for(int i = 0; i < n_pfps; i ++){                                                                                       
       float track_score = trk_score_v->at(i);                                                                         
       float track_distance = trk_distance_v->at(i);
-      if(track_score >= 0.8){
+      float track_pid = trk_llr_pid_score_v->at(i);
+      if(track_score >= TRACK_SCORE_CUT){
 	y++; 
       }
-      if(track_distance <= 4){
+      if(track_distance <= TRACK_DIST_CUT){
 	y1++;
-      }                                                                               
-    }                                                                                                                                                                                                                                    
+      }                  
+      if(track_pid > PID_CUT){
+	muons++;
+      }
+      if(track_pid < PID_CUT){
+	protons++;                                             
+      }                                                                                                       }                                                                                                     
+
     //Three pfps with track score above 0.8
     if(y != 3) continue; 
     threetrkcntr++;
@@ -214,13 +219,26 @@ void twoproton_pelee_overlay::Loop()
     }
     testVector.clear();
 
+    //5) PID: One track with PID > 0.6 and 2 tracks with PID < 0.6
+    //////////////////////////////////////////////////////////////
+    if(muons != 1 && protons != 2) continue;
+    pid++;
+    
+    //Fill Histograms
+    Fill_Histograms_Mine(5, pot_wgt*mc_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv);
+    Fill_Histograms_Raquel(5, pot_wgt*mc_wgt, cuts.fv);
+
+    ///////////////////////////////////////////////////////////////////////////////////////////
+    //Huzzah! We are done with the inital selection. Now to make some particle specific plots:
+    //////////////////////////////////////////////////////////////////////////////////////////
+
     events_remaining++;
 
   } //end of Loop over events
 
   //Before we finish, we need to make the efficiency and purity plots:
   ///////////////////////////////////////////////////////////////////
-  std::vector<int> cut_values = {static_cast<int>(nentries),fvcntr,threepfps,threetrkcntr, threetrk_connected};
+    std::vector<int> cut_values = {static_cast<int>(nentries),fvcntr,threepfps,threetrkcntr, threetrk_connected, pid};
   for(int i = 0; i < number; i++){
     double eff = double(cc2p0pi[i]) / double(cc2p0pi[0]);
     double purity = double(cc2p0pi[i]) / double(cut_values[i]);
@@ -235,19 +253,15 @@ void twoproton_pelee_overlay::Loop()
   std::cout << "[ANALYZER] Number of Events with Vertex in FV: "<<fvcntr<<" Fraction of Total: "<<float(100.*float(fvcntr)/float(nentries))<<"%"<<std::endl;
   std::cout << "[ANALYZER] Number of Events with 3 PFPs: "<<threepfps<<" Fraction of Total: "<<float(100.*float(threepfps)/float(nentries))<<"%"<<std::endl;
   std::cout << "[ANALYZER] Number of Events with 3 Tracks: "<<threetrkcntr<<" Fraction of Total: "<<float(100.*float(threetrkcntr)/float(nentries))<<"%"<<std::endl;
-  std::cout << "[ANALYZER] Number of Events with 3 Tracks Connected to Vertex: "<<threetrk_connected<<std::endl; 
-
-
-
+  std::cout << "[ANALYZER] Number of Events with 3 Tracks Connected to Vertex: "<<threetrk_connected<<" Fraction of Total: "<<float(100.*float(threetrk_connected)/float(nentries))<<"%"<<std::endl; 
+  std::cout << "[ANALYZER] Number of Events with 1 Muon and 2 Protons: "<<pid<<" Fraction of Total: "<<float(100.*float(pid)/float(nentries))<<"%"<<std::endl;
+  /* not sure it we will need these yet
   std::cout<<  "[ANALYZER] Number of Events with the Second Shortest Track Contained: "<<secondtrkgood<<std::endl;
   std::cout<<  "[ANALYZER] Number of Events with the Shortest Track Contained: "<<shortesttrkgood<<std::endl;
-  std::cout<<  "[ANALYZER] Number of Events with The Other Vector Larger than 0: "<<pid_cut0<<std::endl;
-  std::cout<<  "[ANALYZER] Number of Events with More than 3 tracks: "<<pid_cut1<<std::endl;
-  std::cout<<  "[ANALYZER] Number of Events with 2 Protons: "<<proton_cut<<std::endl; 
-  std::cout<<  "[ANALYZER] Number of Events with 1 Muon: "<<muon_cut<<std::endl;
   std::cout<<  "[ANALYZER] Muon Momentum Quality Cut: "<<n_mom_mu<<std::endl;
   std::cout<<  "[ANALYZER] Leading Proton Momentum Quality Cut: "<<n_mom_p1<<std::endl;
   std::cout<<  "[ANALYZER] Recoil Proton Momentum Quality Cut: "<<n_mom_p2<<std::endl;
+  */
   std::cout << "[ANALYZER] Sanity Check of the Total Number of Events Remaining: "<<events_remaining<<std::endl;
   std::cout <<"-----CLOSING TIME. YOU DON'T HAVE TO GO HOME, BUT YOU CAN'T STAY HERE-----"<<std::endl;
    
@@ -308,17 +322,17 @@ void twoproton_pelee_overlay::Loop()
   std::cout<<"Neutrinos 0: "<<neutrinos_0<<std::endl;
   std::cout<<"Neutrinos 1: "<<neutrinos_1<<std::endl;
   std::cout<<"Neutrinos Else: "<<neutrinos_else<<std::endl;
-  std::cout<<"events_chi2mu++: "<<events_chi2mu<<std::endl;
-  std::cout<<"events_chi2p++: "<<events_chi2p<<std::endl;
-  std::cout<<"events_mc: "<<events_mc<<std::endl;
-  std::cout<<"events_2mu: "<<events_2mu<<std::endl;    
-  std::cout<<"events_2other: "<<events_2other<<std::endl;
   std::cout<<"1mu2p"<<res_count[0]<<std::endl;
   std::cout<<"1mu1p1pi"<<res_count[1]<<std::endl;
   std::cout<<"1muNp"<<res_count[2]<<std::endl;
   //std::cout<<"else"<<res_count[number-1]<<std::endl;
   std::cout<<"Number of Nue: "<<nue<<std::endl;
 
+
+  std::cout<<"Other Else: "<<other_else<<std::endl;
+  std::cout<<"Neutron: "<<neutron<<std::endl;
+  std::cout<<"Neutrino: "<<neutrino<<std::endl;
+  std::cout<<"Zeros: "<<zeros<<std::endl;
 
   std::cout<<"cc2p0pi 0: "<<cc2p0pi[0]<<std::endl;
   std::cout<<"cc2p0pi 1: "<<cc2p0pi[1]<<std::endl;

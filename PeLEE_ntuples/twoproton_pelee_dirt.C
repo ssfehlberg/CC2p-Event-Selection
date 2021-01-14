@@ -30,28 +30,21 @@ void twoproton_pelee_dirt::Loop()
   double pot_wgt = 0.141; //POT weight
   double mc_wgt; //spline times tuned cv weight
                      
-  //Counters                                                                                                       
+  //Counters                                                                                                               
   int fvcntr = 0; //Number of events with reconstructed vertex within the FV                                      
   int threepfps = 0; //Number of Events with Three PFPs
-  int threetrkcntr = 0; //Number of events with Three Tracks
-  int threetrk_connected = 0; //Number of events with Three Tracks attached to vertex   
+  int threetrkcntr = 0; //Number of events with three tracks    
+  int threetrk_connected = 0; //Number of Events with three tracks attached to the vertex
+  int pid = 0; //Number of events with 1 track with PID > 0.6 and 2 tracks with PID < 0.6
 
-                  
-  int vectorsize3 = 0; //Number of events with 3 tracks whose start is < 5cm from the reco vertex                                     
+  /* don't know if we need these counters yet
   int secondtrkgood = 0; //Number of events where the second shortest/longest track is contained
   int shortesttrkgood=0; //Number of events where the shortest track is contained
-  int pid_cut0 = 0; //sanity pid cut
-  int pid_cut1 = 0; //sannity pid cut
-  int proton_cut = 0; //number of events with 2 protons
-  int muon_cut = 0; //number of events with 1 muon in final state
-  int events_remaining = 0; //sanity check for number of events remaining                                                             
-  int events_chi2p = 0;
-  int events_chi2mu = 0;
-  int events_2mu = 0; //events with 2 muons
-  int events_2other = 0; //events with 2 others
-  int n_mom_mu = 0;
-  int n_mom_p1 = 0;
-  int n_mom_p2 = 0;
+  int n_mom_mu = 0; //number of events after muon momentum cut
+  int n_mom_p1 = 0; //number of events after leading proton momentum cut
+  int n_mom_p2 = 0;//number of events after recoil proton momentum cut
+  */
+  int events_remaining = 0; //sanity check for number of events remaining
 
   //neutrino counters                                                                                                                 
   int neutrinos_0 = 0;
@@ -115,17 +108,26 @@ void twoproton_pelee_dirt::Loop()
     //3) Require that the 3 PFP's are tracks. Defined to have a track Score above 0.8
     /////////////////////////////////////////////////////////////////////////////////
     int y = 0;
-    int y1 = 0; 
+    int y1 = 0;
+    int muons = 0;
+    int protons = 0;
     for(int i = 0; i < n_pfps; i ++){    
       float track_score = trk_score_v->at(i); 
-      float track_distance = trk_distance_v->at(i); 
-      if(track_score >= 0.8){
+      float track_distance = trk_distance_v->at(i);
+      float track_pid = trk_llr_pid_score_v->at(i);
+      if(track_score >= cuts.TRACK_SCORE_CUT){
 	y++;                                                                                            
-      }                                             
-      if(track_distance <= 4){
+      }        
+      if(track_distance <= cuts.TRACK_DIST_CUT){
 	y1++;
-      }                                           
-    }                                                                                                              
+      }                                            
+      if(track_pid > cuts.PID_CUT){
+	muons++;
+      }
+      if(track_pid < cuts.PID_CUT){
+	protons++;                                             
+      }  
+    }                                                                                                     
 
     if(y != 3) continue;
     threetrkcntr++;
@@ -137,7 +139,7 @@ void twoproton_pelee_dirt::Loop()
     threetrk_connected++;
       
     //Fill Histograms
-    hist.Fill_Histograms(4, TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z),CosmicIP, topological_score, pot_wgt);
+    hist.Fill_Histograms(4, TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z),CosmicIP, topological_score, pot_wgt*mc_wgt);
 
     //Filling Some Cut Variables to be Used in Optimizing Cuts
     for(int i = 0; i < n_pfps; i++){
@@ -147,40 +149,49 @@ void twoproton_pelee_dirt::Loop()
       hist.h_track[3]->Fill(trk_llr_pid_score_v->at(i),pot_wgt*mc_wgt);
     }
 
-    //Next: The Muon Selection
-    //////////////////////////
+    //5) PID: One track with PID > 0.6 and 2 tracks with PID < 0.6
+    //////////////////////////////////////////////////////////////
+    if(muons != 1 && protons != 2) continue;
+    pid++;
+
+    //Fill Histograms
+    hist.Fill_Histograms(5, TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z),CosmicIP, topological_score, pot_wgt*mc_wgt);
+
+    ///////////////////////////////////////////////////////////////////////////////////////////
+    //Huzzah! We are done with the inital selection. Now to make some particle specific plots:
+    //////////////////////////////////////////////////////////////////////////////////////////
+
+    events_remaining++;
+
 
    } //end of Loop over events
 
-   std::cout<<"-----MODULE SUMMARY-----"<<std::endl;
-   std::cout << "[ANALYZER] Initial Number of Events: "<<nentries<<std::endl;
-   std::cout << "[ANALYZER] Number of Events with Vertex in FV: "<<fvcntr<<std::endl;
-   std::cout << "[ANALYZER] Number of Events with 3 PFPs: "<<threepfps<<std::endl;   
-   std::cout << "[ANALYZER] Number of Events with 3 Tracks: "<<threetrkcntr<<std::endl;
-   std::cout << "[ANALYZER] Number of Events with 3 Tracks Connected to Vertex: "<<threetrk_connected<<std::endl;
-
-   std::cout<<  "[ANALYZER] Number of Events with the Second Shortest Track Contained: "<<secondtrkgood<<std::endl;
-   std::cout<<  "[ANALYZER] Number of Events with the Shortest Track Contained: "<<shortesttrkgood<<std::endl;
-   std::cout<<  "[ANALYZER] Number of Events with The Other Vector Larger than 0: "<<pid_cut0<<std::endl;
-   std::cout<<  "[ANALYZER] Number of Events with More than 3 tracks: "<<pid_cut1<<std::endl;
-   std::cout<<  "[ANALYZER] Number of Events with 2 Protons: "<<proton_cut<<std::endl; 
-   std::cout<<  "[ANALYZER] Number of Events with 1 Muon: "<<muon_cut<<std::endl;
-   std::cout<<  "[ANALYZER] Muon Momentum Quality Cut: "<<n_mom_mu<<std::endl;
-   std::cout<<  "[ANALYZER] Leading Proton Momentum Quality Cut: "<<n_mom_p1<<std::endl;
-   std::cout<<  "[ANALYZER] Recoil Proton Momentum Quality Cut: "<<n_mom_p2<<std::endl;
-   std::cout << "[ANALYZER] Sanity Check of the Total Number of Events Remaining: "<<events_remaining<<std::endl;
-   std::cout <<"-----CLOSING TIME. YOU DON'T HAVE TO GO HOME, BUT YOU CAN'T STAY HERE-----"<<std::endl;
-
-   std::cout<<"Neutrinos 0: "<<neutrinos_0<<std::endl;
-   std::cout<<"Neutrinos 1: "<<neutrinos_1<<std::endl;
-   std::cout<<"Neutrinos Else: "<<neutrinos_else<<std::endl;
-   std::cout<<"events_chi2p++: "<<events_chi2p<<std::endl;
-   std::cout<<"events_chi2mu++: "<<events_chi2mu<<std::endl;
-   std::cout<<"events_2mu: "<<events_2mu<<std::endl;
-   std::cout<<"events_2other: "<<events_2other<<std::endl;
 
    //Don't forget to write all of your histograms before you leave!                                                                       
-   ///////////////////////////////////////////////////////////////                                                                 
+   ///////////////////////////////////////////////////////////////                                         
+  std::cout<<"-----MODULE SUMMARY-----"<<std::endl;
+  std::cout << "[ANALYZER] Initial Number of Events: "<<nentries<<" Fraction of Total: "<<float(100.*float(nentries)/float(nentries))<<"%"<<std::endl;
+  std::cout << "[ANALYZER] Number of Events with Vertex in FV: "<<fvcntr<<" Fraction of Total: "<<float(100.*float(fvcntr)/float(nentries))<<"%"<<std::endl;
+  std::cout << "[ANALYZER] Number of Events with 3 PFPs: "<<threepfps<<" Fraction of Total: "<<float(100.*float(threepfps)/float(nentries))<<"%"<<std::endl;
+  std::cout << "[ANALYZER] Number of Events with 3 Tracks: "<<threetrkcntr<<" Fraction of Total: "<<float(100.*float(threetrkcntr)/float(nentries))<<"%"<<std::endl;
+  std::cout << "[ANALYZER] Number of Events with 3 Tracks Connected to Vertex: "<<threetrk_connected<<" Fraction of Total: "<<float(100.*float(threetrk_connected)/float(nentries))<<"%"<<std::endl; 
+  std::cout << "[ANALYZER] Number of Events with 1 Muon and 2 Protons: "<<pid<<" Fraction of Total: "<<float(100.*float(pid)/float(nentries))<<"%"<<std::endl;
+  /* not sure it we will need these yet
+  std::cout<<  "[ANALYZER] Number of Events with the Second Shortest Track Contained: "<<secondtrkgood<<std::endl;
+  std::cout<<  "[ANALYZER] Number of Events with the Shortest Track Contained: "<<shortesttrkgood<<std::endl;
+  std::cout<<  "[ANALYZER] Muon Momentum Quality Cut: "<<n_mom_mu<<std::endl;
+  std::cout<<  "[ANALYZER] Leading Proton Momentum Quality Cut: "<<n_mom_p1<<std::endl;
+  std::cout<<  "[ANALYZER] Recoil Proton Momentum Quality Cut: "<<n_mom_p2<<std::endl;
+  */
+  std::cout << "[ANALYZER] Sanity Check of the Total Number of Events Remaining: "<<events_remaining<<std::endl;
+  std::cout <<"-----CLOSING TIME. YOU DON'T HAVE TO GO HOME, BUT YOU CAN'T STAY HERE-----"<<std::endl;
+
+  std::cout<<"Neutrinos 0: "<<neutrinos_0<<std::endl;
+  std::cout<<"Neutrinos 1: "<<neutrinos_1<<std::endl;
+  std::cout<<"Neutrinos Else: "<<neutrinos_else<<std::endl;
+
+
+                        
    tfile->cd();
    hist.Write_Histograms(false); //function that writes all our histograms                                                              
    tfile->Close(); //write the root file that contains our histograms                                                         

@@ -7,9 +7,9 @@ class helper_funcs{
   virtual double real_sqrt(double x);
 
 
-  double TRACK_SCORE_CUT = 0.5;
-  double TOPO_SCORE_CUT = 0.3;
-  double COSMIC_IP_CUT = 10.0;
+  double TRACK_SCORE_CUT = 0.8;
+  double TRACK_DIST_CUT = 4;
+  double PID_CUT = 0.6;
   bool fv;
 
 };//end of class definition

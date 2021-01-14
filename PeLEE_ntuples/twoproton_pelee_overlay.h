@@ -1487,10 +1487,10 @@ public :
   const char * labely[num2d] = {"reco y","true y","true y + sce"};
   TH2D *h_correlation_overlay[num2d];
       
-  static const int  number = 5; //number cuts                                                                        
+  static const int  number = 6; //number cuts                                                                        
   static const int  number2 = 11; //categories I defined                                                            
   static const int  number3 = 10; //categories raquel defined
-  const char * point[number] ={"_before_selection","_after_fv","_after_three_pfps","_after_track_cut","_after_connection_cut"}; //this defines histograms after each cut    
+  const char * point[number] ={"_before_selection","_after_fv","_after_three_pfps","_after_track_cut","_after_connection_cut","_after_pid"}; //this defines histograms after each cut    
   const char * channel[number2]={"_total","_cc0p0pi","_cc1p0pi","_cc2p0pi","_ccNp0pi",
 				 "_ccNp1pi","_ccNpNpi","_ccnue","_outfv","_nc","_other"}; //these are the channels I defined        
   const char * channel2[number3] = {"_total","_ccQE","_ccCOH","_ccMEC","_ccRES","_ccDIS",
@@ -1535,8 +1535,8 @@ public :
   //Chi2 Plots
   static const int num_plane = 3;
   const char* plane[num_plane] = {"_Plane_0", "_Plane_1","_Plane_2"};
-  static const int num_part = 6;
-  const char* particle[num_part] = {"_total","_proton","_muon","_pion","_electron","_other"};
+  static const int num_part = 9;
+  const char* particle[num_part] = {"_total","_proton","_muon","_pionpm","_pion0","_electron","_gamma","_kaon","_other"};
   TH1D* h_chi2p_overlay[num_plane][num_part];
   TH1D* h_chi2mu_overlay[num_plane][num_part];
   TH1D* h_dEdx_total_overlay[num_plane][num_part];
@@ -1620,6 +1620,12 @@ public :
    int nc_raquel[number] = {0};
    int other_raquel[number] = {0};
    int res_count[4] = {0};
+
+   int other_else = 0;
+   int neutron = 0;
+   int neutrino = 0;
+   int zeros = 0;
+
 
 };
 
@@ -1841,11 +1847,6 @@ void twoproton_pelee_overlay::Fill_Track_Plots(float value, int pdg, double wgt)
     h_track_overlay[2][1]->Fill(trk_len_v->at(value),wgt);
     h_track_overlay[3][1]->Fill(trk_llr_pid_score_v->at(value),wgt);  
 
-  } else if(pdg == 211 || pdg == -211 || pdg == 111) {
-    h_track_overlay[0][3]->Fill(trk_score_v->at(value),wgt); //fills the pion
-    h_track_overlay[1][3]->Fill(trk_distance_v->at(value),wgt);
-    h_track_overlay[2][3]->Fill(trk_len_v->at(value),wgt);
-    h_track_overlay[3][3]->Fill(trk_llr_pid_score_v->at(value),wgt);  
 
   } else if(pdg == 13 || pdg == -13){
     h_track_overlay[0][2]->Fill(trk_score_v->at(value),wgt); //fills the muon
@@ -1853,17 +1854,53 @@ void twoproton_pelee_overlay::Fill_Track_Plots(float value, int pdg, double wgt)
     h_track_overlay[2][2]->Fill(trk_len_v->at(value),wgt);
     h_track_overlay[3][2]->Fill(trk_llr_pid_score_v->at(value),wgt);  
 
-  } else if(pdg == 11 || pdg == -11){
-    h_track_overlay[0][4]->Fill(trk_score_v->at(value),wgt); //fills the electron
+  } else if(pdg == 211 || pdg == -211) {
+    h_track_overlay[0][3]->Fill(trk_score_v->at(value),wgt); //fills the pionpm
+    h_track_overlay[1][3]->Fill(trk_distance_v->at(value),wgt);
+    h_track_overlay[2][3]->Fill(trk_len_v->at(value),wgt);
+    h_track_overlay[3][3]->Fill(trk_llr_pid_score_v->at(value),wgt);  
+
+  } else if(pdg == 111) {
+    h_track_overlay[0][4]->Fill(trk_score_v->at(value),wgt); //fills the pion0
     h_track_overlay[1][4]->Fill(trk_distance_v->at(value),wgt);
     h_track_overlay[2][4]->Fill(trk_len_v->at(value),wgt);
     h_track_overlay[3][4]->Fill(trk_llr_pid_score_v->at(value),wgt);  
 
-  } else {
-    h_track_overlay[0][5]->Fill(trk_score_v->at(value),wgt); //fills the else
+  } else if(pdg == 11 || pdg == -11){
+    h_track_overlay[0][5]->Fill(trk_score_v->at(value),wgt); //fills the electron
     h_track_overlay[1][5]->Fill(trk_distance_v->at(value),wgt);
     h_track_overlay[2][5]->Fill(trk_len_v->at(value),wgt);
     h_track_overlay[3][5]->Fill(trk_llr_pid_score_v->at(value),wgt);  
+
+  } else if(pdg == 22){
+    h_track_overlay[0][6]->Fill(trk_score_v->at(value),wgt); //fills the gamma
+    h_track_overlay[1][6]->Fill(trk_distance_v->at(value),wgt);
+    h_track_overlay[2][6]->Fill(trk_len_v->at(value),wgt);
+    h_track_overlay[3][6]->Fill(trk_llr_pid_score_v->at(value),wgt);  
+
+  } else if(pdg == 321 || pdg == -321 || pdg == 311){
+    h_track_overlay[0][7]->Fill(trk_score_v->at(value),wgt); //fills the kaon
+    h_track_overlay[1][7]->Fill(trk_distance_v->at(value),wgt);
+    h_track_overlay[2][7]->Fill(trk_len_v->at(value),wgt);
+    h_track_overlay[3][7]->Fill(trk_llr_pid_score_v->at(value),wgt);  
+
+  } else {
+    std::cout<<"Here is the Value of the PDG in the Else Loop: "<<pdg<<std::endl;
+    other_else++;
+    if(pdg == 2112){
+      neutron++;
+    }
+    if( pdg == 14 || pdg == -14){
+      neutrino++;
+    }
+    if(pdg == 0){
+      zeros++;
+    }
+
+    h_track_overlay[0][8]->Fill(trk_score_v->at(value),wgt); //fills the else
+    h_track_overlay[1][8]->Fill(trk_distance_v->at(value),wgt);
+    h_track_overlay[2][8]->Fill(trk_len_v->at(value),wgt);
+    h_track_overlay[3][8]->Fill(trk_llr_pid_score_v->at(value),wgt);  
   }
 }
 
