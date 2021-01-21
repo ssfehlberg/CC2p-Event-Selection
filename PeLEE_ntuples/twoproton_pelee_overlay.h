@@ -1460,7 +1460,8 @@ public :
    virtual void     Define_Histograms(); //defines histograms. works for all samples
    virtual void     Fill_Histograms_Mine(int i, double wgt, int mc_n_threshold_muon, int mc_n_threshold_proton, int mc_n_threshold_pion0, double mc_n_threshold_pionpm, bool fv);
    virtual void     Fill_Histograms_Raquel(int i, double wgt, bool fv);
-   virtual void     Fill_Track_Plots(float value, int pdg, double wgt); //fills the track variables 
+   virtual double   GetTrackMomentum(double trkrange, int pdg) const;
+   virtual void     Fill_Track_Plots(float value, int pdg, bool contained_start,bool contained_end, double wgt); //fills the track variables 
    //virtual void     Fill_Histograms_Particles(int mu, int p1, int p2);
    // virtual void    Fill_Histograms_Particles_Raquel(int mu, int p1, int p2);
    virtual void     Fill_Mine(int i, int j, double wgt);
@@ -1529,14 +1530,21 @@ public :
   TH1D* h_Y_raquel[number][number3]; //mc y                                                                                          
   TH1D* h_Pt_raquel[number][number3]; //mc Pt   
   
-  TGraph* eff_graph = new TGraph(number);
-  TGraph* pur_graph = new TGraph(number);
+  //Efficinecy Plots
+  TGraph* eff_graph = new TGraph(number); //efficiency as function of cuts
+  TGraph* pur_graph = new TGraph(number); //efficiency as function of purity
+  static const int num_threshold = 6;
+  const char* threshold[num_threshold] = {"_muon_contained","_muon_uncontained","_proton","_pion_plus","_pion_minus","_pion0"};
+  TH1D* h_mom_threshold_num[num_threshold]; //these are for the threshold determination plots: numerator of the the efficiency
+  TH1D* h_mom_threshold_denom[num_threshold]; //same as above but the denominator of the efficinecy
+  int num_bins_eff[num_threshold] = {50,50,50,50,50,50};
+  float x_high_eff[num_threshold] = {2.0,2.0,2.0,0.5,0.5,0.5};
 
   //Chi2 Plots
   static const int num_plane = 3;
   const char* plane[num_plane] = {"_Plane_0", "_Plane_1","_Plane_2"};
-  static const int num_part = 9;
-  const char* particle[num_part] = {"_total","_proton","_muon","_pionpm","_pion0","_electron","_gamma","_kaon","_other"};
+  static const int num_part = 10;
+  const char* particle[num_part] = {"_total","_proton_contained","_proton_uncontained","_muon","_pionpm","_pion0","_electron","_gamma","_kaon","_other"};
   TH1D* h_chi2p_overlay[num_plane][num_part];
   TH1D* h_chi2mu_overlay[num_plane][num_part];
   TH1D* h_dEdx_total_overlay[num_plane][num_part];
@@ -1625,6 +1633,9 @@ public :
    int neutron = 0;
    int neutrino = 0;
    int zeros = 0;
+   int total_protons = 0;
+   int contain = 0;
+   int uncontain = 0;
 
 
 };
@@ -1769,6 +1780,13 @@ void twoproton_pelee_overlay::Define_Histograms(){
       }
     }
 
+    //Efficiency plots
+    for(int i =0; i < num_threshold; i++){
+      h_mom_threshold_num[i] = new TH1D(Form("h_mom_threshold_num%s",threshold[i]),Form("h_mom_threshold_num%s",threshold[i]),num_bins_eff[i],0,x_high_eff[i]);
+      h_mom_threshold_denom[i] = new TH1D(Form("h_mom_threshold_denom%s",threshold[i]),Form("h_mom_threshold_denom%s",threshold[i]),num_bins_eff[i],0,x_high_eff[i]);
+      h_list.push_back(h_mom_threshold_num[i]);
+      h_list.push_back(h_mom_threshold_denom[i]);
+    }
 
     //particle specific plots
     for(int j = 0; j < num_var; j++){
@@ -1834,7 +1852,95 @@ void twoproton_pelee_overlay::Define_Histograms(){
     // }
 }
 
-void twoproton_pelee_overlay::Fill_Track_Plots(float value, int pdg, double wgt){
+double twoproton_pelee_overlay::GetTrackMomentum(double trkrange, int pdg) const
+{
+    /* Muon range-momentum tables from CSDA (Argon density = 1.4 g/cm^3)
+       website:
+       http://pdg.lbl.gov/2012/AtomicNuclearProperties/MUON_ELOSS_TABLES/muonloss_289.pdf
+
+       CSDA table values:
+       float Range_grampercm[30] = {9.833E-1, 1.786E0, 3.321E0,
+       6.598E0, 1.058E1, 3.084E1, 4.250E1, 6.732E1, 1.063E2, 1.725E2,
+       2.385E2, 4.934E2, 6.163E2, 8.552E2, 1.202E3, 1.758E3, 2.297E3,
+       4.359E3, 5.354E3, 7.298E3, 1.013E4, 1.469E4, 1.910E4, 3.558E4,
+       4.326E4, 5.768E4, 7.734E4, 1.060E5, 1.307E5}; float KE_MeV[30] = {10, 14,
+       20, 30, 40, 80, 100, 140, 200, 300, 400, 800, 1000, 1400, 2000, 3000,
+       4000, 8000, 10000, 14000, 20000, 30000, 40000, 80000, 100000, 140000,
+       200000, 300000, 400000};
+
+       Functions below are obtained by fitting polynomial fits to KE_MeV vs
+       Range (cm) graph. A better fit was obtained by splitting the graph into
+       two: Below range<=200cm,a polynomial of power 4 was a good fit; above
+       200cm, a polynomial of power 6 was a good fit
+
+       Fit errors for future purposes:
+       Below 200cm, Forpoly4 fit: p0 err=1.38533;p1 err=0.209626; p2
+       err=0.00650077; p3 err=6.42207E-5; p4 err=1.94893E-7; Above 200cm,
+       Forpoly6 fit: p0 err=5.24743;p1 err=0.0176229; p2 err=1.6263E-5; p3
+       err=5.9155E-9; p4 err=9.71709E-13; p5 err=7.22381E-17;p6
+       err=1.9709E-21;*/
+    ///////////////////////////////////////////////////////////////////////////
+    //*********For muon, the calculations are valid up to 1.91E4 cm range
+    //corresponding to a Muon KE of 40 GeV**********//
+    ///////////////////////////////////////////////////////////////////////////
+    /*Proton range-momentum tables from CSDA (Argon density = 1.4 g/cm^3):
+      website: https://physics.nist.gov/PhysRefData/Star/Text/PSTAR.html
+
+      CSDA values:
+      double KE_MeV_P_Nist[31]={10, 15, 20, 30, 40, 80, 100, 150, 200, 250, 300,
+      350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000,
+      1500, 2000, 2500, 3000, 4000, 5000};
+
+      double Range_gpercm_P_Nist[31]={1.887E-1,3.823E-1, 6.335E-1, 1.296,
+      2.159, 7.375, 1.092E1, 2.215E1, 3.627E1, 5.282E1, 7.144E1,
+      9.184E1, 1.138E2, 1.370E2, 1.614E2, 1.869E2, 2.132E2, 2.403E2,
+      2.681E2, 2.965E2, 3.254E2, 3.548E2, 3.846E2, 4.148E2, 4.454E2,
+      7.626E2, 1.090E3, 1.418E3, 1.745E3, 2.391E3, 3.022E3};
+
+      Functions below are obtained by fitting power and polynomial fits to
+      KE_MeV vs Range (cm) graph. A better fit was obtained by splitting the
+      graph into two: Below range<=80cm,a a*(x^b) was a good fit; above 80cm, a
+      polynomial of power 6 was a good fit
+
+      Fit errors for future purposes:
+      For power function fit: a=0.388873; and b=0.00347075
+      Forpoly6 fit: p0 err=3.49729;p1 err=0.0487859; p2 err=0.000225834; p3
+      err=4.45542E-7; p4 err=4.16428E-10; p5 err=1.81679E-13;p6
+      err=2.96958E-17;*/
+    ///////////////////////////////////////////////////////////////////////////
+    //*********For proton, the calculations are valid up to 3.022E3 cm range
+    //corresponding to a Muon KE of 5 GeV**********//
+    ///////////////////////////////////////////////////////////////////////////
+    if (trkrange < 0 || std::isnan(trkrange)) {
+      return -1.;
+    }
+    double KE, Momentum, M;
+    constexpr double Muon_M = 105.7, Proton_M = 938.272;
+    if (abs(pdg) == 2212) {
+      M = Proton_M;
+      if (trkrange > 0 && trkrange <= 80)
+        KE = 29.9317 * std::pow(trkrange, 0.586304);
+      else if (trkrange > 80 && trkrange <= 3.022E3)
+        KE =
+          149.904 + (3.34146 * trkrange) + (-0.00318856 * trkrange * trkrange) +
+          (4.34587E-6 * trkrange * trkrange * trkrange) +
+          (-3.18146E-9 * trkrange * trkrange * trkrange * trkrange) +
+          (1.17854E-12 * trkrange * trkrange * trkrange * trkrange * trkrange) +
+          (-1.71763E-16 * trkrange * trkrange * trkrange * trkrange * trkrange *
+           trkrange);
+      else
+        KE = -999;
+    } else
+      KE = -999;
+    if (KE < 0)
+      Momentum = -999;
+    else
+      Momentum = std::sqrt((KE * KE) + (2 * M * KE));
+    Momentum = Momentum / 1000;
+    return Momentum;
+} //end of get track momentum
+
+void twoproton_pelee_overlay::Fill_Track_Plots(float value, int pdg, bool contained_start, bool contained_end,double wgt){
 
   h_track_overlay[0][0]->Fill(trk_score_v->at(value),wgt); //fills the total
   h_track_overlay[1][0]->Fill(trk_distance_v->at(value),wgt);
@@ -1842,47 +1948,56 @@ void twoproton_pelee_overlay::Fill_Track_Plots(float value, int pdg, double wgt)
   h_track_overlay[3][0]->Fill(trk_llr_pid_score_v->at(value),wgt);  
 
   if(pdg == 2212 || pdg == -2212){
-    h_track_overlay[0][1]->Fill(trk_score_v->at(value),wgt); //fills the proton
-    h_track_overlay[1][1]->Fill(trk_distance_v->at(value),wgt);
-    h_track_overlay[2][1]->Fill(trk_len_v->at(value),wgt);
-    h_track_overlay[3][1]->Fill(trk_llr_pid_score_v->at(value),wgt);  
-
+    total_protons++;
+    if(contained_start == true && contained_end == true){
+      h_track_overlay[0][1]->Fill(trk_score_v->at(value),wgt); //fills the contained protons
+      h_track_overlay[1][1]->Fill(trk_distance_v->at(value),wgt);
+      h_track_overlay[2][1]->Fill(trk_len_v->at(value),wgt);
+      h_track_overlay[3][1]->Fill(trk_llr_pid_score_v->at(value),wgt);  
+      contain++;
+    } else if (contained_start == true && contained_end == false){
+      h_track_overlay[0][2]->Fill(trk_score_v->at(value),wgt); //fills the uncontained protons                                                                                                                                          
+      h_track_overlay[1][2]->Fill(trk_distance_v->at(value),wgt);
+      h_track_overlay[2][2]->Fill(trk_len_v->at(value),wgt);
+      h_track_overlay[3][2]->Fill(trk_llr_pid_score_v->at(value),wgt);
+      uncontain++;
+    }
 
   } else if(pdg == 13 || pdg == -13){
-    h_track_overlay[0][2]->Fill(trk_score_v->at(value),wgt); //fills the muon
-    h_track_overlay[1][2]->Fill(trk_distance_v->at(value),wgt);
-    h_track_overlay[2][2]->Fill(trk_len_v->at(value),wgt);
-    h_track_overlay[3][2]->Fill(trk_llr_pid_score_v->at(value),wgt);  
-
-  } else if(pdg == 211 || pdg == -211) {
-    h_track_overlay[0][3]->Fill(trk_score_v->at(value),wgt); //fills the pionpm
+    h_track_overlay[0][3]->Fill(trk_score_v->at(value),wgt); //fills the muon
     h_track_overlay[1][3]->Fill(trk_distance_v->at(value),wgt);
     h_track_overlay[2][3]->Fill(trk_len_v->at(value),wgt);
     h_track_overlay[3][3]->Fill(trk_llr_pid_score_v->at(value),wgt);  
 
-  } else if(pdg == 111) {
-    h_track_overlay[0][4]->Fill(trk_score_v->at(value),wgt); //fills the pion0
+  } else if(pdg == 211 || pdg == -211) {
+    h_track_overlay[0][4]->Fill(trk_score_v->at(value),wgt); //fills the pionpm
     h_track_overlay[1][4]->Fill(trk_distance_v->at(value),wgt);
     h_track_overlay[2][4]->Fill(trk_len_v->at(value),wgt);
     h_track_overlay[3][4]->Fill(trk_llr_pid_score_v->at(value),wgt);  
 
-  } else if(pdg == 11 || pdg == -11){
-    h_track_overlay[0][5]->Fill(trk_score_v->at(value),wgt); //fills the electron
+  } else if(pdg == 111) {
+    h_track_overlay[0][5]->Fill(trk_score_v->at(value),wgt); //fills the pion0
     h_track_overlay[1][5]->Fill(trk_distance_v->at(value),wgt);
     h_track_overlay[2][5]->Fill(trk_len_v->at(value),wgt);
     h_track_overlay[3][5]->Fill(trk_llr_pid_score_v->at(value),wgt);  
 
-  } else if(pdg == 22){
-    h_track_overlay[0][6]->Fill(trk_score_v->at(value),wgt); //fills the gamma
+  } else if(pdg == 11 || pdg == -11){
+    h_track_overlay[0][6]->Fill(trk_score_v->at(value),wgt); //fills the electron
     h_track_overlay[1][6]->Fill(trk_distance_v->at(value),wgt);
     h_track_overlay[2][6]->Fill(trk_len_v->at(value),wgt);
     h_track_overlay[3][6]->Fill(trk_llr_pid_score_v->at(value),wgt);  
 
-  } else if(pdg == 321 || pdg == -321 || pdg == 311){
-    h_track_overlay[0][7]->Fill(trk_score_v->at(value),wgt); //fills the kaon
+  } else if(pdg == 22){
+    h_track_overlay[0][7]->Fill(trk_score_v->at(value),wgt); //fills the gamma
     h_track_overlay[1][7]->Fill(trk_distance_v->at(value),wgt);
     h_track_overlay[2][7]->Fill(trk_len_v->at(value),wgt);
     h_track_overlay[3][7]->Fill(trk_llr_pid_score_v->at(value),wgt);  
+
+  } else if(pdg == 321 || pdg == -321 || pdg == 311){
+    h_track_overlay[0][8]->Fill(trk_score_v->at(value),wgt); //fills the kaon
+    h_track_overlay[1][8]->Fill(trk_distance_v->at(value),wgt);
+    h_track_overlay[2][8]->Fill(trk_len_v->at(value),wgt);
+    h_track_overlay[3][8]->Fill(trk_llr_pid_score_v->at(value),wgt);  
 
   } else {
     std::cout<<"Here is the Value of the PDG in the Else Loop: "<<pdg<<std::endl;
@@ -1896,11 +2011,10 @@ void twoproton_pelee_overlay::Fill_Track_Plots(float value, int pdg, double wgt)
     if(pdg == 0){
       zeros++;
     }
-
-    h_track_overlay[0][8]->Fill(trk_score_v->at(value),wgt); //fills the else
-    h_track_overlay[1][8]->Fill(trk_distance_v->at(value),wgt);
-    h_track_overlay[2][8]->Fill(trk_len_v->at(value),wgt);
-    h_track_overlay[3][8]->Fill(trk_llr_pid_score_v->at(value),wgt);  
+    h_track_overlay[0][9]->Fill(trk_score_v->at(value),wgt); //fills the else
+    h_track_overlay[1][9]->Fill(trk_distance_v->at(value),wgt);
+    h_track_overlay[2][9]->Fill(trk_len_v->at(value),wgt);
+    h_track_overlay[3][9]->Fill(trk_llr_pid_score_v->at(value),wgt);  
   }
 }
 

@@ -1,8 +1,12 @@
 #define twoproton_pelee_overlay_cxx
 #include "twoproton_pelee_overlay.h"
+#include <chrono>
+using namespace std::chrono;
 
 void twoproton_pelee_overlay::Loop()
 {
+  auto start = high_resolution_clock::now(); 
+
   //Define objects of classes
   ////////////////////////////
   histogram_funcs hist; //histogram_funcs.h
@@ -54,10 +58,7 @@ void twoproton_pelee_overlay::Loop()
   int threetrkcntr = 0; //Number of events with three tracks    
   int threetrk_connected = 0; //Number of Events with three tracks attached to the vertex
   int pid = 0; //Number of events with 1 track with PID > 0.6 and 2 tracks with PID < 0.6
-
   /* don't know if we need these counters yet
-  int secondtrkgood = 0; //Number of events where the second shortest/longest track is contained
-  int shortesttrkgood=0; //Number of events where the shortest track is contained
   int n_mom_mu = 0; //number of events after muon momentum cut
   int n_mom_p1 = 0; //number of events after leading proton momentum cut
   int n_mom_p2 = 0;//number of events after recoil proton momentum cut
@@ -85,16 +86,9 @@ void twoproton_pelee_overlay::Loop()
     std::cout<<"BEGINNING TO PROCESS RUN: " <<run << "  SUBRUN: "<< sub << "  EVENT: " << evt <<std::endl;
     std::cout<<"-----------------------------------"<<std::endl;
 
+    //Checking how many nue's & neutrino slices we have
+    /////////////////////////////////
     if(nu_pdg == 12) nue++;
-
-    //Defining the MC Weight cause it is dumb                                                                                                                                                                                                /////////////////////////////                                                                                                                                                                                                                    
-    if(std::isfinite(weightTune) && weightTune <= 100.) {
-      mc_wgt = weightSplineTimesTune;
-    } else {
-      mc_wgt = 1 * weightSpline;
-    }
-
-    //Just casually checking how many neutrino slices we have
     if(nslice == 0){
       neutrinos_0++;
     }else if(nslice == 1){
@@ -103,12 +97,19 @@ void twoproton_pelee_overlay::Loop()
       neutrinos_else++;
     }
 
+    //Defining the MC Weight  & filling the damn mc values
+    ///////////////////////////////////////////////////////////                                                                                                                                                                        
+    if(std::isfinite(weightTune) && weightTune <= 100.) {
+      mc_wgt = weightSplineTimesTune;
+    } else {
+      mc_wgt = 1 * weightSpline;
+    }
+
     int mc_n_threshold_muon = 0;
     int mc_n_threshold_proton = 0;
     int mc_n_threshold_pion0 = 0;
     int mc_n_threshold_pionpm = 0;
 
-    //ugh we have to fill the damn mc values:
     for ( size_t p = 0u; p < mc_pdg->size(); ++p ) {
       int pdg = mc_pdg->at( p );
       float energy = mc_E->at( p );
@@ -117,18 +118,15 @@ void twoproton_pelee_overlay::Loop()
 	if ( mom > MUON_MOM_CUT ) {
 	  mc_n_threshold_muon++;
 	}
-      }
-      else if ( pdg == 2212 ) {
+      } else if ( pdg == 2212 ) {
 	double mom = cuts.real_sqrt( std::pow(energy, 2) - std::pow(MASS_PROTON, 2) );
 	if ( mom > PROTON_MOM_CUT ) 
 	  mc_n_threshold_proton++;
-      }
-      else if ( pdg == 111 ) {
+      } else if ( pdg == 111 ) {
 	double mom = cuts.real_sqrt( std::pow(energy, 2) - std::pow(MASS_PION0, 2) );
 	if ( mom > PION0_MOM_CUT) 
 	mc_n_threshold_pion0++;
-      }
-      else if ( std::abs(pdg) == 211 ) {
+      } else if ( std::abs(pdg) == 211 ) {
 	double mom = cuts.real_sqrt( std::pow(energy, 2) - std::pow(MASS_PIONPM, 2) );
 	if ( mom > CHARGED_PI_MOM_CUT ) {
 	  mc_n_threshold_pionpm++;
@@ -136,11 +134,26 @@ void twoproton_pelee_overlay::Loop()
       }
     }
 
+    //making sure that the mc_pdg and npfps are the same length cause fuck me
+    //////////////////////////////////////////////////////////////////////////
+    std::vector<int> testVector;
+    std::vector<double> mc_mom_vector;
+    for(int i = 0; i < mc_pdg->size(); i++){
+      testVector.push_back(mc_pdg->at(i));
+      TVector3 mom_temp(mc_px->at(i),mc_py->at(i),mc_pz->at(i));
+      mc_mom_vector.push_back(mom_temp.Mag());
+    }
+    for(int i = 0; i < n_pfps; i++){
+      if(i >= mc_pdg->size()){
+	testVector.resize(i+1);
+	mc_mom_vector.resize(i+1);
+      }
+    }
+
     //Filling histograms before any selection is made
     ////////////////////////////////////////////////
     cuts.Overlay_In_FV(10,10,10,10,10,10,reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z);  // to fill the fv bool
-
-    Fill_Histograms_Mine(0, pot_wgt*mc_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv); 
+    Fill_Histograms_Mine(0, pot_wgt*mc_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0 ,mc_n_threshold_pionpm,cuts.fv); 
     Fill_Histograms_Raquel(0, pot_wgt*mc_wgt,cuts.fv);
 
     //Okay. This Selection requires the following things:
@@ -154,17 +167,36 @@ void twoproton_pelee_overlay::Loop()
     //////////////////////////////////////
     if(cuts.In_FV(10,10,10,10,10,10,reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z) == false) continue; //10 cm border except from backend of detector
     fvcntr++;
-
-    //Fill Histograms
     Fill_Histograms_Mine(1, pot_wgt*mc_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv); 
     Fill_Histograms_Raquel(1, pot_wgt*mc_wgt,cuts.fv);
-    
+
+    if(ccnc == 0 && abs(nu_pdg) == 14 && nproton == 2 && nmuon == 1 && npion == 0 && npi0 == 0){
+      for(int j=0; j < n_pfps; j++){
+	TVector3 backtracker_mom_vector(backtracked_px->at(j),backtracked_py->at(j),backtracked_pz->at(j));
+	if(std::abs(backtracked_pdg->at(j)) == 13){
+	  bool contained_start = cuts.In_FV(10,10,10,10,10,10,trk_start_x_v->at(j),trk_start_y_v->at(j),trk_start_z_v->at(j));
+          bool contained_end = cuts.In_FV(10,10,10,10,10,10,trk_end_x_v->at(j),trk_end_y_v->at(j),trk_end_z_v->at(j));
+	  if(contained_start == true && contained_end == true){
+	    h_mom_threshold_denom[0]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //muon contained
+	  }else if(contained_start == true && contained_end == false){
+	    h_mom_threshold_denom[1]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //muon uncontained 
+	  } 
+	}else if (std::abs(backtracked_pdg->at(j)) == 2212){
+	  h_mom_threshold_denom[2]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //proton   
+	}else if (backtracked_pdg->at(j) == 211){
+	  h_mom_threshold_denom[3]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //pion+
+	}else if (backtracked_pdg->at(j) == -211){
+	  h_mom_threshold_denom[4]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //pion-
+	}else if(std::abs(backtracked_pdg->at(j)) == 111){
+	  h_mom_threshold_denom[5]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //pion0  
+	} //end of else if
+      } //end of for
+    } //end of if
+
     //2) There are exactly 3 PFP's in the Event 
     ///////////////////////////////////////////////////////
     if(n_pfps != 3) continue;
     threepfps++;
-
-    //Fill Histograms  
     Fill_Histograms_Mine(2, pot_wgt*mc_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv);
     Fill_Histograms_Raquel(2, pot_wgt*mc_wgt, cuts.fv);
 
@@ -189,56 +221,134 @@ void twoproton_pelee_overlay::Loop()
       }
       if(track_pid < PID_CUT){
 	protons++;                                             
-      }                                                                                                       }                                                                                                     
+      }                                                                                                       
+    }                                                                                                     
 
     //Three pfps with track score above 0.8
     if(y != 3) continue; 
     threetrkcntr++;
-
-    //Fill Histograms                                                                                               
     Fill_Histograms_Mine(3, pot_wgt*mc_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv);
+    Fill_Histograms_Raquel(3, pot_wgt*mc_wgt, cuts.fv);
 
     //Three Tracks connected to the vertex
     if(y1 != 3) continue;
     threetrk_connected++;
-
-    //Fill Histograms & filling some cut variables to be used in optimizing cuts
     Fill_Histograms_Mine(4, pot_wgt*mc_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv);
     Fill_Histograms_Raquel(4, pot_wgt*mc_wgt, cuts.fv);
-
-    std::vector<int> testVector;
-    for(int i = 0; i < mc_pdg->size(); i++){
-      testVector.push_back(mc_pdg->at(i));
-    }
     for(int i = 0; i < n_pfps; i++){
-      if(i >= mc_pdg->size()){
-	testVector.resize(i+1);
-      }
       int track_pdg = testVector.at(i);
-      Fill_Track_Plots(i,track_pdg,pot_wgt*mc_wgt);
+      bool contained_start = cuts.In_FV(10,10,10,10,10,10,trk_start_x_v->at(i),trk_start_y_v->at(i),trk_start_z_v->at(i));
+      bool contained_end = cuts.In_FV(10,10,10,10,10,10,trk_end_x_v->at(i),trk_end_y_v->at(i),trk_end_z_v->at(i));	
+      Fill_Track_Plots(i,track_pdg,contained_start,contained_end,pot_wgt*mc_wgt);
     }
-    testVector.clear();
 
     //5) PID: One track with PID > 0.6 and 2 tracks with PID < 0.6
     //////////////////////////////////////////////////////////////
     if(muons != 1 && protons != 2) continue;
     pid++;
-    
-    //Fill Histograms
     Fill_Histograms_Mine(5, pot_wgt*mc_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv);
     Fill_Histograms_Raquel(5, pot_wgt*mc_wgt, cuts.fv);
+    
+    if(ccnc == 0 && abs(nu_pdg) == 14 && nproton == 2 && nmuon == 1 && npion == 0 && npi0 == 0){
+    for(int j=0; j < n_pfps; j++){
+      TVector3 backtracker_mom_vector(backtracked_px->at(j),backtracked_py->at(j),backtracked_pz->at(j));
+      if(std::abs(backtracked_pdg->at(j)) == 13){
+	bool contained_start = cuts.In_FV(10,10,10,10,10,10,trk_start_x_v->at(j),trk_start_y_v->at(j),trk_start_z_v->at(j));
+	bool contained_end = cuts.In_FV(10,10,10,10,10,10,trk_end_x_v->at(j),trk_end_y_v->at(j),trk_end_z_v->at(j));
+	if(contained_start == true && contained_end == true){
+	  h_mom_threshold_num[0]->Fill(backtracker_mom_vector.Mag(),1); //muon contained
+	}else if(contained_start == true && contained_end == false){
+	  h_mom_threshold_num[1]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //muon uncontained 
+	} 
+      }else if (std::abs(backtracked_pdg->at(j)) == 2212){
+	h_mom_threshold_num[2]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //proton   
+      }else if (backtracked_pdg->at(j) == 211){
+	h_mom_threshold_num[3]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //pion+
+      }else if (backtracked_pdg->at(j) == -211){
+	h_mom_threshold_num[4]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //pion-
+      }else if(std::abs(backtracked_pdg->at(j)) == -111){
+	h_mom_threshold_num[5]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //pion0  
+      } //end of else if
+    } //end of for
+    } //end of the if
+    
 
     ///////////////////////////////////////////////////////////////////////////////////////////
     //Huzzah! We are done with the inital selection. Now to make some particle specific plots:
     //////////////////////////////////////////////////////////////////////////////////////////
+    int muon_id;
+    int leading_proton_id;
+    int recoil_proton_id;
+    std::vector<int> proton_id_vector;
+    for(int i=0; i < trk_pfp_id_v->size(); i++){
+      int trk_id = trk_pfp_id_v->at(i);
+      double trk_pid = trk_llr_pid_score_v->at(i);	
+      if(trk_pid > cuts.PID_CUT) {
+	muon_id = trk_id - 1;
+      }
+      if(trk_pid < cuts.PID_CUT){
+	proton_id_vector.push_back(trk_id);
+      }
+    }
 
+    float mom0 = std::sqrt(std::pow(trk_energy_proton_v->at(proton_id_vector[0]-1),2)-std::pow(MASS_PROTON,2));
+    float mom1 = std::sqrt(std::pow(trk_energy_proton_v->at(proton_id_vector[1]-1),2)-std::pow(MASS_PROTON,2));
+    if (abs(mom0) > abs(mom1)){
+      leading_proton_id = proton_id_vector[0] - 1; //you have to do the -1 cause of course the id's are indexed at one like fucking losers
+      recoil_proton_id = proton_id_vector[1] - 1;
+    }else{
+      leading_proton_id = proton_id_vector[1] - 1;
+      recoil_proton_id = proton_id_vector[0] - 1;
+    }
+
+    //Finally. Let's define some stuff then fill some variables!
+    ////////////////////////////////////////////////////////////    
+    
+    //Muon
+    TVector3 vMuon(1,1,1);
+    bool muon_start_contained = cuts.In_FV(10,10,10,10,10,10,trk_sce_start_x_v->at(muon_id),trk_sce_start_y_v->at(muon_id),trk_sce_start_z_v->at(muon_id));
+    bool muon_end_contained = cuts.In_FV(10,10,10,10,10,10,trk_sce_end_x_v->at(muon_id),trk_sce_end_y_v->at(muon_id),trk_sce_end_z_v->at(muon_id));
+    double EMuon = 0;
+    if(muon_start_contained == true && muon_end_contained == true){
+      EMuon = std::sqrt(std::pow(trk_range_muon_mom_v->at(muon_id),2)+std::pow(MASS_MUON,2));
+      vMuon.SetMag(trk_range_muon_mom_v->at(muon_id));
+    } else if (muon_start_contained == true && muon_end_contained == false){
+      EMuon = std::sqrt(std::pow(trk_mcs_muon_mom_v->at(muon_id),2)+std::pow(MASS_MUON,2));
+      vMuon.SetMag(trk_mcs_muon_mom_v->at(muon_id));
+    }
+    vMuon.SetTheta(trk_theta_v->at(muon_id));
+    vMuon.SetPhi(trk_phi_v->at(muon_id));
+    TLorentzVector muon(vMuon[0],vMuon[1],vMuon[2],EMuon);    
+    
+    //Leading Proton
+    TVector3 vLead(1,1,1);
+    float ELead = trk_energy_proton_v->at(leading_proton_id) + std::pow(MASS_PROTON,2);
+    vLead.SetMag(std::sqrt(std::pow(ELead,2) - std::pow(MASS_PROTON,2)));
+    vLead.SetTheta(trk_theta_v->at(leading_proton_id));
+    vLead.SetPhi(trk_phi_v->at(leading_proton_id));
+    TLorentzVector lead(vLead[0],vLead[1],vLead[2],ELead);    
+
+    //Recoil Proton
+    TVector3 vRec(1,1,1);
+    float ERec = trk_energy_proton_v->at(recoil_proton_id) + std::pow(MASS_PROTON,2);
+    vRec.SetMag(std::sqrt(std::pow(ERec,2) - std::pow(MASS_PROTON,2)));
+    vRec.SetTheta(trk_theta_v->at(recoil_proton_id));
+    vRec.SetPhi(trk_phi_v->at(recoil_proton_id));
+    TLorentzVector rec(vRec[0],vRec[1],vRec[2],ERec);    
+
+    hist.Fill_Particles(vMuon,muon,vLead,lead,vRec,rec,pot_wgt);
+
+    //Make sure to clean up before you finish
+    proton_id_vector.clear();
+    testVector.clear();
+    mc_mom_vector.clear();
     events_remaining++;
 
   } //end of Loop over events
 
   //Before we finish, we need to make the efficiency and purity plots:
   ///////////////////////////////////////////////////////////////////
-    std::vector<int> cut_values = {static_cast<int>(nentries),fvcntr,threepfps,threetrkcntr, threetrk_connected, pid};
+  std::vector<int> cut_values = {static_cast<int>(nentries),fvcntr,threepfps,threetrkcntr, threetrk_connected, pid};
   for(int i = 0; i < number; i++){
     double eff = double(cc2p0pi[i]) / double(cc2p0pi[0]);
     double purity = double(cc2p0pi[i]) / double(cut_values[i]);
@@ -256,8 +366,6 @@ void twoproton_pelee_overlay::Loop()
   std::cout << "[ANALYZER] Number of Events with 3 Tracks Connected to Vertex: "<<threetrk_connected<<" Fraction of Total: "<<float(100.*float(threetrk_connected)/float(nentries))<<"%"<<std::endl; 
   std::cout << "[ANALYZER] Number of Events with 1 Muon and 2 Protons: "<<pid<<" Fraction of Total: "<<float(100.*float(pid)/float(nentries))<<"%"<<std::endl;
   /* not sure it we will need these yet
-  std::cout<<  "[ANALYZER] Number of Events with the Second Shortest Track Contained: "<<secondtrkgood<<std::endl;
-  std::cout<<  "[ANALYZER] Number of Events with the Shortest Track Contained: "<<shortesttrkgood<<std::endl;
   std::cout<<  "[ANALYZER] Muon Momentum Quality Cut: "<<n_mom_mu<<std::endl;
   std::cout<<  "[ANALYZER] Leading Proton Momentum Quality Cut: "<<n_mom_p1<<std::endl;
   std::cout<<  "[ANALYZER] Recoil Proton Momentum Quality Cut: "<<n_mom_p2<<std::endl;
@@ -328,11 +436,14 @@ void twoproton_pelee_overlay::Loop()
   //std::cout<<"else"<<res_count[number-1]<<std::endl;
   std::cout<<"Number of Nue: "<<nue<<std::endl;
 
-
   std::cout<<"Other Else: "<<other_else<<std::endl;
   std::cout<<"Neutron: "<<neutron<<std::endl;
   std::cout<<"Neutrino: "<<neutrino<<std::endl;
   std::cout<<"Zeros: "<<zeros<<std::endl;
+
+  std::cout<<"Total Protons: "<<total_protons<<std::endl;
+  std::cout<<"Contained Protons: "<<contain<<std::endl;
+  std::cout<<"Uncontained Protons: "<<uncontain<<std::endl;
 
   std::cout<<"cc2p0pi 0: "<<cc2p0pi[0]<<std::endl;
   std::cout<<"cc2p0pi 1: "<<cc2p0pi[1]<<std::endl;
@@ -349,5 +460,8 @@ void twoproton_pelee_overlay::Loop()
   cc2p.close(); //Write the file that contains the RSE of good 1mu2p events
   //ccNp0pi_file.close();
 
+  auto stop = high_resolution_clock::now();
+  auto duration = duration_cast<minutes>(stop - start); 
+  std::cout<<"Program Run Time: "<<duration.count()<<std::endl;
   
 } //end of progrm

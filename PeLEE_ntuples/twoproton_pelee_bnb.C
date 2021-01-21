@@ -37,10 +37,7 @@ void twoproton_pelee_bnb::Loop()
   int threetrkcntr = 0; //Number of events with three tracks    
   int threetrk_connected = 0; //Number of Events with three tracks attached to the vertex
   int pid = 0; //Number of events with 1 track with PID > 0.6 and 2 tracks with PID < 0.6
-
   /* don't know if we need these counters yet
-  int secondtrkgood = 0; //Number of events where the second shortest/longest track is contained
-  int shortesttrkgood=0; //Number of events where the shortest track is contained
   int n_mom_mu = 0; //number of events after muon momentum cut
   int n_mom_p1 = 0; //number of events after leading proton momentum cut
   int n_mom_p2 = 0;//number of events after recoil proton momentum cut
@@ -89,16 +86,12 @@ void twoproton_pelee_bnb::Loop()
     //////////////////////////////////////
     if(cuts.In_FV(10,10,10,10,10,10,reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z) == false) continue; //10 cm border except from backend of detector
     fvcntr++;
-
-    //Fill Histograms
     hist.Fill_Histograms(1, TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z),CosmicIP, topological_score ,pot_wgt);
 
     //2) There are exactly 3 PFP's in the Event 
     ///////////////////////////////////////////////////////
     if(n_pfps != 3) continue;
     threepfps++;
-
-    //Fill Histograms  
     hist.Fill_Histograms(2, TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z),CosmicIP, topological_score, pot_wgt);
 
     //3) Require that there are exactly 3 tracks whose vertex distance attachment is less than 4 cm
@@ -124,16 +117,15 @@ void twoproton_pelee_bnb::Loop()
 	protons++;                                             
       }  
     }                                                                                                              
+
+    //3 PFPS
     if(y != 3) continue;
     threetrkcntr++;
-
-    //Fill Histograms
     hist.Fill_Histograms(3, TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z),CosmicIP, topological_score, pot_wgt);
 
-    if(y1 != 3) continue; //three tracks connected to vertex
+    //3 tracks attached to vertex
+    if(y1 != 3) continue; 
     threetrk_connected++;
-      
-    //Fill Histograms
     hist.Fill_Histograms(4, TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z),CosmicIP, topological_score, pot_wgt);
 
     //Filling Some Cut Variables to be Used in Optimizing Cuts
@@ -148,41 +140,75 @@ void twoproton_pelee_bnb::Loop()
     //////////////////////////////////////////////////////////////
     if(muons != 1 && protons != 2) continue;
     pid++;
-
-    //Fill Histograms
     hist.Fill_Histograms(5, TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z),CosmicIP, topological_score, pot_wgt);
 
     ///////////////////////////////////////////////////////////////////////////////////////////
-    //Huzzah! We are done with the inital selection. Now to make some particle specific plots:
+    //Huzzah! We are done with the inital selection. Now to Figure out the Particle IDs
     //////////////////////////////////////////////////////////////////////////////////////////
+    int muon_id;
+    int leading_proton_id;
+    int recoil_proton_id;
+    std::vector<int> proton_id_vector;
+    for(int i=0; i < trk_pfp_id_v->size(); i++){
+      int trk_id = trk_pfp_id_v->at(i);
+      double trk_pid = trk_llr_pid_score_v->at(i);	
+      if(trk_pid > cuts.PID_CUT) {
+	muon_id = trk_id - 1;
+      }
+      if(trk_pid < cuts.PID_CUT){
+	proton_id_vector.push_back(trk_id);
+      }
+    }
 
-    float muon_id;
-    float leading_proton_id;
-    float recoil_proton_id;
+    float mom0 = std::sqrt(std::pow(trk_energy_proton_v->at(proton_id_vector[0]-1),2)-std::pow(MASS_PROTON,2));
+    float mom1 = std::sqrt(std::pow(trk_energy_proton_v->at(proton_id_vector[1]-1),2)-std::pow(MASS_PROTON,2));
+    if (abs(mom0) > abs(mom1)){
+      leading_proton_id = proton_id_vector[0] - 1; //you have to do the -1 cause of course the id's are indexed at one like fucking losers
+      recoil_proton_id = proton_id_vector[1] - 1;
+    }else{
+      leading_proton_id = proton_id_vector[1] - 1;
+      recoil_proton_id = proton_id_vector[0] - 1;
+    }
 
     //Finally. Let's define some stuff then fill some variables!
-    ////////////////////////////////////////////////////////////
-
-    /*
-    //TVector3 vMuon(1,1,1);
-    //double EMuon = std::sqrt(std::pow(reco_mom_muon->at(muon_id),2)+std::pow(MASS_MUON,2));
-    //vMuon.SetMag(Muon);
-    //vMuon.SetTheta(reco_theta->at(muon_id));
-    //vMuon.SetPhi(reco_phi->at(muon_id));
-    //TLorentzVector muon(vMuon[0],vMuon[1],vMuon[2],EMuon); //Recoil proton TLorentzVector    
+    ////////////////////////////////////////////////////////////    
     
-    TVector3 vLead(backtracked_px->at(leading_proton_id),backtracked_py->at(leading_proton_id),backtracked_pz->at(leading_proton_id));
-    double ELead = std::sqrt(vLead.Mag2() + std::pow(MASS_PROTON,2));
+    //Muon
+    TVector3 vMuon(1,1,1);
+    bool muon_start_contained = cuts.In_FV(10,10,10,10,10,10,trk_sce_start_x_v->at(muon_id),trk_sce_start_y_v->at(muon_id),trk_sce_start_z_v->at(muon_id));
+    bool muon_end_contained = cuts.In_FV(10,10,10,10,10,10,trk_sce_end_x_v->at(muon_id),trk_sce_end_y_v->at(muon_id),trk_sce_end_z_v->at(muon_id));
+    double EMuon = 0;
+    if(muon_start_contained == true && muon_end_contained == true){
+      EMuon = std::sqrt(std::pow(trk_range_muon_mom_v->at(muon_id),2)+std::pow(MASS_MUON,2));
+      vMuon.SetMag(trk_range_muon_mom_v->at(muon_id));
+    } else if (muon_start_contained == true && muon_end_contained == false){
+      EMuon = std::sqrt(std::pow(trk_mcs_muon_mom_v->at(muon_id),2)+std::pow(MASS_MUON,2));
+      vMuon.SetMag(trk_mcs_muon_mom_v->at(muon_id));
+    }
+    vMuon.SetTheta(trk_theta_v->at(muon_id));
+    vMuon.SetPhi(trk_phi_v->at(muon_id));
+    TLorentzVector muon(vMuon[0],vMuon[1],vMuon[2],EMuon);    
+    
+    //Leading Proton
+    TVector3 vLead(1,1,1);
+    float ELead = trk_energy_proton_v->at(leading_proton_id) + std::pow(MASS_PROTON,2);
+    vLead.SetMag(std::sqrt(std::pow(ELead,2) - std::pow(MASS_PROTON,2)));
     vLead.SetTheta(trk_theta_v->at(leading_proton_id));
     vLead.SetPhi(trk_phi_v->at(leading_proton_id));
-    TLorentzVector lead(vLead[0],vLead[1],vLead[2],ELead);//leading proton TLorentzVector    
-		  
-    TVector3 vRec(backtracked_px->at(recoil_proton_id),backtracked_py->at(recoil_proton_id),backtracked_pz->at(recoil_proton_id));
-    double ERec = std::sqrt(vRec.Mag2() + std::pow(MASS_PROTON,2));
+    TLorentzVector lead(vLead[0],vLead[1],vLead[2],ELead);    
+
+    //Recoil Proton
+    TVector3 vRec(1,1,1);
+    float ERec = trk_energy_proton_v->at(recoil_proton_id) + std::pow(MASS_PROTON,2);
+    vRec.SetMag(std::sqrt(std::pow(ERec,2) - std::pow(MASS_PROTON,2)));
     vRec.SetTheta(trk_theta_v->at(recoil_proton_id));
     vRec.SetPhi(trk_phi_v->at(recoil_proton_id));
-    */
+    TLorentzVector rec(vRec[0],vRec[1],vRec[2],ERec);    
 
+    hist.Fill_Particles(vMuon,muon,vLead,lead,vRec,rec,pot_wgt);
+
+    //Make sure to clean up before you finish
+    proton_id_vector.clear();
     events_remaining++;
 
 } //end of Loop over events
@@ -195,24 +221,22 @@ void twoproton_pelee_bnb::Loop()
   std::cout << "[ANALYZER] Number of Events with 3 Tracks Connected to Vertex: "<<threetrk_connected<<" Fraction of Total: "<<float(100.*float(threetrk_connected)/float(nentries))<<"%"<<std::endl; 
   std::cout << "[ANALYZER] Number of Events with 1 Muon and 2 Protons: "<<pid<<" Fraction of Total: "<<float(100.*float(pid)/float(nentries))<<"%"<<std::endl;
   /* not sure it we will need these yet
-  std::cout<<  "[ANALYZER] Number of Events with the Second Shortest Track Contained: "<<secondtrkgood<<std::endl;
-  std::cout<<  "[ANALYZER] Number of Events with the Shortest Track Contained: "<<shortesttrkgood<<std::endl;
   std::cout<<  "[ANALYZER] Muon Momentum Quality Cut: "<<n_mom_mu<<std::endl;
   std::cout<<  "[ANALYZER] Leading Proton Momentum Quality Cut: "<<n_mom_p1<<std::endl;
   std::cout<<  "[ANALYZER] Recoil Proton Momentum Quality Cut: "<<n_mom_p2<<std::endl;
   */
   std::cout << "[ANALYZER] Sanity Check of the Total Number of Events Remaining: "<<events_remaining<<std::endl;
   std::cout <<"-----CLOSING TIME. YOU DON'T HAVE TO GO HOME, BUT YOU CAN'T STAY HERE-----"<<std::endl;
-   
-   std::cout<<"Neutrinos 0: "<<neutrinos_0<<std::endl;
-   std::cout<<"Neutrinos 1: "<<neutrinos_1<<std::endl;
-   std::cout<<"Neutrinos Else: "<<neutrinos_else<<std::endl;
+  
+  std::cout<<"Neutrinos 0: "<<neutrinos_0<<std::endl;
+  std::cout<<"Neutrinos 1: "<<neutrinos_1<<std::endl;
+  std::cout<<"Neutrinos Else: "<<neutrinos_else<<std::endl;
 
-   //Don't forget to write all of your histograms before you leave!                                                                       
-   ///////////////////////////////////////////////////////////////                                                                 
-   tfile->cd();
-   hist.Write_Histograms(false); //function that writes all our histograms                                                              
-   tfile->Close(); //write the root file that contains our histograms                                                         
-   myfile.close(); //Write the file that contains the RSE of good events                                                     
+  //Don't forget to write all of your histograms before you leave!                                                                       
+  ///////////////////////////////////////////////////////////////                                                                 
+  tfile->cd();
+  hist.Write_Histograms(false); //function that writes all our histograms                                                              
+  tfile->Close(); //write the root file that contains our histograms                                                         
+  myfile.close(); //Write the file that contains the RSE of good events                                                     
 
 } //end of progrm
