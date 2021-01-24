@@ -144,7 +144,7 @@ void twoproton_pelee_dirt::Loop()
       hist.h_track[2]->Fill(trk_len_v->at(i),pot_wgt*mc_wgt);
       hist.h_track[3]->Fill(trk_llr_pid_score_v->at(i),pot_wgt*mc_wgt);
     }
-
+    
     //5) PID: One track with PID > 0.6 and 2 tracks with PID < 0.6
     //////////////////////////////////////////////////////////////
     if(muons != 1 && protons != 2) continue;
@@ -169,8 +169,8 @@ void twoproton_pelee_dirt::Loop()
       }
     }
 
-    float mom0 = std::sqrt(std::pow(trk_energy_proton_v->at(proton_id_vector[0]-1),2)-std::pow(MASS_PROTON,2));
-    float mom1 = std::sqrt(std::pow(trk_energy_proton_v->at(proton_id_vector[1]-1),2)-std::pow(MASS_PROTON,2));
+    float mom0 = trk_energy_proton_v->at(proton_id_vector[0]-1);//std::sqrt(std::pow(trk_energy_proton_v->at(proton_id_vector[0]-1),2)-std::pow(MASS_PROTON,2));
+    float mom1 = trk_energy_proton_v->at(proton_id_vector[1]-1);//std::sqrt(std::pow(trk_energy_proton_v->at(proton_id_vector[1]-1),2)-std::pow(MASS_PROTON,2));
     if (abs(mom0) > abs(mom1)){
       leading_proton_id = proton_id_vector[0] - 1; //you have to do the -1 cause of course the id's are indexed at one like fucking losers
       recoil_proton_id = proton_id_vector[1] - 1;

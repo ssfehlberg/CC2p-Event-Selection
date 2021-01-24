@@ -40,7 +40,7 @@ void twoproton_pelee_overlay::Loop()
   //cut values
   double TRACK_SCORE_CUT = 0.8;
   double TRACK_DIST_CUT = 4;
-  double PID_CUT = 0.6;
+  double PID_CUT = 0.2;
 
   //momentum cut values & masses
   double MUON_MOM_CUT = 0.1;
@@ -72,6 +72,7 @@ void twoproton_pelee_overlay::Loop()
 
   //stupid counters
   int nue = 0;
+  int uhoh = 0;
 
   if (fChain == 0) return;
   Long64_t nentries = fChain->GetEntriesFast();
@@ -241,7 +242,7 @@ void twoproton_pelee_overlay::Loop()
       bool contained_end = cuts.In_FV(10,10,10,10,10,10,trk_end_x_v->at(i),trk_end_y_v->at(i),trk_end_z_v->at(i));	
       Fill_Track_Plots(i,track_pdg,contained_start,contained_end,pot_wgt*mc_wgt);
     }
-
+    
     //5) PID: One track with PID > 0.6 and 2 tracks with PID < 0.6
     //////////////////////////////////////////////////////////////
     if(muons != 1 && protons != 2) continue;
@@ -276,13 +277,19 @@ void twoproton_pelee_overlay::Loop()
     ///////////////////////////////////////////////////////////////////////////////////////////
     //Huzzah! We are done with the inital selection. Now to make some particle specific plots:
     //////////////////////////////////////////////////////////////////////////////////////////
+    std::cout<<"Before Id'ing the particles"<<std::endl;
     int muon_id;
     int leading_proton_id;
     int recoil_proton_id;
     std::vector<int> proton_id_vector;
     for(int i=0; i < trk_pfp_id_v->size(); i++){
       int trk_id = trk_pfp_id_v->at(i);
+      std::cout<<"trkid: "<<trk_id<<std::endl;
       double trk_pid = trk_llr_pid_score_v->at(i);	
+      std::cout<<"trk_pid_score"<<trk_pid<<std::endl;
+      std::cout<<"BackTrackerPDG at trk_id "<<trk_id<<": "<<backtracked_pdg->at(i)<<std::endl;
+      if(trk_pid < -1) continue;
+      if(trk_pid > 1) continue;
       if(trk_pid > cuts.PID_CUT) {
 	muon_id = trk_id - 1;
       }
@@ -291,8 +298,19 @@ void twoproton_pelee_overlay::Loop()
       }
     }
 
-    float mom0 = std::sqrt(std::pow(trk_energy_proton_v->at(proton_id_vector[0]-1),2)-std::pow(MASS_PROTON,2));
-    float mom1 = std::sqrt(std::pow(trk_energy_proton_v->at(proton_id_vector[1]-1),2)-std::pow(MASS_PROTON,2));
+    std::cout<<"Proton_id_vector[0]: "<<proton_id_vector[0]<<std::endl;
+    std::cout<<"Proton_id_vector[1]: "<<proton_id_vector[1]<<std::endl;
+
+    if(proton_id_vector[0] == 0 || proton_id_vector[1] ==0) continue; 
+    uhoh++;
+
+    std::cout<<"Right before proton id: "<<std::endl;
+
+    float mom0 = trk_energy_proton_v->at(proton_id_vector[0]-1);//std::sqrt(std::pow(trk_energy_proton_v->at(proton_id_vector[0]-1),2)-std::pow(MASS_PROTON,2));
+    std::cout<<"Right before mom1"<<std::endl;
+    float mom1 = trk_energy_proton_v->at(proton_id_vector[1]-1);//std::sqrt(std::pow(trk_energy_proton_v->at(proton_id_vector[1]-1),2)-std::pow(MASS_PROTON,2));
+    std::cout<<"Right before the mom if loop"<<std::endl;
+
     if (abs(mom0) > abs(mom1)){
       leading_proton_id = proton_id_vector[0] - 1; //you have to do the -1 cause of course the id's are indexed at one like fucking losers
       recoil_proton_id = proton_id_vector[1] - 1;
@@ -300,6 +318,8 @@ void twoproton_pelee_overlay::Loop()
       leading_proton_id = proton_id_vector[1] - 1;
       recoil_proton_id = proton_id_vector[0] - 1;
     }
+
+    std::cout<<"After Id'ing the Particles"<<std::endl;
 
     //Finally. Let's define some stuff then fill some variables!
     ////////////////////////////////////////////////////////////    
@@ -320,6 +340,8 @@ void twoproton_pelee_overlay::Loop()
     vMuon.SetPhi(trk_phi_v->at(muon_id));
     TLorentzVector muon(vMuon[0],vMuon[1],vMuon[2],EMuon);    
     
+    std::cout<<"After Defining Muon"<<std::endl;
+
     //Leading Proton
     TVector3 vLead(1,1,1);
     float ELead = trk_energy_proton_v->at(leading_proton_id) + std::pow(MASS_PROTON,2);
@@ -327,6 +349,8 @@ void twoproton_pelee_overlay::Loop()
     vLead.SetTheta(trk_theta_v->at(leading_proton_id));
     vLead.SetPhi(trk_phi_v->at(leading_proton_id));
     TLorentzVector lead(vLead[0],vLead[1],vLead[2],ELead);    
+
+    std::cout<<"After Defining Lead Proton"<<std::endl;
 
     //Recoil Proton
     TVector3 vRec(1,1,1);
@@ -336,7 +360,12 @@ void twoproton_pelee_overlay::Loop()
     vRec.SetPhi(trk_phi_v->at(recoil_proton_id));
     TLorentzVector rec(vRec[0],vRec[1],vRec[2],ERec);    
 
-    hist.Fill_Particles(vMuon,muon,vLead,lead,vRec,rec,pot_wgt);
+    std::cout<<"After Defining Rec"<<std::endl;
+
+    Fill_Histograms_Particles(mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0, mc_n_threshold_pionpm, cuts.fv, vMuon, muon, vLead, lead, vRec, rec, mc_wgt*pot_wgt);
+    Fill_Histograms_Particles_Raquel(vMuon, muon, vLead, lead, vRec, rec, mc_wgt*pot_wgt, cuts.fv);
+
+    std::cout<<"After Filling Histograms"<<std::endl;
 
     //Make sure to clean up before you finish
     proton_id_vector.clear();
@@ -444,6 +473,7 @@ void twoproton_pelee_overlay::Loop()
   std::cout<<"Total Protons: "<<total_protons<<std::endl;
   std::cout<<"Contained Protons: "<<contain<<std::endl;
   std::cout<<"Uncontained Protons: "<<uncontain<<std::endl;
+  std::cout<<"UhOh: "<<uhoh<<std::endl;
 
   std::cout<<"cc2p0pi 0: "<<cc2p0pi[0]<<std::endl;
   std::cout<<"cc2p0pi 1: "<<cc2p0pi[1]<<std::endl;

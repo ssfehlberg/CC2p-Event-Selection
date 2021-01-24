@@ -9,7 +9,7 @@ class helper_funcs{
 
   double TRACK_SCORE_CUT = 0.8;
   double TRACK_DIST_CUT = 4;
-  double PID_CUT = 0.6;
+  double PID_CUT = 0.2;
   bool fv;
 
 };//end of class definition

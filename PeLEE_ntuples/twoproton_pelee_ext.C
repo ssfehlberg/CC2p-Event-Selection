@@ -162,8 +162,8 @@ void twoproton_pelee_ext::Loop()
       }
     }
 
-    float mom0 = std::sqrt(std::pow(trk_energy_proton_v->at(proton_id_vector[0]-1),2)-std::pow(MASS_PROTON,2));
-    float mom1 = std::sqrt(std::pow(trk_energy_proton_v->at(proton_id_vector[1]-1),2)-std::pow(MASS_PROTON,2));
+    float mom0 = trk_energy_proton_v->at(proton_id_vector[0]-1);//std::sqrt(std::pow(trk_energy_proton_v->at(proton_id_vector[0]-1),2)-std::pow(MASS_PROTON,2));
+    float mom1 = trk_energy_proton_v->at(proton_id_vector[1]-1);//std::sqrt(std::pow(trk_energy_proton_v->at(proton_id_vector[1]-1),2)-std::pow(MASS_PROTON,2));
     if (abs(mom0) > abs(mom1)){
       leading_proton_id = proton_id_vector[0] - 1; //you have to do the -1 cause of course the id's are indexed at one like fucking losers
       recoil_proton_id = proton_id_vector[1] - 1;
