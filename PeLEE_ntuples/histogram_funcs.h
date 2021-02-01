@@ -111,9 +111,9 @@ class histogram_funcs
   static const int num_var = 4;
   const char* var[num_var] = {"_mom","_E","_theta","_phi"};
   int num_bins[num_var] = {50,50,30,10};
-  double xlim_low[num_var] = {0.0,0.0,-1.5,-3.15};
+  double xlim_low[num_var] = {0.2,0.0,-1.5,-3.15}; //0.0 normally first
   double xlim_high_recoil[num_var] = {0.8,0.35,1.5,3.15};
-  double xlim_high_leading[num_var] = {1.5,0.6,1.5,3.15};
+  double xlim_high_leading[num_var] = {1.2,0.6,1.5,3.15}; //1.5 normally in first
   double xlim_high_muon[num_var]={1.2,1,1.5,3.15};
   const char* xlabel[num_var] ={"P [GeV/c]","E [GeV]","cos(#theta)","#phi [Rad]"};
   TH1D* h_muon_overlay[num_var][number2]; //overlay
@@ -135,6 +135,8 @@ class histogram_funcs
   TH1D* h_delta_alphaT;
   TH1D* h_delta_phiT;
   TH1D* h_cos_gamma_cm;
+  TH1D* h_mom_struck_nuc;
+  TH1D* h_tot_pz;
 
   TH1D* h_muon_raquel[num_var][number3];
   TH1D* h_recoil_raquel[num_var][number3];
@@ -151,6 +153,23 @@ class histogram_funcs
   //Numbers useful for later:
   double MASS_PROTON = 0.93827208;
   double MASS_MUON = 0.10565837;
+  double NEUTRON_MASS = 0.93956541; // GeV  
+
+  //add the protons together in the stv calculations
+  bool add_protons = true;
+
+  //Other parameters:                                                                                                                                                                                  
+  double open_angle; //note this is the cos(opening angle)                                                                                                                                             
+  double open_angle_mu; //note this is the cos(opening angle)                                                                                                                                          
+  double delta_pT; //stv delta_pT                                                                                                                                                                      
+  double delta_alphaT; //stv delta_alphaT                                                                                                                                                              
+  double delta_phiT; //stv delta_phiT                                                                                                                                                                  
+  double cos_gamma_lab; //cos(opening angle) in lab                                                                                                                                                    
+  double cos_gamma_cm; //cos(opening angle) in cm                                                                                                                                                      
+  double En; //energy of struck nucleon                                                                                                                                                                
+  double p_struck_nuc; //momentum of the struck nucleon                                                                                                                                                
+  double pz_tot;
+
 
 
 }; //end of class
@@ -214,16 +233,20 @@ void histogram_funcs::Define_Histograms(const char* sample){
 
   h_opening_angle_protons = new TH1D(Form("h_opening_angle_protons_%s",sample),Form("h_opening_angle_protons_%s; Opening Angle btwn Two Protons; Counts",sample),30,-1.5,1.5); //50, 0, 1.5                                      
   h_opening_angle_mu_leading = new TH1D(Form("h_opening_angle_mu_leading_%s",sample),Form("h_opening_angle_mu_leading_%s;Opening Angle btwn Muon and Leading Proton; Counts",sample),30,-1.5,1.5);
-  h_delta_PT = new TH1D(Form("h_delta_PT_%s",sample),Form("h_deltaPT_%s;#delta P_{T} [GeV/c];Counts",sample),10,0,1);
+  h_delta_PT = new TH1D(Form("h_delta_PT_%s",sample),Form("h_deltaPT_%s;#delta P_{T} [GeV/c];Counts",sample),15,0,1); //normally 10 bins
   h_delta_alphaT = new TH1D(Form("h_delta_alphaT_%s",sample),Form("h_delta_alphaT_%s; #delta #alpha_{T} [Deg.];Counts",sample),10,0,180); //0,180 
   h_delta_phiT = new TH1D(Form("h_delta_phiT_%s",sample),Form("h_delta_phiT_%s; #delta #phi_{T} [Deg.];Counts",sample),10,0,180); //0,180     
   h_cos_gamma_cm = new TH1D(Form("h_cos_gamma_cm_%s",sample),Form("h_cos_gamma_cm_%s;cos(#gamma_{COM});Counts",sample),30,-1.5,1.5);
+  h_mom_struck_nuc = new TH1D(Form("h_mom_struck_nuc_%s",sample),Form("h_mom_struck_nuc_%s; P_{Init}; Counts", sample),30, 0, 1);
+  h_tot_pz = new TH1D(Form("h_tot_pz_%s",sample),Form("h_tot_pz_%s; P_{Z}^{Total}; Counts",sample), 20, 0, 2);
   h_list.push_back(h_cos_gamma_cm);
   h_list.push_back(h_opening_angle_protons);
   h_list.push_back(h_opening_angle_mu_leading);
   h_list.push_back(h_delta_PT);
   h_list.push_back(h_delta_alphaT);
   h_list.push_back(h_delta_phiT);
+  h_list.push_back(h_mom_struck_nuc);
+  h_list.push_back(h_tot_pz);
 
   //make sure to handle the weights correctly
   for (int i = 0; i < h_list.size(); i++){
@@ -262,7 +285,12 @@ void histogram_funcs::Fill_Particles(TVector3 vMuon, TLorentzVector muon, TVecto
   h_muon[3]->Fill(vMuon.Phi(),wgt);
   h_leading[3]->Fill(vLead.Phi(),wgt);
   h_recoil[3]->Fill(vRec.Phi(),wgt);
-  /*			  
+  	
+  double EMuon = muon[3];
+  double ELead = lead[3];
+  double ERec = rec[3];
+
+		  
   //Beam Stuff
   double PT_miss = vMuon.Perp() + vRec.Perp() + vLead.Perp();
   double Eneutrino = EMuon + (ELead-0.93827208) + (ERec-0.93827208) +(std::pow(PT_miss,2)/(2*353.7)) + 0.304;
@@ -322,7 +350,7 @@ void histogram_funcs::Fill_Particles(TVector3 vMuon, TLorentzVector muon, TVecto
   h_cos_gamma_cm->Fill(cos_gamma_cm,wgt);
   h_mom_struck_nuc->Fill(p_struck_nuc,wgt);
   h_tot_pz->Fill(pz_tot,wgt);
-  */
+  
 } //end of Fill Particles
 
 void histogram_funcs::Write_Histograms(bool truth){ 

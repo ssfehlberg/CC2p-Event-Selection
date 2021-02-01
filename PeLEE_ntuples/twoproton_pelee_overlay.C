@@ -51,7 +51,8 @@ void twoproton_pelee_overlay::Loop()
   double MASS_MUON = 0.10565837;
   double MASS_PION0 = 0.13497666;
   double MASS_PIONPM =0.13957000;
- 
+  double NEUTRON_MASS = 0.93956541; // GeV  
+
   //Counters
   int fvcntr = 0; //Number of events with reconstructed vertex within the FV                                      
   int threepfps = 0; //Number of Events with Three PFPs
@@ -98,7 +99,7 @@ void twoproton_pelee_overlay::Loop()
       neutrinos_else++;
     }
 
-    //Defining the MC Weight  & filling the damn mc values
+    //Definig the MC Weight  & filling the damn mc values
     ///////////////////////////////////////////////////////////                                                                                                                                                                        
     if(std::isfinite(weightTune) && weightTune <= 100.) {
       mc_wgt = weightSplineTimesTune;
@@ -224,7 +225,6 @@ void twoproton_pelee_overlay::Loop()
 	protons++;                                             
       }                                                                                                       
     }                                                                                                     
-
     //Three pfps with track score above 0.8
     if(y != 3) continue; 
     threetrkcntr++;
@@ -277,7 +277,7 @@ void twoproton_pelee_overlay::Loop()
     ///////////////////////////////////////////////////////////////////////////////////////////
     //Huzzah! We are done with the inital selection. Now to make some particle specific plots:
     //////////////////////////////////////////////////////////////////////////////////////////
-    std::cout<<"Before Id'ing the particles"<<std::endl;
+    /*    std::cout<<"Before Id'ing the particles"<<std::endl;
     int muon_id;
     int leading_proton_id;
     int recoil_proton_id;
@@ -361,6 +361,72 @@ void twoproton_pelee_overlay::Loop()
     TLorentzVector rec(vRec[0],vRec[1],vRec[2],ERec);    
 
     std::cout<<"After Defining Rec"<<std::endl;
+    */
+
+    int muon_id;
+    int leading_proton_id;
+    int recoil_proton_id;
+    std::vector<int> proton_id_vector;
+    for(int i=0; i < trk_pfp_id_v->size(); i++){
+      int trk_id = trk_pfp_id_v->at(i);
+      double trk_pid = trk_llr_pid_score_v->at(i);	
+      if(trk_pid > 1 || trk_pid < -1) continue;
+
+      if(trk_pid > cuts.PID_CUT) {
+	muon_id = trk_id - 1;
+      }
+      if(trk_pid < cuts.PID_CUT){
+	proton_id_vector.push_back(trk_id);
+      }
+    }
+
+    if(proton_id_vector[0] == 0 || proton_id_vector[1] ==0) continue; 
+    uhoh++;
+
+    float mom0 = trk_energy_proton_v->at(proton_id_vector[0]-1);
+    float mom1 = trk_energy_proton_v->at(proton_id_vector[1]-1);
+    if (abs(mom0) > abs(mom1)){
+      leading_proton_id = proton_id_vector[0] - 1; //you have to do the -1 cause of course the id's are indexed at one like fucking losers
+      recoil_proton_id = proton_id_vector[1] - 1;
+    }else{
+      leading_proton_id = proton_id_vector[1] - 1;
+      recoil_proton_id = proton_id_vector[0] - 1;
+    }
+
+    //Finally. Let's define some stuff then fill some variables!
+    ////////////////////////////////////////////////////////////    
+    
+    //Muon
+    TVector3 vMuon(1,1,1);
+    bool muon_start_contained = cuts.In_FV(10,10,10,10,10,10,trk_sce_start_x_v->at(muon_id),trk_sce_start_y_v->at(muon_id),trk_sce_start_z_v->at(muon_id));
+    bool muon_end_contained = cuts.In_FV(10,10,10,10,10,10,trk_sce_end_x_v->at(muon_id),trk_sce_end_y_v->at(muon_id),trk_sce_end_z_v->at(muon_id));
+    double EMuon = 0;
+    if(muon_start_contained == true && muon_end_contained == true){
+      EMuon = std::sqrt(std::pow(trk_range_muon_mom_v->at(muon_id),2)+std::pow(MASS_MUON,2)) - MASS_MUON;
+      vMuon.SetMag(trk_range_muon_mom_v->at(muon_id));
+    } else if (muon_start_contained == true && muon_end_contained == false){
+      EMuon = std::sqrt(std::pow(trk_mcs_muon_mom_v->at(muon_id),2)+std::pow(MASS_MUON,2)) - MASS_MUON;
+      vMuon.SetMag(trk_mcs_muon_mom_v->at(muon_id));
+    }
+    vMuon.SetTheta(trk_theta_v->at(muon_id));
+    vMuon.SetPhi(trk_phi_v->at(muon_id));
+    TLorentzVector muon(vMuon[0],vMuon[1],vMuon[2],EMuon);    
+    
+    //Leading Proton
+    TVector3 vLead(1,1,1);
+    float ELead = trk_energy_proton_v->at(leading_proton_id);
+    vLead.SetMag(std::sqrt(std::pow(ELead + MASS_PROTON,2) - std::pow(MASS_PROTON,2)));
+    vLead.SetTheta(trk_theta_v->at(leading_proton_id));
+    vLead.SetPhi(trk_phi_v->at(leading_proton_id));
+    TLorentzVector lead(vLead[0],vLead[1],vLead[2],ELead);    
+
+    //Recoil Proton
+    TVector3 vRec(1,1,1);
+    float ERec = trk_energy_proton_v->at(recoil_proton_id);
+    vRec.SetMag(std::sqrt(std::pow(ERec + MASS_PROTON,2) - std::pow(MASS_PROTON,2)));
+    vRec.SetTheta(trk_theta_v->at(recoil_proton_id));
+    vRec.SetPhi(trk_phi_v->at(recoil_proton_id));
+    TLorentzVector rec(vRec[0],vRec[1],vRec[2],ERec);    
 
     Fill_Histograms_Particles(mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0, mc_n_threshold_pionpm, cuts.fv, vMuon, muon, vLead, lead, vRec, rec, mc_wgt*pot_wgt);
     Fill_Histograms_Particles_Raquel(vMuon, muon, vLead, lead, vRec, rec, mc_wgt*pot_wgt, cuts.fv);

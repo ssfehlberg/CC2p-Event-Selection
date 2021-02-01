@@ -154,6 +154,9 @@ void twoproton_pelee_ext::Loop()
     for(int i=0; i < trk_pfp_id_v->size(); i++){
       int trk_id = trk_pfp_id_v->at(i);
       double trk_pid = trk_llr_pid_score_v->at(i);	
+      if(trk_pid > 1 || trk_pid < -1){
+	std::cout<<"FUCKING SHIT"<<std::endl;  
+      }
       if(trk_pid > cuts.PID_CUT) {
 	muon_id = trk_id - 1;
       }
@@ -162,8 +165,8 @@ void twoproton_pelee_ext::Loop()
       }
     }
 
-    float mom0 = trk_energy_proton_v->at(proton_id_vector[0]-1);//std::sqrt(std::pow(trk_energy_proton_v->at(proton_id_vector[0]-1),2)-std::pow(MASS_PROTON,2));
-    float mom1 = trk_energy_proton_v->at(proton_id_vector[1]-1);//std::sqrt(std::pow(trk_energy_proton_v->at(proton_id_vector[1]-1),2)-std::pow(MASS_PROTON,2));
+    float mom0 = trk_energy_proton_v->at(proton_id_vector[0]-1);
+    float mom1 = trk_energy_proton_v->at(proton_id_vector[1]-1);
     if (abs(mom0) > abs(mom1)){
       leading_proton_id = proton_id_vector[0] - 1; //you have to do the -1 cause of course the id's are indexed at one like fucking losers
       recoil_proton_id = proton_id_vector[1] - 1;
@@ -181,10 +184,10 @@ void twoproton_pelee_ext::Loop()
     bool muon_end_contained = cuts.In_FV(10,10,10,10,10,10,trk_sce_end_x_v->at(muon_id),trk_sce_end_y_v->at(muon_id),trk_sce_end_z_v->at(muon_id));
     double EMuon = 0;
     if(muon_start_contained == true && muon_end_contained == true){
-      EMuon = std::sqrt(std::pow(trk_range_muon_mom_v->at(muon_id),2)+std::pow(MASS_MUON,2));
+      EMuon = std::sqrt(std::pow(trk_range_muon_mom_v->at(muon_id),2)+std::pow(MASS_MUON,2)) - MASS_MUON;
       vMuon.SetMag(trk_range_muon_mom_v->at(muon_id));
     } else if (muon_start_contained == true && muon_end_contained == false){
-      EMuon = std::sqrt(std::pow(trk_mcs_muon_mom_v->at(muon_id),2)+std::pow(MASS_MUON,2));
+      EMuon = std::sqrt(std::pow(trk_mcs_muon_mom_v->at(muon_id),2)+std::pow(MASS_MUON,2)) - MASS_MUON;
       vMuon.SetMag(trk_mcs_muon_mom_v->at(muon_id));
     }
     vMuon.SetTheta(trk_theta_v->at(muon_id));
@@ -193,16 +196,16 @@ void twoproton_pelee_ext::Loop()
     
     //Leading Proton
     TVector3 vLead(1,1,1);
-    float ELead = trk_energy_proton_v->at(leading_proton_id) + std::pow(MASS_PROTON,2);
-    vLead.SetMag(std::sqrt(std::pow(ELead,2) - std::pow(MASS_PROTON,2)));
+    float ELead = trk_energy_proton_v->at(leading_proton_id);
+    vLead.SetMag(std::sqrt(std::pow(ELead + MASS_PROTON,2) - std::pow(MASS_PROTON,2)));
     vLead.SetTheta(trk_theta_v->at(leading_proton_id));
     vLead.SetPhi(trk_phi_v->at(leading_proton_id));
     TLorentzVector lead(vLead[0],vLead[1],vLead[2],ELead);    
 
     //Recoil Proton
     TVector3 vRec(1,1,1);
-    float ERec = trk_energy_proton_v->at(recoil_proton_id) + std::pow(MASS_PROTON,2);
-    vRec.SetMag(std::sqrt(std::pow(ERec,2) - std::pow(MASS_PROTON,2)));
+    float ERec = trk_energy_proton_v->at(recoil_proton_id);
+    vRec.SetMag(std::sqrt(std::pow(ERec + MASS_PROTON,2) - std::pow(MASS_PROTON,2)));
     vRec.SetTheta(trk_theta_v->at(recoil_proton_id));
     vRec.SetPhi(trk_phi_v->at(recoil_proton_id));
     TLorentzVector rec(vRec[0],vRec[1],vRec[2],ERec);    
