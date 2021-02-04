@@ -224,7 +224,7 @@ void histogram_funcs::Define_Histograms(const char* sample){
   h_mom_struck_nuc = new TH1D(Form("h_mom_struck_nuc_%s",sample),Form("h_mom_struck_nuc_%s; P_{Init}; Counts", sample),30, 0, 1);
   h_tot_pz = new TH1D(Form("h_tot_pz_%s",sample),Form("h_tot_pz_%s; P_{Z}^{Total}; Counts",sample), 20, 0, 2);
   h_tot_E = new TH1D(Form("h_tot_E_%s",sample),Form("h_tot_E_%s; Total Energy; Counts;",sample),50,0,2.5);
-  h_tot_E_minus_beam = new TH1D(Form("h_tot_E_minus_beam_%s",sample),Form("h_tot_E_minus_beam_%s; Total Energy; Counts;",sample),50,-1.0,1.0);
+  h_tot_E_minus_beam = new TH1D(Form("h_tot_E_minus_beam_%s",sample),Form("h_tot_E_minus_beam_%s; Total Energy Remaining (MeV/c); Counts;",sample),100,0,100);
   h_E_neutrino = new TH1D(Form("h_E_neutrino_%s",sample),Form("h_E_neutrino_%s; Total Energy; Counts;",sample),50,0,2.5);
   h_opening_angle_mu_both = new TH1D(Form("h_opening_angle_mu_both_%s",sample),Form("h_opening_angle_mu_both_%s; Opening Angle btwn Muon and Total Proton Momentum; Counts",sample),30,-1.5,1.5);
 
@@ -286,17 +286,23 @@ void histogram_funcs::Fill_Particles(TVector3 vMuon, TLorentzVector muon, TVecto
 
   //Beam Stuff
   TVector3 PT_miss(vMuon[0]+vLead[0]+vRec[0],vMuon[1]+vRec[1]+vLead[1],0);
-  double Eneutrino = (EMuon+MASS_MUON) + ELead + ERec +((PT_miss.Mag2())/(2*35.37)) + 0.0304;
+  double Eneutrino = (EMuon+MASS_MUON) + ELead + ERec +((PT_miss.Mag2())/(2.0*35.37)) + 0.0304;
   TVector3 vBeam(0.,0.,Eneutrino); // z-direction is defined along the neutrino direction                            
   TVector3 vq = vBeam - vMuon; // Momentum transfer                                                                  
   TVector3 vmiss = vLead - vq; // Missing momentum        
-  double E_tot_minus_beam = E_tot - Eneutrino;
+  double E_tot_minus_beam = (Eneutrino - E_tot) * 1000;
   TVector3 vProton;
   if(add_protons){
     vProton.SetXYZ(vLead[0]+vRec[0],vLead[1]+vRec[1],vLead[2]+vRec[2]);
   }else{
     vProton.SetXYZ(vLead[0],vLead[1],vLead[2]);
   }
+
+  std::cout<<"Value of PT_miss magnitude: "<<PT_miss.Mag()<<std::endl;
+  std::cout<<"Value of PT_miss magnitude2: "<<PT_miss.Mag2()<<std::endl;
+  std::cout<<"Value of PT_miss magnitude2 divided by 2*35.37: "<<(PT_miss.Mag2())/(2.0*35.37)<<std::endl;
+  std::cout<<"Value of Eneutrino: "<<Eneutrino<<std::endl;
+  std::cout<<"Value of E_tot_minus_beam: "<<E_tot_minus_beam<<std::endl;
 
   open_angle = ((vLead[0]*vRec[0])+(vLead[1]*vRec[1])+(vLead[2]*vRec[2]))/(vLead.Mag()*vRec.Mag()); //vLead.Angle(vRec);  //note this is the cos(opening angle) opening angle between the protons                             
   open_angle_mu = ((vLead[0]*vMuon[0])+(vLead[1]*vMuon[1])+(vLead[2]*vMuon[2]))/(vLead.Mag()*vMuon.Mag()); //note this is the cos(opening angle) of the angle between the leading proton and the muon   

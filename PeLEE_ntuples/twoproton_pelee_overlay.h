@@ -1576,6 +1576,15 @@ public :
   TH1D* h_muon_overlay[num_var][number2]; //overlay
   TH1D* h_recoil_overlay[num_var][number2];
   TH1D* h_leading_overlay[num_var][number2];
+  TH1D* h_muon_raquel[num_var][number3];
+  TH1D* h_recoil_raquel[num_var][number3];
+  TH1D* h_leading_raquel[num_var][number3];
+    
+
+  //Interesting Physics plots
+  ////////////////////////////
+
+  //mine
   TH1D* h_opening_angle_protons_overlay[number2];
   TH1D* h_opening_angle_mu_leading_overlay[number2];
   TH1D* h_opening_angle_mu_both_overlay[number2];
@@ -1588,10 +1597,9 @@ public :
   TH1D* h_tot_E_overlay[number2];
   TH1D* h_tot_E_minus_beam_overlay[number2];
   TH1D* h_E_neutrino_overlay[number2];
+  TH1D* h_E_resolution_overlay[number2];
 
-  TH1D* h_muon_raquel[num_var][number3];
-  TH1D* h_recoil_raquel[num_var][number3];
-  TH1D* h_leading_raquel[num_var][number3];
+  //raquel
   TH1D* h_opening_angle_protons_raquel[number3];
   TH1D* h_opening_angle_mu_leading_raquel[number3];
   TH1D* h_opening_angle_mu_both_raquel[number3];
@@ -1604,6 +1612,7 @@ public :
   TH1D* h_tot_E_raquel[number3];
   TH1D* h_tot_E_minus_beam_raquel[number3];
   TH1D* h_E_neutrino_raquel[number3];
+  TH1D* h_E_resolution_raquel[number3];
 
   vector<TH1*> h_list; //list of all the 1D histograms
 
@@ -1623,9 +1632,7 @@ public :
   //Other parameters:                                                                                                                                                                                  
   double open_angle; //note this is the cos(opening angle)                                                                                                                                             
   double open_angle_mu; //note this is the cos(opening angle)                                                         
-
   double open_angle_mu_proton;
-                                                              
   double delta_pT; //stv delta_pT                                                                                                                                                                      
   double delta_alphaT; //stv delta_alphaT                                                                                                                                                              
   double delta_phiT; //stv delta_phiT                                                                                                                                                                  
@@ -1634,45 +1641,38 @@ public :
   double En; //energy of struck nucleon                                                                                                                                                                
   double p_struck_nuc; //momentum of the struck nucleon                                                                                                                                                
   double pz_tot;
-
-
-   //counters and stuff
-   //int mc_n_threshold_muon;
-   //int mc_n_threshold_proton;
-   //int mc_n_threshold_pionpm;
-   //int mc_n_threshold_pion0;
-
-   //number of generated event/channel                                                                             
-   int cc0p0pi[number+1] = {0}; //number-1 is after pid. number then would be particle specifics...should be same as number-1
-   int cc1p0pi[number+1] = {0};
-   int cc2p0pi[number+1] = {0};
-   int ccNp0pi[number+1] = {0};
-   int ccNp1pi[number+1] = {0};
-   int ccNpNpi[number+1] = {0};
-   int ccnue[number+1] = {0};
-   int outfv[number+1] = {0};
-   int nc[number+1] = {0};
-   int other[number+1] = {0};
+  
+  //number of generated event/channel                                                                             
+  int cc0p0pi[number+1] = {0}; //number-1 is after pid. number then would be particle specifics...should be same as number-1
+  int cc1p0pi[number+1] = {0};
+  int cc2p0pi[number+1] = {0};
+  int ccNp0pi[number+1] = {0};
+  int ccNp1pi[number+1] = {0};
+  int ccNpNpi[number+1] = {0};
+  int ccnue[number+1] = {0};
+  int outfv[number+1] = {0};
+  int nc[number+1] = {0};
+  int other[number+1] = {0};
    
-   //number of generated event/channel                                                                             
-   int qel[number+1] = {0};
-   int res[number+1] = {0};
-   int mec[number+1] = {0};
-   int coh[number+1] = {0};
-   int dis[number+1] = {0};
-   int ccnue_raquel[number+1] = {0};
-   int outfv_raquel[number+1] = {0};
-   int nc_raquel[number+1] = {0};
-   int other_raquel[number+1] = {0};
-   int res_count[4] = {0};
-
-   int other_else = 0;
-   int neutron = 0;
-   int neutrino = 0;
-   int zeros = 0;
-   int total_protons = 0;
-   int contain = 0;
-   int uncontain = 0;
+  //number of generated event/channel                                                                             
+  int qel[number+1] = {0};
+  int res[number+1] = {0};
+  int mec[number+1] = {0};
+  int coh[number+1] = {0};
+  int dis[number+1] = {0};
+  int ccnue_raquel[number+1] = {0};
+  int outfv_raquel[number+1] = {0};
+  int nc_raquel[number+1] = {0};
+  int other_raquel[number+1] = {0};
+  int res_count[4] = {0};
+  
+  int other_else = 0;
+  int neutron = 0;
+  int neutrino = 0;
+  int zeros = 0;
+  int total_protons = 0;
+  int contain = 0;
+  int uncontain = 0;
 
 };
 
@@ -1860,10 +1860,12 @@ void twoproton_pelee_overlay::Define_Histograms(){
       h_mom_struck_nuc_overlay[i] = new TH1D(Form("h_mom_struck_nuc%s",channel[i]),Form("h_mom_struck_nuc%s; P_{Init}; Counts", channel[i]),30, 0, 1);
       h_tot_pz_overlay[i] = new TH1D(Form("h_tot_pz%s",channel[i]),Form("h_tot_pz%s; P_{Z}^{Total}; Counts",channel[i]), 20, 0, 2);
       h_tot_E_overlay[i] = new TH1D(Form("h_tot_E%s",channel[i]),Form("h_tot_E%s; Total Energy; Counts;",channel[i]),50,0,2.5);
-      h_tot_E_minus_beam_overlay[i] = new TH1D(Form("h_tot_E_minus_beam%s",channel[i]),Form("h_tot_E_minus_beam%s; Total Energy; Counts;",channel[i]),50,-1,1);
+      h_tot_E_minus_beam_overlay[i] = new TH1D(Form("h_tot_E_minus_beam%s",channel[i]),Form("h_tot_E_minus_beam%s; Total Energy Remaining (MeV/c); Counts;",channel[i]),100,0,100);
       h_E_neutrino_overlay[i] =  new TH1D(Form("h_E_neutrino%s",channel[i]),Form("h_E_neutrino%s; Total Energy; Counts;",channel[i]),50,0,2.5);
       h_opening_angle_mu_both_overlay[i] = new TH1D(Form("h_opening_angle_mu_both%s",channel[i]),Form("h_opening_angle_mu_both%s; Opening Angle btwn Muon and Total Proton Momentum; Counts",channel[i]),30,-1.5,1.5);
+      h_E_resolution_overlay[i] = new TH1D(Form("h_E_resolution%s",channel[i]),Form("h_E_resolution%s; Energy Resolution (GeV/c); Counts",channel[i]),100,-1.0,1.0);
 
+      h_list.push_back(h_E_resolution_overlay[i]);
       h_list.push_back(h_opening_angle_mu_both_overlay[i]);
       h_list.push_back(h_E_neutrino_overlay[i]);
       h_list.push_back(h_tot_E_overlay[i]);
@@ -1888,10 +1890,12 @@ void twoproton_pelee_overlay::Define_Histograms(){
       h_mom_struck_nuc_raquel[i] = new TH1D(Form("h_mom_struck_nuc_raquel%s",channel2[i]),Form("h_mom_struck_nuc_raquel%s; P_{Init}; Counts", channel2[i]),30, 0, 1);
       h_tot_pz_raquel[i] = new TH1D(Form("h_tot_pz_raquel%s",channel2[i]),Form("h_tot_pz_raquel%s; P_{Z}^{Total}; Counts",channel2[i]), 20, 0, 2);
       h_tot_E_raquel[i] = new TH1D(Form("h_tot_E_raquel%s",channel2[i]),Form("h_tot_E_raquel%s; Total Energy; Counts;",channel2[i]),50,0,2.5);
-      h_tot_E_minus_beam_raquel[i] = new TH1D(Form("h_tot_E_minus_beam_raquel%s",channel2[i]),Form("h_tot_E_minus_beam_raquel%s; Total Energy; Counts;",channel2[i]),50,-1,1);
+      h_tot_E_minus_beam_raquel[i] = new TH1D(Form("h_tot_E_minus_beam_raquel%s",channel2[i]),Form("h_tot_E_minus_beam_raquel%s; Total Energy; Counts;",channel2[i]),100,0,100);
       h_E_neutrino_raquel[i] =  new TH1D(Form("h_E_neutrino_raquel%s",channel2[i]),Form("h_E_neutrino_raquel%s; Total Energy; Counts;",channel2[i]),50,0,2.5);
       h_opening_angle_mu_both_raquel[i] = new TH1D(Form("h_opening_angle_mu_both_raquel%s",channel2[i]),Form("h_opening_angle_mu_both_raquel%s; Opening Angle btwn Muon and Total Proton Momentum; Counts",channel2[i]),30,-1.5,1.5);
+      h_E_resolution_raquel[i] = new TH1D(Form("h_E_resolution_raquel%s",channel2[i]),Form("h_E_resolution_raquel%s; Energy Resolution (GeV/c); Counts",channel2[i]),100,-1.0,1.0);
 
+      h_list.push_back(h_E_resolution_raquel[i]);
       h_list.push_back(h_opening_angle_mu_both_raquel[i]);
       h_list.push_back(h_E_neutrino_raquel[i]);
       h_list.push_back(h_tot_E_raquel[i]);
@@ -2254,7 +2258,7 @@ void twoproton_pelee_overlay::Fill_Particles(int j, TVector3 vMuon, TLorentzVect
   TVector3 vBeam(0.,0.,Eneutrino); // z-direction is defined along the neutrino direction                                                                         
   TVector3 vq = vBeam - vMuon; // Momentum transfer                                                                                                               
   TVector3 vmiss = vLead - vq; // Missing momentum         
-  double E_tot_minus_beam = E_tot - Eneutrino;
+  double E_tot_minus_beam = (Eneutrino - E_tot) * 1000;
   TVector3 vProton;
   if(add_protons){
     vProton.SetXYZ(vLead[0]+vRec[0],vLead[1]+vRec[1],vLead[2]+vRec[2]);
@@ -2304,6 +2308,7 @@ void twoproton_pelee_overlay::Fill_Particles(int j, TVector3 vMuon, TLorentzVect
   h_tot_E_overlay[j]->Fill(E_tot,wgt);
   h_tot_E_minus_beam_overlay[j]->Fill(E_tot_minus_beam,wgt);
   h_E_neutrino_overlay[j]->Fill(Eneutrino,wgt);
+  h_E_resolution_overlay[j]->Fill(Eneutrino - double(nu_e) ,wgt);
 
 }
 
@@ -2338,7 +2343,7 @@ void twoproton_pelee_overlay::Fill_Particles_Raquel(int j, TVector3 vMuon, TLore
   TVector3 vBeam(0.,0.,Eneutrino); // z-direction is defined along the neutrino direction                                                                         
   TVector3 vq = vBeam - vMuon; // Momentum transfer                                                                                                               
   TVector3 vmiss = vLead - vq; // Missing momentum         
-  double E_tot_minus_beam = E_tot - Eneutrino;
+  double E_tot_minus_beam = (Eneutrino - E_tot) * 1000;
   TVector3 vProton;
   if(add_protons){
     vProton.SetXYZ(vLead[0]+vRec[0],vLead[1]+vRec[1],vLead[2]+vRec[2]);
@@ -2384,6 +2389,7 @@ void twoproton_pelee_overlay::Fill_Particles_Raquel(int j, TVector3 vMuon, TLore
   h_tot_E_raquel[j]->Fill(E_tot,wgt);
   h_tot_E_minus_beam_raquel[j]->Fill(E_tot_minus_beam,wgt);
   h_E_neutrino_raquel[j]->Fill(Eneutrino,wgt);
+  h_E_resolution_raquel[j]->Fill(Eneutrino - double(nu_e) ,wgt);
 
 }
 
