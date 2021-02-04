@@ -14,7 +14,7 @@ void twoproton_pelee_overlay::Loop()
 
   //Making a new Root File that will contain all the histograms that we will want to plot:
   ///////////////////////////////////////////////////////////////////////////////////////
-  TFile *tfile = new TFile("root_files/histograms_filtered_wgt.root","RECREATE"); //wgt indicates applying cenntral value MC value
+  TFile *tfile = new TFile("root_files/histograms_pelee_overlay_wgt.root","RECREATE"); //wgt indicates applying cenntral value MC value
 
   //Files with RSE's in them                                                                            
   ofstream myfile;//File that will contain RSE of good events                                          

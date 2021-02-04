@@ -111,20 +111,11 @@ class histogram_funcs
   static const int num_var = 4;
   const char* var[num_var] = {"_mom","_E","_theta","_phi"};
   int num_bins[num_var] = {50,50,30,10};
-  double xlim_low[num_var] = {0.2,0.0,-1.5,-3.15}; //0.0 normally first
+  double xlim_low[num_var] = {0.0,0.0,-1.5,-3.15}; //0.0 normally first
   double xlim_high_recoil[num_var] = {0.8,0.35,1.5,3.15};
   double xlim_high_leading[num_var] = {1.2,0.6,1.5,3.15}; //1.5 normally in first
-  double xlim_high_muon[num_var]={1.2,1,1.5,3.15};
+  double xlim_high_muon[num_var]={2.5,1,1.5,3.15};
   const char* xlabel[num_var] ={"P [GeV/c]","E [GeV]","cos(#theta)","#phi [Rad]"};
-  TH1D* h_muon_overlay[num_var][number2]; //overlay
-  TH1D* h_recoil_overlay[num_var][number2];
-  TH1D* h_leading_overlay[num_var][number2];
-  TH1D* h_opening_angle_protons_overlay[number2];
-  TH1D* h_opening_angle_mu_leading_overlay[number2];
-  TH1D* h_delta_PT_overlay[number2];
-  TH1D* h_delta_alphaT_overlay[number2];
-  TH1D* h_delta_phiT_overlay[number2];
-  TH1D* h_cos_gamma_cm_overlay[number2];
 
   TH1D* h_muon[num_var]; //bnb,ext,dirt
   TH1D* h_recoil[num_var];
@@ -137,17 +128,11 @@ class histogram_funcs
   TH1D* h_cos_gamma_cm;
   TH1D* h_mom_struck_nuc;
   TH1D* h_tot_pz;
+  TH1D* h_tot_E;
+  TH1D* h_tot_E_minus_beam;
+  TH1D* h_E_neutrino;
+  TH1D* h_opening_angle_mu_both;
 
-  TH1D* h_muon_raquel[num_var][number3];
-  TH1D* h_recoil_raquel[num_var][number3];
-  TH1D* h_leading_raquel[num_var][number3];
-  TH1D* h_opening_angle_protons_raquel[number3];
-  TH1D* h_opening_angle_mu_leading_raquel[number3];
-  TH1D* h_delta_PT_raquel[number3];
-  TH1D* h_delta_alphaT_raquel[number3];
-  TH1D* h_delta_phiT_raquel[number3];
-  TH1D* h_cos_gamma_cm_raquel[number3];
-   
   vector<TH1*> h_list; //list of all the 1D histograms
 
   //Numbers useful for later:
@@ -161,6 +146,7 @@ class histogram_funcs
   //Other parameters:                                                                                                                                                                                  
   double open_angle; //note this is the cos(opening angle)                                                                                                                                             
   double open_angle_mu; //note this is the cos(opening angle)                                                                                                                                          
+  double open_angle_mu_proton; //cos(opening angle)
   double delta_pT; //stv delta_pT                                                                                                                                                                      
   double delta_alphaT; //stv delta_alphaT                                                                                                                                                              
   double delta_phiT; //stv delta_phiT                                                                                                                                                                  
@@ -169,8 +155,6 @@ class histogram_funcs
   double En; //energy of struck nucleon                                                                                                                                                                
   double p_struck_nuc; //momentum of the struck nucleon                                                                                                                                                
   double pz_tot;
-
-
 
 }; //end of class
 
@@ -239,6 +223,15 @@ void histogram_funcs::Define_Histograms(const char* sample){
   h_cos_gamma_cm = new TH1D(Form("h_cos_gamma_cm_%s",sample),Form("h_cos_gamma_cm_%s;cos(#gamma_{COM});Counts",sample),30,-1.5,1.5);
   h_mom_struck_nuc = new TH1D(Form("h_mom_struck_nuc_%s",sample),Form("h_mom_struck_nuc_%s; P_{Init}; Counts", sample),30, 0, 1);
   h_tot_pz = new TH1D(Form("h_tot_pz_%s",sample),Form("h_tot_pz_%s; P_{Z}^{Total}; Counts",sample), 20, 0, 2);
+  h_tot_E = new TH1D(Form("h_tot_E_%s",sample),Form("h_tot_E_%s; Total Energy; Counts;",sample),50,0,2.5);
+  h_tot_E_minus_beam = new TH1D(Form("h_tot_E_minus_beam_%s",sample),Form("h_tot_E_minus_beam_%s; Total Energy; Counts;",sample),50,-1.0,1.0);
+  h_E_neutrino = new TH1D(Form("h_E_neutrino_%s",sample),Form("h_E_neutrino_%s; Total Energy; Counts;",sample),50,0,2.5);
+  h_opening_angle_mu_both = new TH1D(Form("h_opening_angle_mu_both_%s",sample),Form("h_opening_angle_mu_both_%s; Opening Angle btwn Muon and Total Proton Momentum; Counts",sample),30,-1.5,1.5);
+
+  h_list.push_back(h_opening_angle_mu_both);
+  h_list.push_back(h_E_neutrino);
+  h_list.push_back(h_tot_E);
+  h_list.push_back(h_tot_E_minus_beam);
   h_list.push_back(h_cos_gamma_cm);
   h_list.push_back(h_opening_angle_protons);
   h_list.push_back(h_opening_angle_mu_leading);
@@ -289,29 +282,30 @@ void histogram_funcs::Fill_Particles(TVector3 vMuon, TLorentzVector muon, TVecto
   double EMuon = muon[3];
   double ELead = lead[3];
   double ERec = rec[3];
+  double E_tot = (EMuon + MASS_MUON) + ELead + ERec;
 
-		  
   //Beam Stuff
-  double PT_miss = vMuon.Perp() + vRec.Perp() + vLead.Perp();
-  double Eneutrino = EMuon + (ELead-0.93827208) + (ERec-0.93827208) +(std::pow(PT_miss,2)/(2*353.7)) + 0.304;
+  TVector3 PT_miss(vMuon[0]+vLead[0]+vRec[0],vMuon[1]+vRec[1]+vLead[1],0);
+  double Eneutrino = (EMuon+MASS_MUON) + ELead + ERec +((PT_miss.Mag2())/(2*35.37)) + 0.0304;
   TVector3 vBeam(0.,0.,Eneutrino); // z-direction is defined along the neutrino direction                            
   TVector3 vq = vBeam - vMuon; // Momentum transfer                                                                  
   TVector3 vmiss = vLead - vq; // Missing momentum        
-  open_angle = ((vLead[0]*vRec[0])+(vLead[1]*vRec[1])+(vLead[2]*vRec[2]))/(vLead.Mag()*vRec.Mag()); //vLead.Angle(vRec);  //note this is the cos(opening angle)                             
-  open_angle_mu = ((vLead[0]*vMuon[0])+(vLead[1]*vMuon[1])+(vLead[2]*vMuon[2]))/(vLead.Mag()*vMuon.Mag()); //note this is the cos(opening angle)   
-  En = std::sqrt(std::pow(NEUTRON_MASS,2) + vmiss.Mag2()); //energy of struck nucleon   
-
+  double E_tot_minus_beam = E_tot - Eneutrino;
   TVector3 vProton;
   if(add_protons){
     vProton.SetXYZ(vLead[0]+vRec[0],vLead[1]+vRec[1],vLead[2]+vRec[2]);
   }else{
     vProton.SetXYZ(vLead[0],vLead[1],vLead[2]);
   }
-  delta_pT = (vMuon + vProton).Perp();
-  delta_phiT = std::acos( (-vMuon.X()*vProton.X() - vMuon.Y()*vProton.Y()) / (vMuon.XYvector().Mod() * vProton.XYvector().Mod()));
-  TVector2 delta_pT_vec = (vMuon + vProton).XYvector();
-  delta_alphaT = std::acos( (-vMuon.X()*delta_pT_vec.X()- vMuon.Y()*delta_pT_vec.Y()) / (vMuon.XYvector().Mod() * delta_pT_vec.Mod()) );
 
+  open_angle = ((vLead[0]*vRec[0])+(vLead[1]*vRec[1])+(vLead[2]*vRec[2]))/(vLead.Mag()*vRec.Mag()); //vLead.Angle(vRec);  //note this is the cos(opening angle) opening angle between the protons                             
+  open_angle_mu = ((vLead[0]*vMuon[0])+(vLead[1]*vMuon[1])+(vLead[2]*vMuon[2]))/(vLead.Mag()*vMuon.Mag()); //note this is the cos(opening angle) of the angle between the leading proton and the muon   
+  open_angle_mu_proton = ((vProton[0]*vMuon[0])+(vProton[1]*vMuon[1])+(vProton[2]*vMuon[2]))/(vProton.Mag()*vMuon.Mag()); //cos(opening angle) between the total proton momentum vector and the muon
+  En = std::sqrt(std::pow(NEUTRON_MASS,2) + vmiss.Mag2()); //energy of struck nucleon   
+  delta_pT = (vMuon + vProton).Perp(); //perp takes the magnitude as well. stv delta pt
+  delta_phiT = std::acos( (-vMuon.X()*vProton.X() - vMuon.Y()*vProton.Y()) / (vMuon.XYvector().Mod() * vProton.XYvector().Mod())); //stv delta phi t
+  TVector2 delta_pT_vec = (vMuon + vProton).XYvector(); 
+  delta_alphaT = std::acos( (-vMuon.X()*delta_pT_vec.X()- vMuon.Y()*delta_pT_vec.Y()) / (vMuon.XYvector().Mod() * delta_pT_vec.Mod()) ); //stv delta alpha T
   //TLorentzVector betacm(vmiss[0] + vRec[0] + vBeam[0],vmiss[1] + vRec[1] + vBeam[1], vmiss[2] + vRec[2]+ vBeam[2], En + ERec + Eneutrino); //beta for CM              
   TLorentzVector betacm(vRec[0]+vLead[0]+vMuon[0],vRec[1]+vLead[1]+vMuon[1],vRec[2]+vLead[2]+vMuon[2],ERec+ELead+EMuon); 
   TVector3 boost = betacm.BoostVector(); //the boost vector                                                          
@@ -323,7 +317,6 @@ void histogram_funcs::Fill_Particles(TVector3 vMuon, TLorentzVector muon, TVecto
   std::cout<<"Value of the added vectors y : "<<lead[1]+rec[1]+muon[1]<<std::endl;
   std::cout<<"Value of the added vectors z : "<<lead[2]+rec[2]+muon[2]<<std::endl;
   
-
   //Sanity Check
   //TLorentzVector betacm(vRec[0]+vLead[0],vRec[1]+vLead[1],vRec[2]+vLead[2],ERec+ELead);
   //TVector3 boost = betacm.BoostVector(); //the boost vector                                                                                                                                                                                                          
@@ -332,7 +325,6 @@ void histogram_funcs::Fill_Particles(TVector3 vMuon, TLorentzVector muon, TVecto
   //std::cout<<"Value of the added vectors y : "<<lead[1]+rec[1]<<std::endl;
   //std::cout<<"Value of the added vectors z : "<<lead[2]+rec[2]<<std::endl;
   
-
   cos_gamma_cm = cos(lead.Angle(rec.Vect())); //uses Lorentz Vectors                                                                                                  
 
   //Struck nucleon Momentum:                                                                                                                                             
@@ -344,12 +336,17 @@ void histogram_funcs::Fill_Particles(TVector3 vMuon, TLorentzVector muon, TVecto
   //Some more specific plots
   h_opening_angle_protons->Fill(open_angle,wgt);
   h_opening_angle_mu_leading->Fill(open_angle_mu,wgt);
+  h_opening_angle_mu_both->Fill(open_angle_mu_proton,wgt);
   h_delta_PT->Fill(delta_pT,wgt);
   h_delta_alphaT->Fill(delta_alphaT*180/3.14,wgt);
   h_delta_phiT->Fill(delta_phiT*180/3.14,wgt);
   h_cos_gamma_cm->Fill(cos_gamma_cm,wgt);
   h_mom_struck_nuc->Fill(p_struck_nuc,wgt);
   h_tot_pz->Fill(pz_tot,wgt);
+  h_tot_E->Fill(E_tot,wgt);
+  h_tot_E_minus_beam->Fill(E_tot_minus_beam,wgt);
+  h_E_neutrino->Fill(Eneutrino,wgt);
+
   
 } //end of Fill Particles
 

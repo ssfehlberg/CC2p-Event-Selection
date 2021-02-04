@@ -13,7 +13,7 @@ void twoproton_pelee_dirt::Loop()
   
   //Making a new Root File that will contain all the histograms that we will want to plot:                                    
   ///////////////////////////////////////////////////////////////////////////////////////                                      
-  TFile *tfile = new TFile("root_files/histograms_filtered_dirt_wgt.root","RECREATE"); //wgt indicates using the CV MC values
+  TFile *tfile = new TFile("root_files/histograms_pelee_dirt_wgt.root","RECREATE"); //wgt indicates using the CV MC values
 
   //File with RSE's in them                                                                                                   
   ofstream myfile;//File that will contain RSE of good events                                                                 

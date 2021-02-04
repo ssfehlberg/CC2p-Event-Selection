@@ -1568,34 +1568,42 @@ public :
   static const int num_var = 4;
   const char* var[num_var] = {"_mom","_E","_theta","_phi"};
   int num_bins[num_var] = {50,50,30,10};
-  double xlim_low[num_var] = {0.2,0.0,-1.5,-3.15}; ///normaly 0.0 in first
+  double xlim_low[num_var] = {0.0,0.0,-1.5,-3.15}; ///normaly 0.0 in first
   double xlim_high_recoil[num_var] = {0.8,0.35,1.5,3.15};
   double xlim_high_leading[num_var] = {1.2,0.6,1.5,3.15}; //normally 1.5 in first
-  double xlim_high_muon[num_var]={1.2,1,1.5,3.15};
+  double xlim_high_muon[num_var]={2.5,1,1.5,3.15};
   const char* xlabel[num_var] ={"P [GeV/c]","E [GeV]","cos(#theta)","#phi [Rad]"};
   TH1D* h_muon_overlay[num_var][number2]; //overlay
   TH1D* h_recoil_overlay[num_var][number2];
   TH1D* h_leading_overlay[num_var][number2];
   TH1D* h_opening_angle_protons_overlay[number2];
   TH1D* h_opening_angle_mu_leading_overlay[number2];
+  TH1D* h_opening_angle_mu_both_overlay[number2];
   TH1D* h_delta_PT_overlay[number2];
   TH1D* h_delta_alphaT_overlay[number2];
   TH1D* h_delta_phiT_overlay[number2];
   TH1D* h_cos_gamma_cm_overlay[number2];
   TH1D* h_mom_struck_nuc_overlay[number2];
   TH1D* h_tot_pz_overlay[number2];
+  TH1D* h_tot_E_overlay[number2];
+  TH1D* h_tot_E_minus_beam_overlay[number2];
+  TH1D* h_E_neutrino_overlay[number2];
 
   TH1D* h_muon_raquel[num_var][number3];
   TH1D* h_recoil_raquel[num_var][number3];
   TH1D* h_leading_raquel[num_var][number3];
   TH1D* h_opening_angle_protons_raquel[number3];
   TH1D* h_opening_angle_mu_leading_raquel[number3];
+  TH1D* h_opening_angle_mu_both_raquel[number3];
   TH1D* h_delta_PT_raquel[number3];
   TH1D* h_delta_alphaT_raquel[number3];
   TH1D* h_delta_phiT_raquel[number3];
   TH1D* h_cos_gamma_cm_raquel[number3];
   TH1D* h_mom_struck_nuc_raquel[number3];
   TH1D* h_tot_pz_raquel[number3];
+  TH1D* h_tot_E_raquel[number3];
+  TH1D* h_tot_E_minus_beam_raquel[number3];
+  TH1D* h_E_neutrino_raquel[number3];
 
   vector<TH1*> h_list; //list of all the 1D histograms
 
@@ -1614,7 +1622,10 @@ public :
 
   //Other parameters:                                                                                                                                                                                  
   double open_angle; //note this is the cos(opening angle)                                                                                                                                             
-  double open_angle_mu; //note this is the cos(opening angle)                                                                                                                                          
+  double open_angle_mu; //note this is the cos(opening angle)                                                         
+
+  double open_angle_mu_proton;
+                                                              
   double delta_pT; //stv delta_pT                                                                                                                                                                      
   double delta_alphaT; //stv delta_alphaT                                                                                                                                                              
   double delta_phiT; //stv delta_phiT                                                                                                                                                                  
@@ -1840,13 +1851,23 @@ void twoproton_pelee_overlay::Define_Histograms(){
     for(int i = 0; i < number2; i++){
       h_opening_angle_protons_overlay[i] = new TH1D(Form("h_opening_angle_protons%s",channel[i]),Form("h_opening_angle_protons%s; Opening Angle btwn Two Protons; Counts",channel[i]),30,-1.5,1.5); //50, 0, 1.5        
       h_opening_angle_mu_leading_overlay[i] = new TH1D(Form("h_opening_angle_mu_leading%s",channel[i]),Form("h_opening_angle_mu_leading%s;Opening Angle btwn Muon and Leading Proton; Counts",channel[i]),30,-1.5,1.5);
+      
+
       h_delta_PT_overlay[i] = new TH1D(Form("h_delta_PT%s",channel[i]),Form("h_deltaPT%s;#delta P_{T} [GeV/c];Counts",channel[i]),15,0,1); //normally 10 bins
       h_delta_alphaT_overlay[i] = new TH1D(Form("h_delta_alphaT%s",channel[i]),Form("h_delta_alphaT%s; #delta #alpha_{T} [Deg.];Counts",channel[i]),10,0,180); //0,180                 
       h_delta_phiT_overlay[i] = new TH1D(Form("h_delta_phiT%s",channel[i]),Form("h_delta_phiT%s; #delta #phi_{T} [Deg.];Counts",channel[i]),10,0,180); //0,180                   
       h_cos_gamma_cm_overlay[i] = new TH1D(Form("h_cos_gamma_cm%s",channel[i]),Form("h_cos_gamma_cm%s; cos(#gamma_{COM}); Counts",channel[i]),30,-1.5,1.5);
       h_mom_struck_nuc_overlay[i] = new TH1D(Form("h_mom_struck_nuc%s",channel[i]),Form("h_mom_struck_nuc%s; P_{Init}; Counts", channel[i]),30, 0, 1);
       h_tot_pz_overlay[i] = new TH1D(Form("h_tot_pz%s",channel[i]),Form("h_tot_pz%s; P_{Z}^{Total}; Counts",channel[i]), 20, 0, 2);
+      h_tot_E_overlay[i] = new TH1D(Form("h_tot_E%s",channel[i]),Form("h_tot_E%s; Total Energy; Counts;",channel[i]),50,0,2.5);
+      h_tot_E_minus_beam_overlay[i] = new TH1D(Form("h_tot_E_minus_beam%s",channel[i]),Form("h_tot_E_minus_beam%s; Total Energy; Counts;",channel[i]),50,-1,1);
+      h_E_neutrino_overlay[i] =  new TH1D(Form("h_E_neutrino%s",channel[i]),Form("h_E_neutrino%s; Total Energy; Counts;",channel[i]),50,0,2.5);
+      h_opening_angle_mu_both_overlay[i] = new TH1D(Form("h_opening_angle_mu_both%s",channel[i]),Form("h_opening_angle_mu_both%s; Opening Angle btwn Muon and Total Proton Momentum; Counts",channel[i]),30,-1.5,1.5);
 
+      h_list.push_back(h_opening_angle_mu_both_overlay[i]);
+      h_list.push_back(h_E_neutrino_overlay[i]);
+      h_list.push_back(h_tot_E_overlay[i]);
+      h_list.push_back(h_tot_E_minus_beam_overlay[i]);
       h_list.push_back(h_mom_struck_nuc_overlay[i]);
       h_list.push_back(h_tot_pz_overlay[i]);
       h_list.push_back(h_cos_gamma_cm_overlay[i]);
@@ -1866,7 +1887,15 @@ void twoproton_pelee_overlay::Define_Histograms(){
       h_cos_gamma_cm_raquel[i] = new TH1D(Form("h_cos_gamma_cm_raquel%s",channel2[i]),Form("h_cos_gamma_cm_raquel%s; cos(#gamma_{COM}); Counts",channel2[i]),30,-1.5,1.5);
       h_mom_struck_nuc_raquel[i] = new TH1D(Form("h_mom_struck_nuc_raquel%s",channel2[i]),Form("h_mom_struck_nuc_raquel%s; P_{Init}; Counts", channel2[i]),30, 0, 1);
       h_tot_pz_raquel[i] = new TH1D(Form("h_tot_pz_raquel%s",channel2[i]),Form("h_tot_pz_raquel%s; P_{Z}^{Total}; Counts",channel2[i]), 20, 0, 2);
+      h_tot_E_raquel[i] = new TH1D(Form("h_tot_E_raquel%s",channel2[i]),Form("h_tot_E_raquel%s; Total Energy; Counts;",channel2[i]),50,0,2.5);
+      h_tot_E_minus_beam_raquel[i] = new TH1D(Form("h_tot_E_minus_beam_raquel%s",channel2[i]),Form("h_tot_E_minus_beam_raquel%s; Total Energy; Counts;",channel2[i]),50,-1,1);
+      h_E_neutrino_raquel[i] =  new TH1D(Form("h_E_neutrino_raquel%s",channel2[i]),Form("h_E_neutrino_raquel%s; Total Energy; Counts;",channel2[i]),50,0,2.5);
+      h_opening_angle_mu_both_raquel[i] = new TH1D(Form("h_opening_angle_mu_both_raquel%s",channel2[i]),Form("h_opening_angle_mu_both_raquel%s; Opening Angle btwn Muon and Total Proton Momentum; Counts",channel2[i]),30,-1.5,1.5);
 
+      h_list.push_back(h_opening_angle_mu_both_raquel[i]);
+      h_list.push_back(h_E_neutrino_raquel[i]);
+      h_list.push_back(h_tot_E_raquel[i]);
+      h_list.push_back(h_tot_E_minus_beam_raquel[i]);
       h_list.push_back(h_mom_struck_nuc_raquel[i]);
       h_list.push_back(h_tot_pz_raquel[i]);
       h_list.push_back(h_cos_gamma_cm_raquel[i]);
@@ -2216,31 +2245,33 @@ void twoproton_pelee_overlay::Fill_Particles(int j, TVector3 vMuon, TLorentzVect
   double EMuon = muon[3];
   double ELead = lead[3];
   double ERec = rec[3];
+  double E_tot = (EMuon + MASS_MUON) + ELead + ERec;
 
   //Beam Stuff
-  double PT_miss = vMuon.Perp() + vRec.Perp() + vLead.Perp();
-   double Eneutrino = EMuon + (ELead-0.93827208) + (ERec-0.93827208) +(std::pow(PT_miss,2)/(2*353.7)) + 0.304;
-   TVector3 vBeam(0.,0.,Eneutrino); // z-direction is defined along the neutrino direction                                                                         
-   TVector3 vq = vBeam - vMuon; // Momentum transfer                                                                                                               
-   TVector3 vmiss = vLead - vq; // Missing momentum         
+  //double PT_miss = vMuon.Perp() + vRec.Perp() + vLead.Perp();
+  TVector3 PT_miss(vMuon[0]+vLead[0]+vRec[0],vMuon[1]+vRec[1]+vLead[1],0);
+  double Eneutrino = (EMuon+MASS_MUON) + ELead + ERec +((PT_miss.Mag2())/(2*35.37)) + 0.0304;
+  TVector3 vBeam(0.,0.,Eneutrino); // z-direction is defined along the neutrino direction                                                                         
+  TVector3 vq = vBeam - vMuon; // Momentum transfer                                                                                                               
+  TVector3 vmiss = vLead - vq; // Missing momentum         
+  double E_tot_minus_beam = E_tot - Eneutrino;
+  TVector3 vProton;
+  if(add_protons){
+    vProton.SetXYZ(vLead[0]+vRec[0],vLead[1]+vRec[1],vLead[2]+vRec[2]);
+  }else{
+    vProton.SetXYZ(vLead[0],vLead[1],vLead[2]);
+  }
 
-   open_angle = ((vLead[0]*vRec[0])+(vLead[1]*vRec[1])+(vLead[2]*vRec[2]))/(vLead.Mag()*vRec.Mag()); //note this is the cos(opening angle)                             
-   open_angle_mu = ((vLead[0]*vMuon[0])+(vLead[1]*vMuon[1])+(vLead[2]*vMuon[2]))/(vLead.Mag()*vMuon.Mag()); //note this is the cos(opening angle)   
-   En = std::sqrt(std::pow(NEUTRON_MASS,2) + vmiss.Mag2()); //energy of struck nucleon   
+  open_angle = ((vLead[0]*vRec[0])+(vLead[1]*vRec[1])+(vLead[2]*vRec[2]))/(vLead.Mag()*vRec.Mag()); //note this is the cos(opening angle)                             
+  open_angle_mu = ((vLead[0]*vMuon[0])+(vLead[1]*vMuon[1])+(vLead[2]*vMuon[2]))/(vLead.Mag()*vMuon.Mag()); //note this is the cos(opening angle)   
+  open_angle_mu_proton = ((vProton[0]*vMuon[0])+(vProton[1]*vMuon[1])+(vProton[2]*vMuon[2]))/(vProton.Mag()*vMuon.Mag()); //cos(opening angle) between the total proton momentum vector and the muon
+  En = std::sqrt(std::pow(NEUTRON_MASS,2) + vmiss.Mag2()); //energy of struck nucleon   
+  delta_pT = (vMuon + vProton).Perp(); 
+  delta_phiT = std::acos( (-vMuon.X()*vProton.X() - vMuon.Y()*vProton.Y()) / (vMuon.XYvector().Mod() * vProton.XYvector().Mod()));
+  TVector2 delta_pT_vec = (vMuon + vProton).XYvector();
+  delta_alphaT = std::acos( (-vMuon.X()*delta_pT_vec.X()- vMuon.Y()*delta_pT_vec.Y()) / (vMuon.XYvector().Mod() * delta_pT_vec.Mod()) );
 
-   TVector3 vProton;
-   if(add_protons){
-     vProton.SetXYZ(vLead[0]+vRec[0],vLead[1]+vRec[1],vLead[2]+vRec[2]);
-   }else{
-     vProton.SetXYZ(vLead[0],vLead[1],vLead[2]);
-     }
-
-   delta_pT = (vMuon + vProton).Perp(); 
-   delta_phiT = std::acos( (-vMuon.X()*vProton.X() - vMuon.Y()*vProton.Y()) / (vMuon.XYvector().Mod() * vProton.XYvector().Mod()));
-   TVector2 delta_pT_vec = (vMuon + vProton).XYvector();
-   delta_alphaT = std::acos( (-vMuon.X()*delta_pT_vec.X()- vMuon.Y()*delta_pT_vec.Y()) / (vMuon.XYvector().Mod() * delta_pT_vec.Mod()) );
-
-   //TLorentzVector betacm(vmiss[0] + vRec[0] + vBeam[0],vmiss[1] + vRec[1] + vBeam[1], vmiss[2] + vRec[2]+ vBeam[2], En + ERec + Eneutrino); //beta for CM              
+  //TLorentzVector betacm(vmiss[0] + vRec[0] + vBeam[0],vmiss[1] + vRec[1] + vBeam[1], vmiss[2] + vRec[2]+ vBeam[2], En + ERec + Eneutrino); //beta for CM              
 
    TLorentzVector betacm(vRec[0]+vLead[0]+vMuon[0],vRec[1]+vLead[1]+vMuon[1],vRec[2]+vLead[2]+vMuon[2],ERec+ELead+EMuon);
    TVector3 boost = betacm.BoostVector(); //the boost vector                                                                                                           
@@ -2263,12 +2294,16 @@ void twoproton_pelee_overlay::Fill_Particles(int j, TVector3 vMuon, TLorentzVect
   //Some more specific plots
   h_opening_angle_protons_overlay[j]->Fill(open_angle,wgt);
   h_opening_angle_mu_leading_overlay[j]->Fill(open_angle_mu,wgt);
+  h_opening_angle_mu_both_overlay[j]->Fill(open_angle_mu_proton,wgt);
   h_delta_PT_overlay[j]->Fill(delta_pT,wgt);
   h_delta_alphaT_overlay[j]->Fill(delta_alphaT*180/3.14,wgt);
   h_delta_phiT_overlay[j]->Fill(delta_phiT*180./3.14,wgt);
   h_cos_gamma_cm_overlay[j]->Fill(cos_gamma_cm,wgt);
   h_mom_struck_nuc_overlay[j]->Fill(p_struck_nuc,wgt);
   h_tot_pz_overlay[j]->Fill(pz_tot,wgt);
+  h_tot_E_overlay[j]->Fill(E_tot,wgt);
+  h_tot_E_minus_beam_overlay[j]->Fill(E_tot_minus_beam,wgt);
+  h_E_neutrino_overlay[j]->Fill(Eneutrino,wgt);
 
 }
 
@@ -2294,25 +2329,27 @@ void twoproton_pelee_overlay::Fill_Particles_Raquel(int j, TVector3 vMuon, TLore
   double EMuon = muon[3];
   double ELead = lead[3];
   double ERec = rec[3];
+  double E_tot = (EMuon + MASS_MUON) + ELead + ERec;
 
   //Beam Stuff
-  double PT_miss = vMuon.Perp() + vRec.Perp() + vLead.Perp();
-  double Eneutrino = EMuon + (ELead-0.93827208) + (ERec-0.93827208) +(std::pow(PT_miss,2)/(2*353.7)) + 0.304;
+  //double PT_miss = vMuon.Perp() + vRec.Perp() + vLead.Perp();
+  TVector3 PT_miss(vMuon[0]+vLead[0]+vRec[0],vMuon[1]+vRec[1]+vLead[1],0);
+  double Eneutrino =  (EMuon+MASS_MUON) + ELead + ERec +((PT_miss.Mag2())/(2*35.37)) + 0.0304;
   TVector3 vBeam(0.,0.,Eneutrino); // z-direction is defined along the neutrino direction                                                                         
   TVector3 vq = vBeam - vMuon; // Momentum transfer                                                                                                               
   TVector3 vmiss = vLead - vq; // Missing momentum         
-
-  open_angle = ((vLead[0]*vRec[0])+(vLead[1]*vRec[1])+(vLead[2]*vRec[2]))/(vLead.Mag()*vRec.Mag()); //note this is the cos(opening angle)                             
-  open_angle_mu = ((vLead[0]*vMuon[0])+(vLead[1]*vMuon[1])+(vLead[2]*vMuon[2]))/(vLead.Mag()*vMuon.Mag()); //note this is the cos(opening angle)   
-  En = std::sqrt(std::pow(NEUTRON_MASS,2) + vmiss.Mag2()); //energy of struck nucleon   
-
+  double E_tot_minus_beam = E_tot - Eneutrino;
   TVector3 vProton;
   if(add_protons){
     vProton.SetXYZ(vLead[0]+vRec[0],vLead[1]+vRec[1],vLead[2]+vRec[2]);
   }else{
     vProton.SetXYZ(vLead[0],vLead[1],vLead[2]);
-    }
+  }
 
+  open_angle = ((vLead[0]*vRec[0])+(vLead[1]*vRec[1])+(vLead[2]*vRec[2]))/(vLead.Mag()*vRec.Mag()); //note this is the cos(opening angle)                             
+  open_angle_mu = ((vLead[0]*vMuon[0])+(vLead[1]*vMuon[1])+(vLead[2]*vMuon[2]))/(vLead.Mag()*vMuon.Mag()); //note this is the cos(opening angle)   
+  open_angle_mu_proton = ((vProton[0]*vMuon[0])+(vProton[1]*vMuon[1])+(vProton[2]*vMuon[2]))/(vProton.Mag()*vMuon.Mag()); //cos(opening angle) between the total proton momentum vector and the muon
+  En = std::sqrt(std::pow(NEUTRON_MASS,2) + vmiss.Mag2()); //energy of struck nucleon   
   delta_pT = (vMuon + vProton).Perp(); 
   delta_phiT = std::acos( (-vMuon.X()*vProton.X() - vMuon.Y()*vProton.Y()) / (vMuon.XYvector().Mod() * vProton.XYvector().Mod()));
   TVector2 delta_pT_vec = (vMuon + vProton).XYvector();
@@ -2337,13 +2374,17 @@ void twoproton_pelee_overlay::Fill_Particles_Raquel(int j, TVector3 vMuon, TLore
   //Some more specific plots
   h_opening_angle_protons_raquel[j]->Fill(open_angle,wgt);
   h_opening_angle_mu_leading_raquel[j]->Fill(open_angle_mu,wgt);
+  h_opening_angle_mu_both_raquel[j]->Fill(open_angle_mu_proton,wgt);
   h_delta_PT_raquel[j]->Fill(delta_pT,wgt);
   h_delta_alphaT_raquel[j]->Fill(delta_alphaT*180/3.14,wgt);
   h_delta_phiT_raquel[j]->Fill(delta_phiT*180./3.14,wgt);
   h_cos_gamma_cm_raquel[j]->Fill(cos_gamma_cm,wgt);
   h_mom_struck_nuc_raquel[j]->Fill(p_struck_nuc,wgt);
   h_tot_pz_raquel[j]->Fill(pz_tot,wgt);
-  
+  h_tot_E_raquel[j]->Fill(E_tot,wgt);
+  h_tot_E_minus_beam_raquel[j]->Fill(E_tot_minus_beam,wgt);
+  h_E_neutrino_raquel[j]->Fill(Eneutrino,wgt);
+
 }
 
 void twoproton_pelee_overlay::Fill_Histograms_Particles(int mc_n_threshold_muon, int mc_n_threshold_proton, int mc_n_threshold_pion0, double mc_n_threshold_pionpm, bool fv,TVector3 vMuon, TLorentzVector muon, TVector3 vLead, TLorentzVector lead, TVector3 vRec, TLorentzVector rec, double wgt){
