@@ -1540,23 +1540,9 @@ public :
   int num_bins_eff[num_threshold] = {50,50,50,50,50,50};
   float x_high_eff[num_threshold] = {2.0,2.0,2.0,0.5,0.5,0.5};
 
-  //Chi2 Plots
-  static const int num_plane = 3;
-  const char* plane[num_plane] = {"_Plane_0", "_Plane_1","_Plane_2"};
+  //Track related variables
   static const int num_part = 10;
   const char* particle[num_part] = {"_total","_proton_contained","_proton_uncontained","_muon","_pionpm","_pion0","_electron","_gamma","_kaon","_other"};
-  TH1D* h_chi2p_overlay[num_plane][num_part];
-  TH1D* h_chi2mu_overlay[num_plane][num_part];
-  TH1D* h_dEdx_total_overlay[num_plane][num_part];
-
-  //3D chi2 plots
-  static const int num_3D = 2;
-  const char* point_3D[num_3D] = {"_before_selection","_after_selection"};
-  TH1D* h_chi2p_3D_overlay[num_3D][num_part]; //3D PID
-  TH1D* h_chi2mu_3D_overlay[num_3D][num_part]; //3D PID
-  TH1D* h_chi2pi_3D_overlay[num_3D][num_part];
-
-  //Track related variables
   static const int num_track = 4;
   const char* variable[num_track] = {"_track_score","_track_vertex_distance","_track_length","_track_pid"};
   TH1D* h_track_overlay[num_track][num_part]; //overlay
@@ -1598,6 +1584,7 @@ public :
   TH1D* h_tot_E_minus_beam_overlay[number2];
   TH1D* h_E_neutrino_overlay[number2];
   TH1D* h_E_resolution_overlay[number2];
+  TH1D* h_PT_squared_overlay[number2];
 
   //raquel
   TH1D* h_opening_angle_protons_raquel[number3];
@@ -1613,6 +1600,7 @@ public :
   TH1D* h_tot_E_minus_beam_raquel[number3];
   TH1D* h_E_neutrino_raquel[number3];
   TH1D* h_E_resolution_raquel[number3];
+  TH1D* h_PT_squared_raquel[number3];
 
   vector<TH1*> h_list; //list of all the 1D histograms
 
@@ -1787,28 +1775,6 @@ void twoproton_pelee_overlay::Define_Histograms(){
       }
     }
 
-    for(int k=0; k < num_plane; k++){
-      for(int l=0; l < num_part; l++){
-	h_chi2p_overlay[k][l] = new TH1D(Form("h_chi2p%s%s",plane[k],particle[l]),Form("h_chi2p%s%s",plane[k],particle[l]),50,0,400);
-	h_chi2mu_overlay[k][l] = new TH1D(Form("h_chi2mu%s%s",plane[k],particle[l]),Form("h_chi2mu%s%s",plane[k],particle[l]),50,0,120);
-	h_dEdx_total_overlay[k][l] = new TH1D(Form("h_dEdx_total%s%s",plane[k],particle[l]),Form("h_dEdx_total%s%s",plane[k],particle[l]),20,0,1000);
-	h_list.push_back(h_chi2p_overlay[k][l]);
-	h_list.push_back(h_chi2mu_overlay[k][l]);
-	h_list.push_back(h_dEdx_total_overlay[k][l]);
-      }
-    }
-
-    for(int j=0; j < num_3D; j++){ 
-      for(int k=0; k < num_part; k++){
-	h_chi2p_3D_overlay[j][k] = new TH1D(Form("h_chi2p_3D%s%s",point_3D[j],particle[k]),Form("h_chi2p_3D%s%s",point_3D[j],particle[k]),50,0,350);
-	h_chi2mu_3D_overlay[j][k] = new TH1D(Form("h_chi2mu_3D%s%s",point_3D[j],particle[k]),Form("h_chi2mu_3D%s%s",point_3D[j],particle[k]),50,0,120);
-	h_chi2pi_3D_overlay[j][k] = new TH1D(Form("h_chi2pi_3D%s%s",point_3D[j],particle[k]),Form("h_chi2pi_3D%s%s",point_3D[j],particle[k]),50,0,120);
-	h_list.push_back(h_chi2p_3D_overlay[j][k]);
-	h_list.push_back(h_chi2mu_3D_overlay[j][k]);
-	h_list.push_back(h_chi2pi_3D_overlay[j][k]);
-      }
-    }
-
     for(int j=0; j < num_track; j++){
       for(int i=0; i < num_part; i++){
 	h_track_overlay[j][i] = new TH1D(Form("h_track%s%s",variable[j],particle[i]),Form("h_track%s%s",variable[j],particle[i]),num_bins_track[j],xlim_low_track[j],xlim_high_track[j]);
@@ -1864,7 +1830,10 @@ void twoproton_pelee_overlay::Define_Histograms(){
       h_E_neutrino_overlay[i] =  new TH1D(Form("h_E_neutrino%s",channel[i]),Form("h_E_neutrino%s; Total Energy; Counts;",channel[i]),50,0,2.5);
       h_opening_angle_mu_both_overlay[i] = new TH1D(Form("h_opening_angle_mu_both%s",channel[i]),Form("h_opening_angle_mu_both%s; Opening Angle btwn Muon and Total Proton Momentum; Counts",channel[i]),30,-1.5,1.5);
       h_E_resolution_overlay[i] = new TH1D(Form("h_E_resolution%s",channel[i]),Form("h_E_resolution%s; Energy Resolution (GeV/c); Counts",channel[i]),100,-1.0,1.0);
+      h_PT_squared_overlay[i] = new TH1D(Form("h_PT_squared%s",channel[i]),Form("h_PT_squared%s; P_{T}^{2}; Counts", channel[i]),50,0,5);
 
+
+      h_list.push_back(h_PT_squared_overlay[i]);
       h_list.push_back(h_E_resolution_overlay[i]);
       h_list.push_back(h_opening_angle_mu_both_overlay[i]);
       h_list.push_back(h_E_neutrino_overlay[i]);
@@ -1894,7 +1863,10 @@ void twoproton_pelee_overlay::Define_Histograms(){
       h_E_neutrino_raquel[i] =  new TH1D(Form("h_E_neutrino_raquel%s",channel2[i]),Form("h_E_neutrino_raquel%s; Total Energy; Counts;",channel2[i]),50,0,2.5);
       h_opening_angle_mu_both_raquel[i] = new TH1D(Form("h_opening_angle_mu_both_raquel%s",channel2[i]),Form("h_opening_angle_mu_both_raquel%s; Opening Angle btwn Muon and Total Proton Momentum; Counts",channel2[i]),30,-1.5,1.5);
       h_E_resolution_raquel[i] = new TH1D(Form("h_E_resolution_raquel%s",channel2[i]),Form("h_E_resolution_raquel%s; Energy Resolution (GeV/c); Counts",channel2[i]),100,-1.0,1.0);
+      h_PT_squared_raquel[i] = new TH1D(Form("h_PT_squared_raquel%s",channel2[i]),Form("h_PT_squared_raquel%s; P_{T}^{2}; Counts", channel2[i]),50,0,5);
 
+
+      h_list.push_back(h_PT_squared_raquel[i]);
       h_list.push_back(h_E_resolution_raquel[i]);
       h_list.push_back(h_opening_angle_mu_both_raquel[i]);
       h_list.push_back(h_E_neutrino_raquel[i]);
@@ -2309,6 +2281,8 @@ void twoproton_pelee_overlay::Fill_Particles(int j, TVector3 vMuon, TLorentzVect
   h_tot_E_minus_beam_overlay[j]->Fill(E_tot_minus_beam,wgt);
   h_E_neutrino_overlay[j]->Fill(Eneutrino,wgt);
   h_E_resolution_overlay[j]->Fill(Eneutrino - double(nu_e) ,wgt);
+  h_PT_squared_overlay[j]->Fill(PT_miss.Mag2(),wgt);
+  
 
 }
 
@@ -2390,6 +2364,7 @@ void twoproton_pelee_overlay::Fill_Particles_Raquel(int j, TVector3 vMuon, TLore
   h_tot_E_minus_beam_raquel[j]->Fill(E_tot_minus_beam,wgt);
   h_E_neutrino_raquel[j]->Fill(Eneutrino,wgt);
   h_E_resolution_raquel[j]->Fill(Eneutrino - double(nu_e) ,wgt);
+  h_PT_squared_raquel[j]->Fill(PT_miss.Mag2(),wgt);
 
 }
 

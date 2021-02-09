@@ -35,69 +35,11 @@ class histogram_funcs
   static const int  number2 = 11; //categories I defined                                                            
   static const int  number3 = 10; //categories raquel defined
   const char * point[number] ={"_before_selection","_after_fv","_after_three_pfps","_after_track_cut","_after_connection_cut","_after_pid"}; //this defines histograms after each cut    
-  const char * channel[number2]={"_total","_cc0p0pi","_cc1p0pi","_cc2p0pi","_ccNp0pi",
-				 "_ccNp1pi","_ccNpNpi","_ccnue","_outfv","_nc","_other"}; //these are the channels I defined        
-  const char * channel2[number3] = {"_total","_ccQE","_ccCOH","_ccMEC","_ccRES","_ccDIS",
-				     "_ccNue","_nc","_outfv","_other"};//these are the channels that raquel defined
-  
-  TH1D* h_vtx_x_overlay[number][number2]; //reco x: overlay
-  TH1D* h_vtx_y_overlay[number][number2]; //reco y: overlay
-  TH1D* h_vtx_z_overlay[number][number2]; //reco z: overlay
-  TH1D* h_vtx_x_raquel[number][number3]; //reco x: overlay                                                                          
-  TH1D* h_vtx_y_raquel[number][number3]; //reco y: overlay                                                                         
-  TH1D* h_vtx_z_raquel[number][number3]; //reco z: overlay                                                                       
   TH1D* h_vtx_x[number]; //reco x: bnb, ext, dirt                                                                                   
   TH1D* h_vtx_y[number]; //reco y: bnb, ext, dirt                                                                                  
   TH1D* h_vtx_z[number]; //reco z: bnb, ext, dirt   
-
   TH1D* h_topological_score[number]; //bnb,ext,dirt
-  TH1D* h_cosmic_impact_parameter_overlay[number2]; //overlay
-  TH1D* h_cosmic_impact_parameter_raquel[number3]; //raquel
-  TH1D* h_cosmic_impact_parameter[number]; //bnb,ext,dirt
-  
-  TH1D* h_vtx_x_mc[number][number2]; //mc x
-  TH1D* h_vtx_y_mc[number][number2]; //mc y 
-  TH1D* h_vtx_z_mc[number][number2]; //mc z
-  TH1D* h_vtx_x_mc_sce[number][number2]; //mc+sce x
-  TH1D* h_vtx_y_mc_sce[number][number2]; //mc+sce y
-  TH1D* h_vtx_z_mc_sce[number][number2]; //mc+sce z
-  TH1D* h_q2[number][number2]; //mc q2
-  TH1D* h_X[number][number2]; //mc x
-  TH1D* h_Y[number][number2]; //mc y
-  TH1D* h_Pt[number][number2]; //mc Pt
- 
-  TH1D* h_vtx_x_mc_raquel[number][number3]; //mc x raquel                                                                                   
-  TH1D* h_vtx_y_mc_raquel[number][number3]; //mc y                                                                                   
-  TH1D* h_vtx_z_mc_raquel[number][number3]; //mc z                                                                                   
-  TH1D* h_vtx_x_mc_sce_raquel[number][number3]; //mc+sce x                                                                          
-  TH1D* h_vtx_y_mc_sce_raquel[number][number3]; //mc+sce y                                                                           
-  TH1D* h_vtx_z_mc_sce_raquel[number][number3]; //mc+sce z                                                                           
-  TH1D* h_q2_raquel[number][number3]; //mc q2                                                                                        
-  TH1D* h_X_raquel[number][number3]; //mc x                                                                                          
-  TH1D* h_Y_raquel[number][number3]; //mc y                                                                                          
-  TH1D* h_Pt_raquel[number][number3]; //mc Pt   
-
-  //Chi2 Plots
-  static const int num_plane = 3;
-  const char* plane[num_plane] = {"_Plane_0", "_Plane_1","_Plane_2"};
-  static const int num_part = 6;
-  const char* particle[num_part] = {"_total","_proton","_muon","_pion","_electron","_other"};
-  TH1D* h_chi2p_overlay[num_plane][num_part];
-  TH1D* h_chi2mu_overlay[num_plane][num_part];
-  TH1D* h_dEdx_total_overlay[num_plane][num_part];
-  TH1D* h_chi2p[num_plane];
-  TH1D* h_chi2mu[num_plane];
-  TH1D* h_dEdx_total[num_plane];
-
-  //3D chi2 plots
-  static const int num_3D = 2;
-  const char* point_3D[num_3D] = {"_before_selection","_after_selection"};
-  TH1D* h_chi2p_3D_overlay[num_3D][num_part]; //3D PID
-  TH1D* h_chi2mu_3D_overlay[num_3D][num_part]; //3D PID
-  TH1D* h_chi2pi_3D_overlay[num_3D][num_part];
-  TH1D* h_chi2p_3D[num_3D]; //3D PID                                                                                                                                                                                                                
-  TH1D* h_chi2mu_3D[num_3D]; //3D PID                                                                                                                                                                                                             
-  TH1D* h_chi2pi_3D[num_3D];
+  TH1D* h_cosmic_impact_parameter[number];
 
   //Track related variables
   static const int num_track = 4;
@@ -132,6 +74,7 @@ class histogram_funcs
   TH1D* h_tot_E_minus_beam;
   TH1D* h_E_neutrino;
   TH1D* h_opening_angle_mu_both;
+  TH1D* h_PT_squared;
 
   vector<TH1*> h_list; //list of all the 1D histograms
 
@@ -143,17 +86,17 @@ class histogram_funcs
   //add the protons together in the stv calculations
   bool add_protons = true;
 
-  //Other parameters:                                                                                                                                                                                  
-  double open_angle; //note this is the cos(opening angle)                                                                                                                                             
-  double open_angle_mu; //note this is the cos(opening angle)                                                                                                                                          
+  //Other parameters:                                                                                                                                                      
+  double open_angle; //note this is the cos(opening angle)                                                                                                                 
+  double open_angle_mu; //note this is the cos(opening angle)                                                                                                              
   double open_angle_mu_proton; //cos(opening angle)
-  double delta_pT; //stv delta_pT                                                                                                                                                                      
-  double delta_alphaT; //stv delta_alphaT                                                                                                                                                              
-  double delta_phiT; //stv delta_phiT                                                                                                                                                                  
-  double cos_gamma_lab; //cos(opening angle) in lab                                                                                                                                                    
-  double cos_gamma_cm; //cos(opening angle) in cm                                                                                                                                                      
-  double En; //energy of struck nucleon                                                                                                                                                                
-  double p_struck_nuc; //momentum of the struck nucleon                                                                                                                                                
+  double delta_pT; //stv delta_pT                                                                                                                                          
+  double delta_alphaT; //stv delta_alphaT                                                                                                                                  
+  double delta_phiT; //stv delta_phiT                                                                                                                                      
+  double cos_gamma_lab; //cos(opening angle) in lab                                                                                                                        
+  double cos_gamma_cm; //cos(opening angle) in cm                                                                                                                         
+  double En; //energy of struck nucleon                                                                                                                                    
+  double p_struck_nuc; //momentum of the struck nucleon                                                                                                                    
   double pz_tot;
 
 }; //end of class
@@ -183,24 +126,6 @@ void histogram_funcs::Define_Histograms(const char* sample){
     h_list.push_back(h_vtx_z[i]);
   }
 
-  for(int k=0; k < num_plane; k++){
-    h_chi2p[k] = new TH1D(Form("h_chi2p%s_%s",plane[k],sample),Form("h_chi2p%s_%s",plane[k],sample),50,0,400);
-    h_chi2mu[k] = new TH1D(Form("h_chi2mu%s_%s",plane[k],sample),Form("h_chi2mu%s_%s",plane[k],sample),50,0,120);
-    h_dEdx_total[k] = new TH1D(Form("h_dEdx_total%s_%s",plane[k],sample),Form("h_dEdx_total%s_%s",plane[k],sample),20,0,1000);
-    h_list.push_back(h_chi2p[k]);
-    h_list.push_back(h_chi2mu[k]);
-    h_list.push_back(h_dEdx_total[k]);
-  }
-
-  for(int j=0; j < num_3D; j++){ 
-    h_chi2p_3D[j] = new TH1D(Form("h_chi2p_3D%s_%s",point_3D[j],sample),Form("h_chi2p_3D%s_%s",point_3D[j],sample),50,0,350);
-    h_chi2mu_3D[j] = new TH1D(Form("h_chi2mu_3D%s_%s",point_3D[j],sample),Form("h_chi2mu_3D%s_%s",point_3D[j],sample),50,0,120);
-    h_chi2pi_3D[j] = new TH1D(Form("h_chi2pi_3D%s_%s",point_3D[j],sample),Form("h_chi2pi_3D%s_%s",point_3D[j],sample),50,0,120);
-    h_list.push_back(h_chi2p_3D[j]);
-    h_list.push_back(h_chi2mu_3D[j]);
-    h_list.push_back(h_chi2pi_3D[j]);
-  }
-
   for(int j=0; j < num_track; j++){
     h_track[j] = new TH1D(Form("h_track%s",variable[j]),Form("h_track%s",variable[j]),num_bins_track[j],xlim_low_track[j],xlim_high_track[j]);
     h_list.push_back(h_track[j]);
@@ -227,7 +152,9 @@ void histogram_funcs::Define_Histograms(const char* sample){
   h_tot_E_minus_beam = new TH1D(Form("h_tot_E_minus_beam_%s",sample),Form("h_tot_E_minus_beam_%s; Total Energy Remaining (MeV/c); Counts;",sample),100,0,100);
   h_E_neutrino = new TH1D(Form("h_E_neutrino_%s",sample),Form("h_E_neutrino_%s; Total Energy; Counts;",sample),50,0,2.5);
   h_opening_angle_mu_both = new TH1D(Form("h_opening_angle_mu_both_%s",sample),Form("h_opening_angle_mu_both_%s; Opening Angle btwn Muon and Total Proton Momentum; Counts",sample),30,-1.5,1.5);
+  h_PT_squared = new TH1D(Form("h_PT_squared_%s",sample),Form("h_PT_squared_%s; P_{T}^{2}; Counts", sample),50,0,5);
 
+  h_list.push_back(h_PT_squared);
   h_list.push_back(h_opening_angle_mu_both);
   h_list.push_back(h_E_neutrino);
   h_list.push_back(h_tot_E);
@@ -352,7 +279,8 @@ void histogram_funcs::Fill_Particles(TVector3 vMuon, TLorentzVector muon, TVecto
   h_tot_E->Fill(E_tot,wgt);
   h_tot_E_minus_beam->Fill(E_tot_minus_beam,wgt);
   h_E_neutrino->Fill(Eneutrino,wgt);
-
+  h_PT_squared->Fill(PT_miss.Mag2(),wgt);
+  
   
 } //end of Fill Particles
 
