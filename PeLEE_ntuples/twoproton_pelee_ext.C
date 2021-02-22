@@ -11,12 +11,14 @@ void twoproton_pelee_ext::Loop()
   helper_funcs cuts; //helper_funcs.h    
   
   //Making a new Root File that will contain all the histograms that we will want to plot:                                    
-  ///////////////////////////////////////////////////////////////////////////////////////                                      
-  TFile *tfile = new TFile("root_files/histograms_pelee_ext.root","RECREATE");
+  ///////////////////////////////////////////////////////////////////////////////////////                          
+  Which_Run();
+            
+  TFile *tfile = new TFile(Form("root_files/%s/histograms_pelee_ext.root",directory),"RECREATE");
 
   //File with RSE's in them                                                                                                   
   ofstream myfile;//File that will contain RSE of good events                                                                 
-  myfile.open("lists/files_filtered_ext.list");
+  myfile.open(Form("lists/%s/files_filtered_ext.list",directory));
   myfile<<"Run"<<" "<<"Subrun"<<" "<<"Event"<<endl;
 
   //Define all the histograms I am going to fill
@@ -26,7 +28,6 @@ void twoproton_pelee_ext::Loop()
   //Defining all the constans we will use later                                                                                          
   //////////////////////////////                                                                                                      
   bool _debug = false; //debug statements                                                                         
-  double pot_wgt = 0.154; //POT weight                                    
   double MASS_PROTON = 0.93827208;
   double MASS_MUON = 0.10565837;
   

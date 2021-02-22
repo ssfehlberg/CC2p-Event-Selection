@@ -969,18 +969,17 @@ twoproton_pelee_bnb::twoproton_pelee_bnb(TTree *tree) : fChain(0)
   }
   
   if (tree == 0) {
-    TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject(Form("%s",file));//"/uboone/data/users/davidc/searchingfornues/v08_00_00_43/0702/run1/data_bnb_mcc9.1_v08_00_00_25_reco2_C1_beam_good_reco2_5e19.root");
+    TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject(Form("%s",file));
     if (!f || !f->IsOpen()) {
-      f = new TFile(Form("%s",file));//"/uboone/data/users/davidc/searchingfornues/v08_00_00_43/0702/run1/data_bnb_mcc9.1_v08_00_00_25_reco2_C1_beam_good_reco2_5e19.root");
+      f = new TFile(Form("%s",file));
     }
-    TDirectory * dir = (TDirectory*)f->Get(Form("%s:/nuselection",file));//"/uboone/data/users/davidc/searchingfornues/v08_00_00_43/0702/run1/data_bnb_mcc9.1_v08_00_00_25_reco2_C1_beam_good_reco2_5e19.root:/nuselection");
+    TDirectory * dir = (TDirectory*)f->Get(Form("%s:/nuselection",file));
     dir->GetObject("NeutrinoSelectionFilter",tree);
   }
   Init(tree);
 
   //Run the program with the correct file
   Loop();
-
 }
 
 twoproton_pelee_bnb::~twoproton_pelee_bnb()
