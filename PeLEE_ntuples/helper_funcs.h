@@ -1,11 +1,9 @@
 class helper_funcs{
  
  public:
-   virtual void Overlay_In_FV(float x_low_edge, float x_up_edge, float y_low_edge, float y_up_edge, float z_low_edge, float z_up_edge, float x, float y, float z);
- 
- virtual bool In_FV(float x_low_edge, float x_up_edge, float y_low_edge, float y_up_edge, float z_low_edge, float z_up_edge, float x, float y, float z);
+  virtual void Overlay_In_FV(float x_low_edge, float x_up_edge, float y_low_edge, float y_up_edge, float z_low_edge, float z_up_edge, float x, float y, float z);
+  virtual bool In_FV(float x_low_edge, float x_up_edge, float y_low_edge, float y_up_edge, float z_low_edge, float z_up_edge, float x, float y, float z);
   virtual double real_sqrt(double x);
-
 
   double TRACK_SCORE_CUT = 0.8;
   double TRACK_DIST_CUT = 4;
@@ -13,6 +11,7 @@ class helper_funcs{
   bool fv;
 
 };//end of class definition
+
 
 bool helper_funcs::In_FV(float x_low_edge, float x_up_edge, float y_low_edge, float y_up_edge, float z_low_edge, float z_up_edge, float x, float y, float z){
   //Just defining the x,y, and z locations of the FV                                                              

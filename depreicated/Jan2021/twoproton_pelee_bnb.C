@@ -13,7 +13,7 @@ void twoproton_pelee_bnb::Loop()
   
   //Making a new Root File that will contain all the histograms that we will want to plot:                                    
   ///////////////////////////////////////////////////////////////////////////////////////                        
-  Which_Run();
+  //Which_Run();
               
   TFile *tfile = new TFile(Form("root_files/%s/histograms_pelee_bnb.root",directory),"RECREATE");
 

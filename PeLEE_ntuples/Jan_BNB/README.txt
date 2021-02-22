@@ -1,0 +1,1 @@
+this code is not depricated. I moved it because it works for the original file I was running on (the Run1 5e19). The sample that Steven gave me has more events, but some of the information has been slimmed. This means that the .h file no longer works for the larger files. I want to keep this incase people ask me to rerun the January analysis.

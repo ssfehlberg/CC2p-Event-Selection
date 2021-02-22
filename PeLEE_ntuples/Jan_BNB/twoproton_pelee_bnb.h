@@ -1,25 +1,22 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Wed Nov 18 15:10:23 2020 by ROOT version 6.12/06
+// Wed Nov 18 15:08:14 2020 by ROOT version 6.12/06
 // from TTree NeutrinoSelectionFilter/Neutrino Selection TTree
-// found on file: /pnfs/uboone/persistent/users/davidc/searchingfornues/v08_00_00_43/0928/prodgenie_bnb_nu_uboone_overlay_mcc9.1_v08_00_00_26_filter_run1_reco2_reco2.root
+// found on file: /uboone/data/users/davidc/searchingfornues/v08_00_00_43/0702/run1/data_bnb_mcc9.1_v08_00_00_25_reco2_C1_beam_good_reco2_5e19.root
 //////////////////////////////////////////////////////////
 
-#ifndef twoproton_pelee_overlay_h
-#define twoproton_pelee_overlay_h
+#ifndef twoproton_pelee_bnb_h
+#define twoproton_pelee_bnb_h
 
 #include <TROOT.h>
 #include <TChain.h>
 #include <TFile.h>
 
 // Header file for the classes stored in the TTree if any.
-#include "string"
-#include "map"
 #include "vector"
-#include "histogram_funcs.h"
-#include "helper_funcs.h"
+#include "string"
 
-class twoproton_pelee_overlay {
+class twoproton_pelee_bnb {
 public :
    TTree          *fChain;   //!pointer to the analyzed TTree or TChain
    Int_t           fCurrent; //!current Tree number in a TChain
@@ -33,8 +30,6 @@ public :
    Int_t           evt;
    UInt_t          trk_id;
    UInt_t          shr_id;
-   UInt_t          trk2_id;
-   UInt_t          shr2_id;
    Float_t         shr_energy_tot;
    Float_t         shr_energy;
    Float_t         shr_energy_tot_cali;
@@ -85,12 +80,6 @@ public :
    Float_t         shr_trkfitmedangle;
    Float_t         shrmoliereavg;
    Float_t         shrmoliererms;
-   Float_t         shr1shr2moliereavg;
-   Float_t         shr1shr2moliererms;
-   Float_t         shr1trk1moliereavg;
-   Float_t         shr1trk1moliererms;
-   Float_t         shr1trk2moliereavg;
-   Float_t         shr1trk2moliererms;
    UChar_t         ismerged;
    Float_t         merge_bestdot;
    Float_t         merge_bestdist;
@@ -159,17 +148,9 @@ public :
    Float_t         trk_bragg_pion;
    UInt_t          trk_hits_max;
    UInt_t          shr_hits_max;
-   UInt_t          trk_hits_2nd;
-   UInt_t          shr_hits_2nd;
    Float_t         trkshrhitdist0;
    Float_t         trkshrhitdist1;
    Float_t         trkshrhitdist2;
-   Float_t         trk2shrhitdist0;
-   Float_t         trk2shrhitdist1;
-   Float_t         trk2shrhitdist2;
-   Float_t         trk1trk2hitdist0;
-   Float_t         trk1trk2hitdist1;
-   Float_t         trk1trk2hitdist2;
    UInt_t          total_hits_y;
    Float_t         extra_energy_y;
    Float_t         trk_energy_hits_tot;
@@ -246,7 +227,6 @@ public :
    Int_t           nu_decay_mode;
    Int_t           interaction;
    Float_t         nu_e;
-   Float_t         nu_l;
    Float_t         nu_pt;
    Float_t         theta;
    Bool_t          isVtxInFiducial;
@@ -291,8 +271,6 @@ public :
    Float_t         pion_e;
    Float_t         pion_c;
    Float_t         pion_p;
-   Int_t           neta;
-   Float_t         eta_e;
    Int_t           nslice;
    Int_t           crtveto;
    Float_t         crthitpe;
@@ -368,25 +346,6 @@ public :
    Int_t           filter_ncpi0;
    Int_t           filter_pi0;
    Int_t           filter_ccinclusive;
-   map<string,vector<double> > *weights;
-   vector<unsigned short> *weightsFlux;
-   vector<unsigned short> *weightsGenie;
-   vector<unsigned short> *weightsReint;
-   Float_t         weightSpline;
-   Float_t         weightTune;
-   Float_t         weightSplineTimesTune;
-   Double_t        knobRPAup;
-   Double_t        knobRPAdn;
-   Double_t        knobCCMECup;
-   Double_t        knobCCMECdn;
-   Double_t        knobAxFFCCQEup;
-   Double_t        knobAxFFCCQEdn;
-   Double_t        knobVecFFCCQEup;
-   Double_t        knobVecFFCCQEdn;
-   Double_t        knobDecayAngMECup;
-   Double_t        knobDecayAngMECdn;
-   Double_t        knobThetaDelta2Npiup;
-   Double_t        knobThetaDelta2Npidn;
    Float_t         flash_pe;
    Float_t         flash_time;
    Float_t         nu_flashmatch_score;
@@ -744,8 +703,6 @@ public :
    TBranch        *b_evt;   //!
    TBranch        *b_trk_pfp_id;   //!
    TBranch        *b_shr_pfp_id;   //!
-   TBranch        *b_trk2_pfp_id;   //!
-   TBranch        *b_shr2_pfp_id;   //!
    TBranch        *b_shr_energy_tot;   //!
    TBranch        *b_shr_energy;   //!
    TBranch        *b_shr_energy_tot_cali;   //!
@@ -796,12 +753,6 @@ public :
    TBranch        *b_shr_trkfitmedangle;   //!
    TBranch        *b_shrmoliereavg;   //!
    TBranch        *b_shrmoliererms;   //!
-   TBranch        *b_shr1shr2moliereavg;   //!
-   TBranch        *b_shr1shr2moliererms;   //!
-   TBranch        *b_shr1trk1moliereavg;   //!
-   TBranch        *b_shr1trk1moliererms;   //!
-   TBranch        *b_shr1trk2moliereavg;   //!
-   TBranch        *b_shr1trk2moliererms;   //!
    TBranch        *b_ismerged;   //!
    TBranch        *b_merge_bestdot;   //!
    TBranch        *b_merge_bestdist;   //!
@@ -870,17 +821,9 @@ public :
    TBranch        *b_trk_bragg_pion;   //!
    TBranch        *b_trk_hits_max;   //!
    TBranch        *b_shr_hits_max;   //!
-   TBranch        *b_trk_hits_2nd;   //!
-   TBranch        *b_shr_hits_2nd;   //!
    TBranch        *b_trkshrhitdist0;   //!
    TBranch        *b_trkshrhitdist1;   //!
    TBranch        *b_trkshrhitdist2;   //!
-   TBranch        *b_trk2shrhitdist0;   //!
-   TBranch        *b_trk2shrhitdist1;   //!
-   TBranch        *b_trk2shrhitdist2;   //!
-   TBranch        *b_trk1trk2hitdist0;   //!
-   TBranch        *b_trk1trk2hitdist1;   //!
-   TBranch        *b_trk1trk2hitdist2;   //!
    TBranch        *b_total_hits_y;   //!
    TBranch        *b_extra_energy_y;   //!
    TBranch        *b_trk_energy_hits_tot;   //!
@@ -957,7 +900,6 @@ public :
    TBranch        *b_nu_decay_mode;   //!
    TBranch        *b_interaction;   //!
    TBranch        *b_nu_e;   //!
-   TBranch        *b_nu_l;   //!
    TBranch        *b_nu_pt;   //!
    TBranch        *b_theta;   //!
    TBranch        *b_isVtxInFiducial;   //!
@@ -1002,8 +944,6 @@ public :
    TBranch        *b_pion_e;   //!
    TBranch        *b_pion_c;   //!
    TBranch        *b_pion_p;   //!
-   TBranch        *b_neta;   //!
-   TBranch        *b_eta_e;   //!
    TBranch        *b_nslice;   //!
    TBranch        *b_crtveto;   //!
    TBranch        *b_crthitpe;   //!
@@ -1079,25 +1019,6 @@ public :
    TBranch        *b_filter_ncpi0;   //!
    TBranch        *b_filter_pi0;   //!
    TBranch        *b_filter_ccinclusive;   //!
-   TBranch        *b_weights;   //!
-   TBranch        *b_weightsFlux;   //!
-   TBranch        *b_weightsGenie;   //!
-   TBranch        *b_weightsReint;   //!
-   TBranch        *b_weightSpline;   //!
-   TBranch        *b_weightTune;   //!
-   TBranch        *b_weightSplineTimesTune;   //!
-   TBranch        *b_knobRPAup;   //!
-   TBranch        *b_knobRPAdn;   //!
-   TBranch        *b_knobCCMECup;   //!
-   TBranch        *b_knobCCMECdn;   //!
-   TBranch        *b_knobAxFFCCQEup;   //!
-   TBranch        *b_knobAxFFCCQEdn;   //!
-   TBranch        *b_knobVecFFCCQEup;   //!
-   TBranch        *b_knobVecFFCCQEdn;   //!
-   TBranch        *b_knobDecayAngMECup;   //!
-   TBranch        *b_knobDecayAngMECdn;   //!
-   TBranch        *b_knobThetaDelta2Npiup;   //!
-   TBranch        *b_knobThetaDelta2Npidn;   //!
    TBranch        *b_flash_pe;   //!
    TBranch        *b_flash_time;   //!
    TBranch        *b_nu_flashmatch_score;   //!
@@ -1448,8 +1369,8 @@ public :
    TBranch        *b_anglediff_U;   //!
    TBranch        *b_trkpid;   //!
 
-   twoproton_pelee_overlay(TTree *tree=0);
-   virtual ~twoproton_pelee_overlay();
+   twoproton_pelee_bnb(TTree *tree=0);
+   virtual ~twoproton_pelee_bnb();
    virtual Int_t    Cut(Long64_t entry);
    virtual Int_t    GetEntry(Long64_t entry);
    virtual Long64_t LoadTree(Long64_t entry);
@@ -1457,1045 +1378,79 @@ public :
    virtual void     Loop();
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
-   virtual void     Define_Histograms(); //defines histograms. works for all samples
-   virtual void     Fill_Histograms_Mine(int i, double wgt, int mc_n_threshold_muon, int mc_n_threshold_proton, int mc_n_threshold_pion0, double mc_n_threshold_pionpm, bool fv);
-   virtual void     Fill_Histograms_Raquel(int i, double wgt, bool fv);
-   virtual double   GetTrackMomentum(double trkrange, int pdg) const;
-   virtual void     Fill_Track_Plots(float value, int pdg, bool contained_start,bool contained_end, double wgt); //fills the track variables 
-   virtual void     Fill_Histograms_Particles(int mc_n_threshold_muon, int mc_n_threshold_proton, int mc_n_threshold_pion0, double mc_n_threshold_pionpm, bool fv,TVector3 vMuon, TLorentzVector muon, TVector3 vLead, TLorentzVector lead, TVector3 vRec, TLorentzVector rec, double wgt);
-   virtual void     Fill_Histograms_Particles_Raquel(TVector3 vMuon, TLorentzVector muon, TVector3 vLead, TLorentzVector lead, TVector3 vRec, TLorentzVector rec, double wgt, bool fv);
-   virtual void     Fill_Mine(int i, int j, double wgt);
-   virtual void     Fill_Raquel(int i, int j, double wgt);
-   virtual void     Fill_Particles(int j, TVector3 vMuon, TLorentzVector muon, TVector3 vLead, TLorentzVector lead, TVector3 vRec, TLorentzVector rec, double wgt);
-   virtual void     Fill_Particles_Raquel(int j, TVector3 vMuon, TLorentzVector muon, TVector3 vLead, TLorentzVector lead, TVector3 vRec, TLorentzVector rec, double wgt);
-   //virtual void     Fill_Particle_Plots(int y, float value);
-   virtual void Write_Histograms();
+   virtual void     Which_Run();
 
  private:
-   //Defining all the histograms becaues I wrote the classes stupidly
-   //////////////////////////////////////////////////////////////////
- 
-  //Total Histograms                                                                                              
-   static const int num = 4;
-  const char * total[num] = {"npfp","vtx_npfp","ntrack","nshower"};
-  TH1D * h_pfp_overlay[num]; //overlay
-  TH1D* h_pfp[num]; //bnb, ext, dirt
-
-  //Correlation Histograms                                                                                         
-  static const int num2d = 3;
-  const char * total2d[num2d] = {"reco","truth","truth_sce"};
-  const char * labelx[num2d] = {"reco x","true x","true x + sce"};
-  const char * labely[num2d] = {"reco y","true y","true y + sce"};
-  TH2D *h_correlation_overlay[num2d];
-      
-  static const int  number = 6; //number cuts                                                                        
-  static const int  number2 = 11; //categories I defined                                                            
-  static const int  number3 = 10; //categories raquel defined
-  const char * point[number] ={"_before_selection","_after_fv","_after_three_pfps","_after_track_cut","_after_connection_cut","_after_pid"}; //this defines histograms after each cut    
-  const char * channel[number2]={"_total","_cc0p0pi","_cc1p0pi","_cc2p0pi","_ccNp0pi",
-				 "_ccNp1pi","_ccNpNpi","_ccnue","_outfv","_nc","_other"}; //these are the channels I defined        
-  const char * channel2[number3] = {"_total","_ccQE","_ccCOH","_ccMEC","_ccRES","_ccDIS",
-				     "_ccNue","_nc","_outfv","_other"};//these are the channels that raquel defined
-  
-  TH1D* h_vtx_x_overlay[number][number2]; //reco x: overlay
-  TH1D* h_vtx_y_overlay[number][number2]; //reco y: overlay
-  TH1D* h_vtx_z_overlay[number][number2]; //reco z: overlay
-  TH1D* h_vtx_x_raquel[number][number3]; //reco x: overlay                                                                          
-  TH1D* h_vtx_y_raquel[number][number3]; //reco y: overlay                                                                        
-  TH1D* h_vtx_z_raquel[number][number3]; //reco z: overlay                                                                       
-  TH1D* h_topological_score_overlay[number][number2]; //overlay
-  TH1D* h_topological_score_raquel[number][number3]; //raquel
-  TH1D* h_cosmic_impact_parameter_overlay[number][number2]; //overlay
-  TH1D* h_cosmic_impact_parameter_raquel[number][number3]; //raquel
-
-  TH1D* h_vtx_x_mc[number][number2]; //mc x
-  TH1D* h_vtx_y_mc[number][number2]; //mc y 
-  TH1D* h_vtx_z_mc[number][number2]; //mc z
-  TH1D* h_vtx_x_mc_sce[number][number2]; //mc+sce x
-  TH1D* h_vtx_y_mc_sce[number][number2]; //mc+sce y
-  TH1D* h_vtx_z_mc_sce[number][number2]; //mc+sce z
-  TH1D* h_q2[number][number2]; //mc q2
-  TH1D* h_X[number][number2]; //mc x
-  TH1D* h_Y[number][number2]; //mc y
-  TH1D* h_Pt[number][number2]; //mc Pt
- 
-  TH1D* h_vtx_x_mc_raquel[number][number3]; //mc x raquel                                                                                   
-  TH1D* h_vtx_y_mc_raquel[number][number3]; //mc y                                                                                   
-  TH1D* h_vtx_z_mc_raquel[number][number3]; //mc z                                                                                   
-  TH1D* h_vtx_x_mc_sce_raquel[number][number3]; //mc+sce x                                                                          
-  TH1D* h_vtx_y_mc_sce_raquel[number][number3]; //mc+sce y                                                                           
-  TH1D* h_vtx_z_mc_sce_raquel[number][number3]; //mc+sce z                                                                           
-  TH1D* h_q2_raquel[number][number3]; //mc q2                                                                                        
-  TH1D* h_X_raquel[number][number3]; //mc x                                                                                          
-  TH1D* h_Y_raquel[number][number3]; //mc y                                                                                          
-  TH1D* h_Pt_raquel[number][number3]; //mc Pt   
-  
-  //Check of MEC weight
-  TH1D* h_mec_wgt[number];
-  
-  //Efficinecy Plots
-  TGraph* eff_graph = new TGraph(number); //efficiency as function of cuts
-  TGraph* pur_graph = new TGraph(number); //efficiency as function of purity
-  static const int num_threshold = 6;
-  const char* threshold[num_threshold] = {"_muon_contained","_muon_uncontained","_proton","_pion_plus","_pion_minus","_pion0"};
-  TH1D* h_mom_threshold_num[num_threshold]; //these are for the threshold determination plots: numerator of the the efficiency
-  TH1D* h_mom_threshold_denom[num_threshold]; //same as above but the denominator of the efficinecy
-  int num_bins_eff[num_threshold] = {50,50,50,50,50,50};
-  float x_high_eff[num_threshold] = {2.0,2.0,2.0,0.5,0.5,0.5};
-
-  //Track related variables
-  static const int num_part = 10;
-  const char* particle[num_part] = {"_total","_proton_contained","_proton_uncontained","_muon","_pionpm","_pion0","_electron","_gamma","_kaon","_other"};
-  static const int num_track = 4;
-  const char* variable[num_track] = {"_track_score","_track_vertex_distance","_track_length","_track_pid"};
-  TH1D* h_track_overlay[num_track][num_part]; //overlay
-  int num_bins_track[num_track] = {30,10,50,50};
-  double xlim_low_track[num_track] = {0.0,0.0,0.0,-1.0};
-  double xlim_high_track[num_track] = {1.0,10.0,50.0,1.0};
-
-  //All the single particle plots
-  static const int num_var = 4;
-  const char* var[num_var] = {"_mom","_E","_theta","_phi"};
-  int num_bins[num_var] = {50,50,30,10};
-  double xlim_low[num_var] = {0.0,0.0,-1.5,-3.15}; ///normaly 0.0 in first
-  double xlim_high_recoil[num_var] = {0.8,0.35,1.5,3.15};
-  double xlim_high_leading[num_var] = {1.2,0.6,1.5,3.15}; //normally 1.5 in first
-  double xlim_high_muon[num_var]={2.5,1,1.5,3.15};
-  const char* xlabel[num_var] ={"P [GeV/c]","E [GeV]","cos(#theta)","#phi [Rad]"};
-  TH1D* h_muon_overlay[num_var][number2]; //overlay
-  TH1D* h_recoil_overlay[num_var][number2];
-  TH1D* h_leading_overlay[num_var][number2];
-  TH1D* h_muon_raquel[num_var][number3];
-  TH1D* h_recoil_raquel[num_var][number3];
-  TH1D* h_leading_raquel[num_var][number3];
-    
-
-  //Interesting Physics plots
-  ////////////////////////////
-
-  //mine
-  TH1D* h_opening_angle_protons_overlay[number2];
-  TH1D* h_opening_angle_mu_leading_overlay[number2];
-  TH1D* h_opening_angle_mu_both_overlay[number2];
-  TH1D* h_delta_PT_overlay[number2];
-  TH1D* h_delta_alphaT_overlay[number2];
-  TH1D* h_delta_phiT_overlay[number2];
-  TH1D* h_cos_gamma_cm_overlay[number2];
-  TH1D* h_mom_struck_nuc_overlay[number2];
-  TH1D* h_tot_pz_overlay[number2];
-  TH1D* h_tot_E_overlay[number2];
-  TH1D* h_tot_E_minus_beam_overlay[number2];
-  TH1D* h_E_neutrino_overlay[number2];
-  TH1D* h_E_resolution_overlay[number2];
-  TH1D* h_PT_squared_overlay[number2];
-
-  //raquel
-  TH1D* h_opening_angle_protons_raquel[number3];
-  TH1D* h_opening_angle_mu_leading_raquel[number3];
-  TH1D* h_opening_angle_mu_both_raquel[number3];
-  TH1D* h_delta_PT_raquel[number3];
-  TH1D* h_delta_alphaT_raquel[number3];
-  TH1D* h_delta_phiT_raquel[number3];
-  TH1D* h_cos_gamma_cm_raquel[number3];
-  TH1D* h_mom_struck_nuc_raquel[number3];
-  TH1D* h_tot_pz_raquel[number3];
-  TH1D* h_tot_E_raquel[number3];
-  TH1D* h_tot_E_minus_beam_raquel[number3];
-  TH1D* h_E_neutrino_raquel[number3];
-  TH1D* h_E_resolution_raquel[number3];
-  TH1D* h_PT_squared_raquel[number3];
-
-
-  vector<TH1*> h_list; //list of all the 1D histograms
-
-  //defining class stuff
-  histogram_funcs hist;
-  helper_funcs cuts; //helper_funcs.h 
-  
-  //masses
-  double MASS_PROTON = 0.93827208;
-  double MASS_MUON = 0.10565837;
-  double NEUTRON_MASS = 0.93956541; // GeV  
-
-  //add the protons together in the stv calculations
-  bool add_protons = true;
-
-  //Other parameters:                                                                                                                                                                                  
-  double open_angle; //note this is the cos(opening angle)                                                                                                                                             
-  double open_angle_mu; //note this is the cos(opening angle)                                                         
-  double open_angle_mu_proton;
-  double delta_pT; //stv delta_pT                                                                                                                                                                      
-  double delta_alphaT; //stv delta_alphaT                                                                                                                                                              
-  double delta_phiT; //stv delta_phiT                                                                                                                                                                  
-  double cos_gamma_lab; //cos(opening angle) in lab                                                                                                                                                    
-  double cos_gamma_cm; //cos(opening angle) in cm                                                                                                                                                      
-  double En; //energy of struck nucleon                                                                                                                                                                
-  double p_struck_nuc; //momentum of the struck nucleon                                                                                                                                                
-  double pz_tot;
-  double mec_wgt;
-
-  //number of generated event/channel                                                                             
-  int cc0p0pi[number+1] = {0}; //number-1 is after pid. number then would be particle specifics...should be same as number-1
-  int cc1p0pi[number+1] = {0};
-  int cc2p0pi[number+1] = {0};
-  int ccNp0pi[number+1] = {0};
-  int ccNp1pi[number+1] = {0};
-  int ccNpNpi[number+1] = {0};
-  int ccnue[number+1] = {0};
-  int outfv[number+1] = {0};
-  int nc[number+1] = {0};
-  int other[number+1] = {0};
-   
-  //number of generated event/channel                                                                             
-  int qel[number+1] = {0};
-  int res[number+1] = {0};
-  int mec[number+1] = {0};
-  int coh[number+1] = {0};
-  int dis[number+1] = {0};
-  int ccnue_raquel[number+1] = {0};
-  int outfv_raquel[number+1] = {0};
-  int nc_raquel[number+1] = {0};
-  int other_raquel[number+1] = {0};
-  int res_count[4] = {0};
-  
-  int other_else = 0;
-  int neutron = 0;
-  int neutrino = 0;
-  int zeros = 0;
-  int total_protons = 0;
-  int contain = 0;
-  int uncontain = 0;
+   const char* directory;
+   const char* file;
+   double pot_wgt;
 
 };
 
 #endif
 
-#ifdef twoproton_pelee_overlay_cxx
-twoproton_pelee_overlay::twoproton_pelee_overlay(TTree *tree) : fChain(0) 
+void twoproton_pelee_bnb::Which_Run(){
+
+  char response;
+  std::cout<<"Which Run Are we Looking at?"<<std::endl;
+  std::cout<<" 1 = Run 1 \n 2 = Run 2 \n 3 = Run 3"<<std::endl;
+  std::cin>>response;
+  
+  if(response =='1'){
+    directory = "Run1";
+    file = "/uboone/data/users/davidc/searchingfornues/v08_00_00_41/cc0pinp/0617/nslice/run1_neutrinoselection_filt_numu_ALL.root";
+    pot_wgt = 1;
+  } else if(response == '2'){
+    directory = "Run2";
+    file = "/uboone/data/users/davidc/searchingfornues/v08_00_00_41/cc0pinp/0617/nslice/run2_neutrinoselection_filt_numu_ALL.root";
+    pot_wgt = 1;
+  } else if(response == '3'){
+    directory ="Run3";
+    file = "/uboone/data/users/davidc/searchingfornues/v08_00_00_41/cc0pinp/0617/nslice/run3_neutrinoselection_filt_numu_ALL.root";
+    pot_wgt = 1;
+  } else{
+    std::cout<<"Invalid Response. Please Type 1, 2, or 3 for Run 1,Run 2, and Run 3 samples respectively."<<std::endl;
+  }
+  
+} //end of which_run
+  
+
+#ifdef twoproton_pelee_bnb_cxx
+twoproton_pelee_bnb::twoproton_pelee_bnb(TTree *tree) : fChain(0) 
 {
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
-   if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/pnfs/uboone/persistent/users/davidc/searchingfornues/v08_00_00_43/0928/prodgenie_bnb_nu_uboone_overlay_mcc9.1_v08_00_00_26_filter_run1_reco2_reco2.root");
-      if (!f || !f->IsOpen()) {
-         f = new TFile("/pnfs/uboone/persistent/users/davidc/searchingfornues/v08_00_00_43/0928/prodgenie_bnb_nu_uboone_overlay_mcc9.1_v08_00_00_26_filter_run1_reco2_reco2.root");
-      }
-      TDirectory * dir = (TDirectory*)f->Get("/pnfs/uboone/persistent/users/davidc/searchingfornues/v08_00_00_43/0928/prodgenie_bnb_nu_uboone_overlay_mcc9.1_v08_00_00_26_filter_run1_reco2_reco2.root:/nuselection");
-      dir->GetObject("NeutrinoSelectionFilter",tree);
 
-   }
-   Init(tree);
+  std::vector<const char*> files = {"/uboone/data/users/davidc/searchingfornues/v08_00_00_43/0702/run1/data_bnb_mcc9.1_v08_00_00_25_reco2_C1_beam_good_reco2_5e19.root"};//{"/uboone/data/users/davidc/searchingfornues/v08_00_00_41/cc0pinp/0617/nslice/run1_neutrinoselection_filt_numu_ALL.root",
+				   //    "/uboone/data/users/davidc/searchingfornues/v08_00_00_41/cc0pinp/0617/nslice/run2_neutrinoselection_filt_numu_ALL.root",
+    //   "/uboone/data/users/davidc/searchingfornues/v08_00_00_41/cc0pinp/0617/nslice/run3_neutrinoselection_filt_numu_ALL.root"};
+
+  for(int i=0; i < files.size(); i++){
+    if (tree == 0) {
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject(Form("%s",files[i]));//"/uboone/data/users/davidc/searchingfornues/v08_00_00_43/0702/run1/data_bnb_mcc9.1_v08_00_00_25_reco2_C1_beam_good_reco2_5e19.root");
+      if (!f || !f->IsOpen()) {
+	f = new TFile(Form("%s",files[i]));//"/uboone/data/users/davidc/searchingfornues/v08_00_00_43/0702/run1/data_bnb_mcc9.1_v08_00_00_25_reco2_C1_beam_good_reco2_5e19.root");
+      }
+      TDirectory * dir = (TDirectory*)f->Get(Form("%s:/nuselection",files[i]));//"/uboone/data/users/davidc/searchingfornues/v08_00_00_43/0702/run1/data_bnb_mcc9.1_v08_00_00_25_reco2_C1_beam_good_reco2_5e19.root:/nuselection");
+      dir->GetObject("NeutrinoSelectionFilter",tree);
+    }
+    Init(tree);
+  }
 }
 
-twoproton_pelee_overlay::~twoproton_pelee_overlay()
+twoproton_pelee_bnb::~twoproton_pelee_bnb()
 {
    if (!fChain) return;
    delete fChain->GetCurrentFile();
 }
 
-void twoproton_pelee_overlay::Define_Histograms(){
-
-    //Total Histograms                                                                                                       
-    for(int i=0; i < num; i++){
-      h_pfp_overlay[i] = new TH1D(Form("h_%s_overlay",total[i]),Form("h_%s_overlay",total[i]),10,0,10);
-      h_list.push_back(h_pfp_overlay[i]);
-    }
-
-    //Correlation Histograms                                                                                                           
-    for(int i=0; i < num2d; i++){
-      h_correlation_overlay[i] = new TH2D(Form("h_correlation_overlay_%s",total2d[i]),Form(";%s ;%s",labelx[i],labely[i]),40,0,275,40,-125,-125);
-    }
-  
-    //Now to do the channel seperated histograms
-    for(int i=0; i< number; i++){
-      h_mec_wgt[i] = new TH1D(Form("h_mec_wgt%s",point[i]),Form("h_mec_wgt%s; Weight; Events",point[i]),50,-1,1);
-      h_list.push_back(h_mec_wgt[i]);
-
-      for(int j=0; j < number2; j++){ //my stuff                                                                                        
-	h_vtx_x_overlay[i][j]=new TH1D(Form("h_vtx_x%s%s",point[i],channel[j]),Form("h_vtx_x%s%s",point[i],channel[j]),50,0,250);
-	h_vtx_y_overlay[i][j]=new TH1D(Form("h_vtx_y%s%s",point[i],channel[j]),Form("h_vtx_y%s%s",point[i],channel[j]),50,-125,125);
-	h_vtx_z_overlay[i][j]=new TH1D(Form("h_vtx_z%s%s",point[i],channel[j]),Form("h_vtx_z%s%s",point[i],channel[j]),50,0,1050);
-	h_vtx_x_mc[i][j]=new TH1D(Form("h_vtx_x_mc%s%s",point[i],channel[j]),Form("h_vtx_x_mc%s%s",point[i],channel[j]),40,0,275);
-	h_vtx_y_mc[i][j]=new TH1D(Form("h_vtx_y_mc%s%s",point[i],channel[j]),Form("h_vtx_y_mc%s%s",point[i],channel[j]),40,-125,125);
-	h_vtx_z_mc[i][j]=new TH1D(Form("h_vtx_z_mc%s%s",point[i],channel[j]),Form("h_vtx_z_mc%s%s",point[i],channel[j]),50,0,1050);
-	h_vtx_x_mc_sce[i][j]=new TH1D(Form("h_vtx_x_mc_sce%s%s",point[i],channel[j]),Form("h_vtx_x_mc_sce%s%s",point[i],channel[j]),40,0,275);
-	h_vtx_y_mc_sce[i][j]=new TH1D(Form("h_vtx_y_mc_sce%s%s",point[i],channel[j]),Form("h_vtx_y_mc_sce%s%s",point[i],channel[j]),40,-125,125);
-	h_vtx_z_mc_sce[i][j]=new TH1D(Form("h_vtx_z_mc_sce%s%s",point[i],channel[j]),Form("h_vtx_z_mc_sce%s%s",point[i],channel[j]),50,0,1050);
-	h_q2[i][j] = new TH1D(Form("h_q2%s%s",point[i],channel[j]),Form("h_q2_x%s%s",point[i],channel[j]),20,0,2);
-	h_X[i][j] = new TH1D(Form("h_X%s%s",point[i],channel[j]),Form("h_X_x%s%s",point[i],channel[j]),20,0,2);
-	h_Y[i][j] = new TH1D(Form("h_Y%s%s",point[i],channel[j]),Form("h_Y_x%s%s",point[i],channel[j]),10,0,1);
-	h_Pt[i][j] = new TH1D(Form("h_Pt%s%s",point[i],channel[j]),Form("h_Pt_x%s%s",point[i],channel[j]),20,0,2);
-	h_cosmic_impact_parameter_overlay[i][j] = new TH1D(Form("h_cosmic_impact_parameter%s%s",point[i],channel[j]),Form("h_cosmic_impact_parameter%s%s; Cosmic Impact Distance (cm); No. Events",point[i],channel[j]),20,0,200);
-	h_topological_score_overlay[i][j] = new TH1D(Form("h_topological_score%s%s",point[i],channel[j]),Form("h_topological_score%s%s; Topological Score; No. Events",point[i],channel[j]),50,0.0,1.0); //30 for wouter, 50 for steven
-
-	h_list.push_back(h_topological_score_overlay[i][j]);
-	h_list.push_back(h_cosmic_impact_parameter_overlay[i][j]);
-	h_list.push_back(h_vtx_x_overlay[i][j]);
-	h_list.push_back(h_vtx_y_overlay[i][j]);
-	h_list.push_back(h_vtx_z_overlay[i][j]);
-	h_list.push_back(h_vtx_x_mc[i][j]);
-	h_list.push_back(h_vtx_y_mc[i][j]);
-	h_list.push_back(h_vtx_z_mc[i][j]);
-	h_list.push_back(h_vtx_x_mc_sce[i][j]);
-	h_list.push_back(h_vtx_y_mc_sce[i][j]);
-	h_list.push_back(h_vtx_z_mc_sce[i][j]);
-	h_list.push_back(h_q2[i][j]);
-	h_list.push_back(h_X[i][j]);
-	h_list.push_back(h_Y[i][j]);
-	h_list.push_back(h_Pt[i][j]);
-
-      }
-
-      for(int j=0; j < number3; j++){//raquel's stuff
-	h_vtx_x_raquel[i][j]=new TH1D(Form("h_vtx_x_raquel%s%s",point[i],channel2[j]),Form("h_vtx_x_raquel%s%s",point[i],channel2[j]),50,0,250);
-	h_vtx_y_raquel[i][j]=new TH1D(Form("h_vtx_y_raquel%s%s",point[i],channel2[j]),Form("h_vtx_y_raquel%s%s",point[i],channel2[j]),50,-125,125);
-	h_vtx_z_raquel[i][j]=new TH1D(Form("h_vtx_z_raquel%s%s",point[i],channel2[j]),Form("h_vtx_z_raquel%s%s",point[i],channel2[j]),50,0,1050);
-	h_vtx_x_mc_raquel[i][j]=new TH1D(Form("h_vtx_x_m_raquel%s%s",point[i],channel2[j]),Form("h_vtx_x_mc_raquel%s%s",point[i],channel2[j]),40,0,275);
-	h_vtx_y_mc_raquel[i][j]=new TH1D(Form("h_vtx_y_mc_raquel%s%s",point[i],channel2[j]),Form("h_vtx_y_mc_raquel%s%s",point[i],channel2[j]),40,-125,125);
-	h_vtx_z_mc_raquel[i][j]=new TH1D(Form("h_vtx_z_mc_raquel%s%s",point[i],channel2[j]),Form("h_vtx_z_mc_raquel%s%s",point[i],channel2[j]),50,0,1050);
-	h_vtx_x_mc_sce_raquel[i][j]=new TH1D(Form("h_vtx_x_mc_sce_raquel%s%s",point[i],channel2[j]),Form("h_vtx_x_mc_sce_raquel%s%s",point[i],channel2[j]),40,0,275);
-	h_vtx_y_mc_sce_raquel[i][j]=new TH1D(Form("h_vtx_y_mc_sce-raquel%s%s",point[i],channel2[j]),Form("h_vtx_y_mc_sce_raquel%s%s",point[i],channel2[j]),40,-125,125);
-	h_vtx_z_mc_sce_raquel[i][j]=new TH1D(Form("h_vtx_z_mc_sce_raquel%s%s",point[i],channel2[j]),Form("h_vtx_z_mc_sce_raquel%s%s",point[i],channel2[j]),50,0,1050);
-	h_q2_raquel[i][j] = new TH1D(Form("h_q2_raquel%s%s",point[i],channel2[j]),Form("h_q2_raquel%s%s",point[i],channel2[j]),20,0,2);
-	h_X_raquel[i][j] = new TH1D(Form("h_X_raquel%s%s",point[i],channel2[j]),Form("h_X_raquel%s%s",point[i],channel2[j]),20,0,2);
-	h_Y_raquel[i][j] = new TH1D(Form("h_Y_raquel%s%s",point[i],channel2[j]),Form("h_Y_raquel%s%s",point[i],channel2[j]),10,0,1);
-	h_Pt_raquel[i][j] = new TH1D(Form("h_Pt_raquel%s%s",point[i],channel2[j]),Form("h_Pt_raquel%s%s",point[i],channel2[j]),20,0,2);
-	h_cosmic_impact_parameter_raquel[i][j] = new TH1D(Form("h_cosmic_impact_parameter_raquel%s%s",point[i],channel2[j]),Form("h_cosmic_impact_parameter_raquel%s%s; Cosmic Impact Distance (cm); No. Events",point[i],channel2[j]),20,0,200);
-	h_topological_score_raquel[i][j] = new TH1D(Form("h_topological_score_raquel%s%s",point[i],channel2[j]),Form("h_topological_score_raquel%s%s; Topological Score; No. Events",point[i],channel2[j]),50,0.0,1.0); //30 wouter/50 steven
-
-	h_list.push_back(h_topological_score_raquel[i][j]);
-	h_list.push_back(h_cosmic_impact_parameter_raquel[i][j]);
-	h_list.push_back(h_vtx_x_raquel[i][j]);
-	h_list.push_back(h_vtx_y_raquel[i][j]);
-	h_list.push_back(h_vtx_z_raquel[i][j]);
-	h_list.push_back(h_vtx_x_mc_raquel[i][j]);
-	h_list.push_back(h_vtx_y_mc_raquel[i][j]);
-	h_list.push_back(h_vtx_z_mc_raquel[i][j]);
-	h_list.push_back(h_vtx_x_mc_sce_raquel[i][j]);
-	h_list.push_back(h_vtx_y_mc_sce_raquel[i][j]);
-	h_list.push_back(h_vtx_z_mc_sce_raquel[i][j]);
-	h_list.push_back(h_q2_raquel[i][j]);
-	h_list.push_back(h_X_raquel[i][j]);
-	h_list.push_back(h_Y_raquel[i][j]);
-	h_list.push_back(h_Pt_raquel[i][j]);
-
-      }
-    }
-
-    for(int j=0; j < num_track; j++){
-      for(int i=0; i < num_part; i++){
-	h_track_overlay[j][i] = new TH1D(Form("h_track%s%s",variable[j],particle[i]),Form("h_track%s%s",variable[j],particle[i]),num_bins_track[j],xlim_low_track[j],xlim_high_track[j]);
-	h_list.push_back(h_track_overlay[j][i]);
-      }
-    }
-
-    //Efficiency plots
-    for(int i =0; i < num_threshold; i++){
-      h_mom_threshold_num[i] = new TH1D(Form("h_mom_threshold_num%s",threshold[i]),Form("h_mom_threshold_num%s",threshold[i]),num_bins_eff[i],0,x_high_eff[i]);
-      h_mom_threshold_denom[i] = new TH1D(Form("h_mom_threshold_denom%s",threshold[i]),Form("h_mom_threshold_denom%s",threshold[i]),num_bins_eff[i],0,x_high_eff[i]);
-      h_list.push_back(h_mom_threshold_num[i]);
-      h_list.push_back(h_mom_threshold_denom[i]);
-    }
-
-    //particle specific plots
-    for(int j = 0; j < num_var; j++){
-      for(int k = 0; k < number2; k++){
-	h_muon_overlay[j][k] = new TH1D(Form("h_muon%s%s",var[j],channel[k]),Form(" h_muon%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_muon[j]);
-	h_recoil_overlay[j][k] = new TH1D(Form("h_recoil%s%s",var[j],channel[k]),Form("h_recoil%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_recoil[j]);
-	h_leading_overlay[j][k] = new TH1D(Form("h_leading%s%s",var[j],channel[k]),Form("h_leading%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_leading[j]);
-	h_list.push_back(h_muon_overlay[j][k]);
-	h_list.push_back(h_recoil_overlay[j][k]);
-	h_list.push_back(h_leading_overlay[j][k]);
-      }
-    }
-
-    for(int j = 0; j < num_var; j++){
-      for(int k = 0; k < number3; k++){
-	h_muon_raquel[j][k] = new TH1D(Form("h_muon_raquel%s%s",var[j],channel2[k]),Form(" h_muon_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_muon[j]);
-	h_recoil_raquel[j][k] = new TH1D(Form("h_recoil_raquel%s%s",var[j],channel2[k]),Form("h_recoil_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_recoil[j]);
-	h_leading_raquel[j][k] = new TH1D(Form("h_leading_raquel%s%s",var[j],channel2[k]),Form("h_leading_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_leading[j]);
-	h_list.push_back(h_muon_raquel[j][k]);
-	h_list.push_back(h_recoil_raquel[j][k]);
-	h_list.push_back(h_leading_raquel[j][k]);
-      }
-    }
-
-    //more particle specific plots
-    for(int i = 0; i < number2; i++){
-      h_opening_angle_protons_overlay[i] = new TH1D(Form("h_opening_angle_protons%s",channel[i]),Form("h_opening_angle_protons%s; Opening Angle btwn Two Protons; Counts",channel[i]),30,-1.5,1.5); //50, 0, 1.5        
-      h_opening_angle_mu_leading_overlay[i] = new TH1D(Form("h_opening_angle_mu_leading%s",channel[i]),Form("h_opening_angle_mu_leading%s;Opening Angle btwn Muon and Leading Proton; Counts",channel[i]),30,-1.5,1.5);
-      
-
-      h_delta_PT_overlay[i] = new TH1D(Form("h_delta_PT%s",channel[i]),Form("h_deltaPT%s;#delta P_{T} [GeV/c];Counts",channel[i]),15,0,1); //normally 10 bins
-      h_delta_alphaT_overlay[i] = new TH1D(Form("h_delta_alphaT%s",channel[i]),Form("h_delta_alphaT%s; #delta #alpha_{T} [Deg.];Counts",channel[i]),10,0,180); //0,180                 
-      h_delta_phiT_overlay[i] = new TH1D(Form("h_delta_phiT%s",channel[i]),Form("h_delta_phiT%s; #delta #phi_{T} [Deg.];Counts",channel[i]),10,0,180); //0,180                   
-      h_cos_gamma_cm_overlay[i] = new TH1D(Form("h_cos_gamma_cm%s",channel[i]),Form("h_cos_gamma_cm%s; cos(#gamma_{COM}); Counts",channel[i]),30,-1.5,1.5);
-      h_mom_struck_nuc_overlay[i] = new TH1D(Form("h_mom_struck_nuc%s",channel[i]),Form("h_mom_struck_nuc%s; P_{Init}; Counts", channel[i]),30, 0, 1);
-      h_tot_pz_overlay[i] = new TH1D(Form("h_tot_pz%s",channel[i]),Form("h_tot_pz%s; P_{Z}^{Total}; Counts",channel[i]), 20, 0, 2);
-      h_tot_E_overlay[i] = new TH1D(Form("h_tot_E%s",channel[i]),Form("h_tot_E%s; Total Energy; Counts;",channel[i]),50,0,2.5);
-      h_tot_E_minus_beam_overlay[i] = new TH1D(Form("h_tot_E_minus_beam%s",channel[i]),Form("h_tot_E_minus_beam%s; Total Energy Remaining (MeV/c); Counts;",channel[i]),100,-100,0);
-      h_E_neutrino_overlay[i] =  new TH1D(Form("h_E_neutrino%s",channel[i]),Form("h_E_neutrino%s; Total Energy; Counts;",channel[i]),50,0,2.5);
-      h_opening_angle_mu_both_overlay[i] = new TH1D(Form("h_opening_angle_mu_both%s",channel[i]),Form("h_opening_angle_mu_both%s; Opening Angle btwn Muon and Total Proton Momentum; Counts",channel[i]),30,-1.5,1.5);
-      h_E_resolution_overlay[i] = new TH1D(Form("h_E_resolution%s",channel[i]),Form("h_E_resolution%s; Energy Resolution (GeV/c); Counts",channel[i]),100,-1.0,1.0);
-      h_PT_squared_overlay[i] = new TH1D(Form("h_PT_squared%s",channel[i]),Form("h_PT_squared%s; P_{T}^{2}; Counts", channel[i]),50,0,5);
-
-
-      h_list.push_back(h_PT_squared_overlay[i]);
-      h_list.push_back(h_E_resolution_overlay[i]);
-      h_list.push_back(h_opening_angle_mu_both_overlay[i]);
-      h_list.push_back(h_E_neutrino_overlay[i]);
-      h_list.push_back(h_tot_E_overlay[i]);
-      h_list.push_back(h_tot_E_minus_beam_overlay[i]);
-      h_list.push_back(h_mom_struck_nuc_overlay[i]);
-      h_list.push_back(h_tot_pz_overlay[i]);
-      h_list.push_back(h_cos_gamma_cm_overlay[i]);
-      h_list.push_back(h_opening_angle_protons_overlay[i]);
-      h_list.push_back(h_opening_angle_mu_leading_overlay[i]);
-      h_list.push_back(h_delta_PT_overlay[i]);
-      h_list.push_back(h_delta_alphaT_overlay[i]);
-      h_list.push_back(h_delta_phiT_overlay[i]);
-    }
-
-    for(int i = 0; i < number3; i++){
-      h_opening_angle_protons_raquel[i] = new TH1D(Form("h_opening_angle_protons_raquel%s",channel2[i]),Form("h_opening_angle_protons_raquel%s; Opening Angle btwn Two Protons; Counts",channel2[i]),30,-1.5,1.5); //50, 0, 1.5        
-      h_opening_angle_mu_leading_raquel[i] = new TH1D(Form("h_opening_angle_mu_leading_raquel%s",channel2[i]),Form("h_opening_angle_mu_leading_raquel%s;Opening Angle btwn Muon and Leading Proton; Counts",channel2[i]),30,-1.5,1.5);
-      h_delta_PT_raquel[i] = new TH1D(Form("h_delta_PT_raquel%s",channel2[i]),Form("h_deltaPT_raquel%s;#delta P_{T} [GeV/c];Counts",channel2[i]),15,0,1); //normally 10 bins
-      h_delta_alphaT_raquel[i] = new TH1D(Form("h_delta_alphaT_raquel%s",channel2[i]),Form("h_delta_alphaT_raquel%s; #delta #alpha_{T} [Deg.];Counts",channel2[i]),10,0,180); //0,180                 
-      h_delta_phiT_raquel[i] = new TH1D(Form("h_delta_phiT_raquel%s",channel2[i]),Form("h_delta_phiT_raquel%s; #delta #phi_{T} [Deg.];Counts",channel2[i]),10,0,180); //0,180                   
-      h_cos_gamma_cm_raquel[i] = new TH1D(Form("h_cos_gamma_cm_raquel%s",channel2[i]),Form("h_cos_gamma_cm_raquel%s; cos(#gamma_{COM}); Counts",channel2[i]),30,-1.5,1.5);
-      h_mom_struck_nuc_raquel[i] = new TH1D(Form("h_mom_struck_nuc_raquel%s",channel2[i]),Form("h_mom_struck_nuc_raquel%s; P_{Init}; Counts", channel2[i]),30, 0, 1);
-      h_tot_pz_raquel[i] = new TH1D(Form("h_tot_pz_raquel%s",channel2[i]),Form("h_tot_pz_raquel%s; P_{Z}^{Total}; Counts",channel2[i]), 20, 0, 2);
-      h_tot_E_raquel[i] = new TH1D(Form("h_tot_E_raquel%s",channel2[i]),Form("h_tot_E_raquel%s; Total Energy; Counts;",channel2[i]),50,0,2.5);
-      h_tot_E_minus_beam_raquel[i] = new TH1D(Form("h_tot_E_minus_beam_raquel%s",channel2[i]),Form("h_tot_E_minus_beam_raquel%s; Total Energy; Counts;",channel2[i]),100,-100,0);
-      h_E_neutrino_raquel[i] =  new TH1D(Form("h_E_neutrino_raquel%s",channel2[i]),Form("h_E_neutrino_raquel%s; Total Energy; Counts;",channel2[i]),50,0,2.5);
-      h_opening_angle_mu_both_raquel[i] = new TH1D(Form("h_opening_angle_mu_both_raquel%s",channel2[i]),Form("h_opening_angle_mu_both_raquel%s; Opening Angle btwn Muon and Total Proton Momentum; Counts",channel2[i]),30,-1.5,1.5);
-      h_E_resolution_raquel[i] = new TH1D(Form("h_E_resolution_raquel%s",channel2[i]),Form("h_E_resolution_raquel%s; Energy Resolution (GeV/c); Counts",channel2[i]),100,-1.0,1.0);
-      h_PT_squared_raquel[i] = new TH1D(Form("h_PT_squared_raquel%s",channel2[i]),Form("h_PT_squared_raquel%s; P_{T}^{2}; Counts", channel2[i]),50,0,5);
-
-
-      h_list.push_back(h_PT_squared_raquel[i]);
-      h_list.push_back(h_E_resolution_raquel[i]);
-      h_list.push_back(h_opening_angle_mu_both_raquel[i]);
-      h_list.push_back(h_E_neutrino_raquel[i]);
-      h_list.push_back(h_tot_E_raquel[i]);
-      h_list.push_back(h_tot_E_minus_beam_raquel[i]);
-      h_list.push_back(h_mom_struck_nuc_raquel[i]);
-      h_list.push_back(h_tot_pz_raquel[i]);
-      h_list.push_back(h_cos_gamma_cm_raquel[i]);
-      h_list.push_back(h_opening_angle_protons_raquel[i]);
-      h_list.push_back(h_opening_angle_mu_leading_raquel[i]);
-      h_list.push_back(h_delta_PT_raquel[i]);
-      h_list.push_back(h_delta_alphaT_raquel[i]);
-      h_list.push_back(h_delta_phiT_raquel[i]);
-    }
-
-    //make sure to handle the weights correcly
-    for (int i = 0; i < h_list.size(); i++){
-      h_list[i]->Sumw2();
-    }
-    ///for(int i = 0; i < h_list_2D.size(); i++){
-    // h_list_2D[i]->Sumw2();
-    // }
-}
-
-double twoproton_pelee_overlay::GetTrackMomentum(double trkrange, int pdg) const
-{
-    /* Muon range-momentum tables from CSDA (Argon density = 1.4 g/cm^3)
-       website:
-       http://pdg.lbl.gov/2012/AtomicNuclearProperties/MUON_ELOSS_TABLES/muonloss_289.pdf
-
-       CSDA table values:
-       float Range_grampercm[30] = {9.833E-1, 1.786E0, 3.321E0,
-       6.598E0, 1.058E1, 3.084E1, 4.250E1, 6.732E1, 1.063E2, 1.725E2,
-       2.385E2, 4.934E2, 6.163E2, 8.552E2, 1.202E3, 1.758E3, 2.297E3,
-       4.359E3, 5.354E3, 7.298E3, 1.013E4, 1.469E4, 1.910E4, 3.558E4,
-       4.326E4, 5.768E4, 7.734E4, 1.060E5, 1.307E5}; float KE_MeV[30] = {10, 14,
-       20, 30, 40, 80, 100, 140, 200, 300, 400, 800, 1000, 1400, 2000, 3000,
-       4000, 8000, 10000, 14000, 20000, 30000, 40000, 80000, 100000, 140000,
-       200000, 300000, 400000};
-
-       Functions below are obtained by fitting polynomial fits to KE_MeV vs
-       Range (cm) graph. A better fit was obtained by splitting the graph into
-       two: Below range<=200cm,a polynomial of power 4 was a good fit; above
-       200cm, a polynomial of power 6 was a good fit
-
-       Fit errors for future purposes:
-       Below 200cm, Forpoly4 fit: p0 err=1.38533;p1 err=0.209626; p2
-       err=0.00650077; p3 err=6.42207E-5; p4 err=1.94893E-7; Above 200cm,
-       Forpoly6 fit: p0 err=5.24743;p1 err=0.0176229; p2 err=1.6263E-5; p3
-       err=5.9155E-9; p4 err=9.71709E-13; p5 err=7.22381E-17;p6
-       err=1.9709E-21;*/
-    ///////////////////////////////////////////////////////////////////////////
-    //*********For muon, the calculations are valid up to 1.91E4 cm range
-    //corresponding to a Muon KE of 40 GeV**********//
-    ///////////////////////////////////////////////////////////////////////////
-    /*Proton range-momentum tables from CSDA (Argon density = 1.4 g/cm^3):
-      website: https://physics.nist.gov/PhysRefData/Star/Text/PSTAR.html
-
-      CSDA values:
-      double KE_MeV_P_Nist[31]={10, 15, 20, 30, 40, 80, 100, 150, 200, 250, 300,
-      350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000,
-      1500, 2000, 2500, 3000, 4000, 5000};
-
-      double Range_gpercm_P_Nist[31]={1.887E-1,3.823E-1, 6.335E-1, 1.296,
-      2.159, 7.375, 1.092E1, 2.215E1, 3.627E1, 5.282E1, 7.144E1,
-      9.184E1, 1.138E2, 1.370E2, 1.614E2, 1.869E2, 2.132E2, 2.403E2,
-      2.681E2, 2.965E2, 3.254E2, 3.548E2, 3.846E2, 4.148E2, 4.454E2,
-      7.626E2, 1.090E3, 1.418E3, 1.745E3, 2.391E3, 3.022E3};
-
-      Functions below are obtained by fitting power and polynomial fits to
-      KE_MeV vs Range (cm) graph. A better fit was obtained by splitting the
-      graph into two: Below range<=80cm,a a*(x^b) was a good fit; above 80cm, a
-      polynomial of power 6 was a good fit
-
-      Fit errors for future purposes:
-      For power function fit: a=0.388873; and b=0.00347075
-      Forpoly6 fit: p0 err=3.49729;p1 err=0.0487859; p2 err=0.000225834; p3
-      err=4.45542E-7; p4 err=4.16428E-10; p5 err=1.81679E-13;p6
-      err=2.96958E-17;*/
-    ///////////////////////////////////////////////////////////////////////////
-    //*********For proton, the calculations are valid up to 3.022E3 cm range
-    //corresponding to a Muon KE of 5 GeV**********//
-    ///////////////////////////////////////////////////////////////////////////
-    if (trkrange < 0 || std::isnan(trkrange)) {
-      return -1.;
-    }
-    double KE, Momentum, M;
-    constexpr double Muon_M = 105.7, Proton_M = 938.272;
-    if (abs(pdg) == 2212) {
-      M = Proton_M;
-      if (trkrange > 0 && trkrange <= 80)
-        KE = 29.9317 * std::pow(trkrange, 0.586304);
-      else if (trkrange > 80 && trkrange <= 3.022E3)
-        KE =
-          149.904 + (3.34146 * trkrange) + (-0.00318856 * trkrange * trkrange) +
-          (4.34587E-6 * trkrange * trkrange * trkrange) +
-          (-3.18146E-9 * trkrange * trkrange * trkrange * trkrange) +
-          (1.17854E-12 * trkrange * trkrange * trkrange * trkrange * trkrange) +
-          (-1.71763E-16 * trkrange * trkrange * trkrange * trkrange * trkrange *
-           trkrange);
-      else
-        KE = -999;
-    } else
-      KE = -999;
-    if (KE < 0)
-      Momentum = -999;
-    else
-      Momentum = std::sqrt((KE * KE) + (2 * M * KE));
-    Momentum = Momentum / 1000;
-    return Momentum;
-} //end of get track momentum
-
-void twoproton_pelee_overlay::Fill_Track_Plots(float value, int pdg, bool contained_start, bool contained_end,double wgt){
-
-  h_track_overlay[0][0]->Fill(trk_score_v->at(value),wgt); //fills the total
-  h_track_overlay[1][0]->Fill(trk_distance_v->at(value),wgt);
-  h_track_overlay[2][0]->Fill(trk_len_v->at(value),wgt);
-  h_track_overlay[3][0]->Fill(trk_llr_pid_score_v->at(value),wgt);  
-
-  if(pdg == 2212 || pdg == -2212){
-    total_protons++;
-    if(contained_start == true && contained_end == true){
-      h_track_overlay[0][1]->Fill(trk_score_v->at(value),wgt); //fills the contained protons
-      h_track_overlay[1][1]->Fill(trk_distance_v->at(value),wgt);
-      h_track_overlay[2][1]->Fill(trk_len_v->at(value),wgt);
-      h_track_overlay[3][1]->Fill(trk_llr_pid_score_v->at(value),wgt);  
-      contain++;
-    } else if (contained_start == true && contained_end == false){
-      h_track_overlay[0][2]->Fill(trk_score_v->at(value),wgt); //fills the uncontained protons                                                                                                                                          
-      h_track_overlay[1][2]->Fill(trk_distance_v->at(value),wgt);
-      h_track_overlay[2][2]->Fill(trk_len_v->at(value),wgt);
-      h_track_overlay[3][2]->Fill(trk_llr_pid_score_v->at(value),wgt);
-      uncontain++;
-    }
-
-  } else if(pdg == 13 || pdg == -13){
-    h_track_overlay[0][3]->Fill(trk_score_v->at(value),wgt); //fills the muon
-    h_track_overlay[1][3]->Fill(trk_distance_v->at(value),wgt);
-    h_track_overlay[2][3]->Fill(trk_len_v->at(value),wgt);
-    h_track_overlay[3][3]->Fill(trk_llr_pid_score_v->at(value),wgt);  
-
-  } else if(pdg == 211 || pdg == -211) {
-    h_track_overlay[0][4]->Fill(trk_score_v->at(value),wgt); //fills the pionpm
-    h_track_overlay[1][4]->Fill(trk_distance_v->at(value),wgt);
-    h_track_overlay[2][4]->Fill(trk_len_v->at(value),wgt);
-    h_track_overlay[3][4]->Fill(trk_llr_pid_score_v->at(value),wgt);  
-
-  } else if(pdg == 111) {
-    h_track_overlay[0][5]->Fill(trk_score_v->at(value),wgt); //fills the pion0
-    h_track_overlay[1][5]->Fill(trk_distance_v->at(value),wgt);
-    h_track_overlay[2][5]->Fill(trk_len_v->at(value),wgt);
-    h_track_overlay[3][5]->Fill(trk_llr_pid_score_v->at(value),wgt);  
-
-  } else if(pdg == 11 || pdg == -11){
-    h_track_overlay[0][6]->Fill(trk_score_v->at(value),wgt); //fills the electron
-    h_track_overlay[1][6]->Fill(trk_distance_v->at(value),wgt);
-    h_track_overlay[2][6]->Fill(trk_len_v->at(value),wgt);
-    h_track_overlay[3][6]->Fill(trk_llr_pid_score_v->at(value),wgt);  
-
-  } else if(pdg == 22){
-    h_track_overlay[0][7]->Fill(trk_score_v->at(value),wgt); //fills the gamma
-    h_track_overlay[1][7]->Fill(trk_distance_v->at(value),wgt);
-    h_track_overlay[2][7]->Fill(trk_len_v->at(value),wgt);
-    h_track_overlay[3][7]->Fill(trk_llr_pid_score_v->at(value),wgt);  
-
-  } else if(pdg == 321 || pdg == -321 || pdg == 311){
-    h_track_overlay[0][8]->Fill(trk_score_v->at(value),wgt); //fills the kaon
-    h_track_overlay[1][8]->Fill(trk_distance_v->at(value),wgt);
-    h_track_overlay[2][8]->Fill(trk_len_v->at(value),wgt);
-    h_track_overlay[3][8]->Fill(trk_llr_pid_score_v->at(value),wgt);  
-
-  } else {
-    std::cout<<"Here is the Value of the PDG in the Else Loop: "<<pdg<<std::endl;
-    other_else++;
-    if(pdg == 2112){
-      neutron++;
-    }
-    if( pdg == 14 || pdg == -14){
-      neutrino++;
-    }
-    if(pdg == 0){
-      zeros++;
-    }
-    h_track_overlay[0][9]->Fill(trk_score_v->at(value),wgt); //fills the else
-    h_track_overlay[1][9]->Fill(trk_distance_v->at(value),wgt);
-    h_track_overlay[2][9]->Fill(trk_len_v->at(value),wgt);
-    h_track_overlay[3][9]->Fill(trk_llr_pid_score_v->at(value),wgt);  
-  }
-}
-
-void twoproton_pelee_overlay::Fill_Mine(int i, int j, double wgt){
-  //index i indicates at which point the histograms are being filled 
-  //index j represents what channel we are filling                                                                
-  h_vtx_x_overlay[i][j]->Fill(reco_nu_vtx_sce_x,wgt);
-  h_vtx_y_overlay[i][j]->Fill(reco_nu_vtx_sce_y,wgt);
-  h_vtx_z_overlay[i][j]->Fill(reco_nu_vtx_sce_z,wgt);
-
-  h_vtx_x_mc[i][j]->Fill(true_nu_vtx_x,wgt);
-  h_vtx_y_mc[i][j]->Fill(true_nu_vtx_y,wgt);
-  h_vtx_z_mc[i][j]->Fill(true_nu_vtx_z,wgt);
-
-  h_vtx_x_mc_sce[i][j]->Fill(true_nu_vtx_sce_x,wgt);
-  h_vtx_y_mc_sce[i][j]->Fill(true_nu_vtx_sce_y,wgt);
-  h_vtx_z_mc_sce[i][j]->Fill(true_nu_vtx_sce_z,wgt);
-
-  h_topological_score_overlay[i][j]->Fill(topological_score,wgt); //remember to add POT weight
-  h_cosmic_impact_parameter_overlay[i][j]->Fill(CosmicIP,wgt); //remember to add POT weight
-  //h_q2[i][j]->Fill(mc_q2,wgt);
-  //h_X[i][j]->Fill(mc_X,wgt);
-  //h_Y[i][j]->Fill(mc_Y,wgt);
-  //h_Pt[i][j]->Fill(mc_Pt,wgt);
- }
-
-void twoproton_pelee_overlay::Fill_Raquel(int i, int j, double wgt){
-  //index i indicates at which point the histograms are being filled                                                 
-  //index j represents what channel we are filling          
-  h_vtx_x_raquel[i][j]->Fill(reco_nu_vtx_sce_x,wgt);
-  h_vtx_y_raquel[i][j]->Fill(reco_nu_vtx_sce_y,wgt);
-  h_vtx_z_raquel[i][j]->Fill(reco_nu_vtx_sce_z,wgt);
-
-  h_vtx_x_mc_raquel[i][j]->Fill(true_nu_vtx_x,wgt);
-  h_vtx_y_mc_raquel[i][j]->Fill(true_nu_vtx_y,wgt);
-  h_vtx_z_mc_raquel[i][j]->Fill(true_nu_vtx_z,wgt);
-
-  h_vtx_x_mc_sce_raquel[i][j]->Fill(true_nu_vtx_sce_x,wgt);
-  h_vtx_y_mc_sce_raquel[i][j]->Fill(true_nu_vtx_sce_y,wgt);
-  h_vtx_z_mc_sce_raquel[i][j]->Fill(true_nu_vtx_sce_z,wgt);
-
-  h_topological_score_raquel[i][j]->Fill(topological_score,wgt); //remember to add POT weight
-  h_cosmic_impact_parameter_raquel[i][j]->Fill(CosmicIP,wgt); //remember to add POT weight
-  //h_q2_raquel[i][j]->Fill(mc_q2,wgt);
-  ///h_X_raquel[i][j]->Fill(mc_X,wgt);
-  //h_Y_raquel[i][j]->Fill(mc_Y,wgt);
-  //h_Pt_raquel[i][j]->Fill(mc_Pt,wgt);
- }
-
-
-void twoproton_pelee_overlay::Fill_Histograms_Mine(int i, double wgt, int mc_n_threshold_muon, int mc_n_threshold_proton, int mc_n_threshold_pion0, double mc_n_threshold_pionpm, bool fv){
-  Fill_Mine(i,0,wgt);
-  //cc0p0pi                                                                                                                                  
-  if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton == 0 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
-    Fill_Mine(i,1,wgt);
-    cc0p0pi[i]++;
-    //cc1p0pi                                                                                                                                  
-  } else if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 &&mc_n_threshold_proton == 1 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
-    Fill_Mine(i,2,wgt);
-    cc1p0pi[i]++;
-    //cc2p0pi                                                                                                                                    
-  } else if (ccnc == 0 && nu_pdg == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton == 2 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
-    Fill_Mine(i,3,wgt);
-    cc2p0pi[i]++;
-    //ccNp0pi                                                                                                                                  
-  } else if (ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton > 2 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
-    Fill_Mine(i,4,wgt);
-    ccNp0pi[i]++;
-    //ccNp1pi                                                                                                                                   
-  } else if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton >= 0 && (mc_n_threshold_pion0 == 1 || mc_n_threshold_pionpm == 1) && fv == true){
-    Fill_Mine(i,5,wgt);
-    ccNp1pi[i]++;
-    //ccNpNpi                                                                                                                                   
-  } else if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton >= 0 && (mc_n_threshold_pion0 > 1 || mc_n_threshold_pionpm > 1) && fv == true){
-    Fill_Mine(i,6,wgt);
-    ccNpNpi[i]++;
-    //CC NUE                                                                                                                                   
-  } else if(ccnc == 0 && abs(nu_pdg) == 12 && fv == true){
-    Fill_Mine(i,7,wgt);
-    ccnue[i]++;
-  //OUT OF FV                                                                                                                                
-  } else if(fv == false){                                                                                                                  
-    Fill_Mine(i,8,wgt);
-    outfv[i]++;
-    //NC                                                                                                                                       
-  } else if(ccnc == 1 && fv == true){
-    Fill_Mine(i,9,wgt);
-    nc[i]++;
-    //else                                                                                                                                     
-  } else{
-    Fill_Mine(i,10,wgt);
-    other[i]++;
-  }
-}
-
-void twoproton_pelee_overlay::Fill_Histograms_Raquel(int i, double wgt, bool fv){
-  Fill_Raquel(i,0, wgt);
-  //CCQE
-  if(ccnc == 0 && interaction == 0 && abs(nu_pdg) == 14 && fv==true){
-    Fill_Raquel(i,1, wgt);
-    qel[i]++;
-    //CCCoh                                                                                                                                                                                             
-  } else if(ccnc == 0 && interaction == 3 && abs(nu_pdg) == 14 && fv == true){
-    Fill_Raquel(i,2, wgt);
-    coh[i]++;
-    //CCMEC                                                                                                                                                                                             
-  } else if(ccnc == 0 && interaction == 10 && abs(nu_pdg) == 14 && fv==true){
-    Fill_Raquel(i,3, wgt);
-    mec[i]++;
-
-    //checking the mec weight
-    if(std::isfinite(weightTune) && weightTune <= 100.) {
-      mec_wgt = weightSplineTimesTune;
-    } else {
-      mec_wgt = 1 * weightSpline;
-    }
-    h_mec_wgt[i]->Fill(mec_wgt,1);
-
-    //CCRES                                                                                                                                                                                             
-  } else if(ccnc == 0 && interaction == 1 && abs(nu_pdg) == 14 && fv==true){
-    //if(mc_n_threshold_muon == 1 && mc_n_threshold_proton == 2){
-    //  res_count[0]++;
-    //}else if (mc_n_threshold_muon == 1 && mc_n_threshold_proton == 1 && (mc_n_threshold_pion0 == 1 || mc_n_threshold_pionpm == 1)){
-    //  res_count[1]++;
-    //}else if(mc_n_threshold_muon == 1 && mc_n_threshold_proton > 2){
-    //  res_count[2]++;
-    //}else{
-    //  res_count[3]++;
-    //}
-    Fill_Raquel(i,4,wgt);
-    res[i]++;
-    //CCDIS                                                                                                                                                                                             
-  } else if(ccnc == 0 && interaction == 2 && abs(nu_pdg) == 14 && fv==true){
-  Fill_Raquel(i,5,wgt);
-    dis[i]++;
-    //CCNue                                                                                                                                                                                             
-  } else if(ccnc == 0  && abs(nu_pdg) == 12 && fv ==true){
-  Fill_Raquel(i,6, wgt);
-    ccnue_raquel[i]++;
-    //NC                                                                                                                                                                                                
-  } else if(ccnc == 1 && abs(nu_pdg) == 14 && fv == true){
-  Fill_Raquel(i,7, wgt);
-    nc_raquel[i]++;
-    //OUT OF FV                                                                                                                                                                                          
-  } else if(fv == false){
-    Fill_Raquel(i,8, wgt);
-    outfv_raquel[i]++;
-    //Other                                                                                                                                                                                             
-  }else{
-    Fill_Raquel(i,9, wgt);
-    other_raquel[i]++;
-  } 
-}
-
-void twoproton_pelee_overlay::Fill_Particles(int j, TVector3 vMuon, TLorentzVector muon, TVector3 vLead, TLorentzVector lead, TVector3 vRec, TLorentzVector rec, double wgt){
-  //first index indicates which variable is being filled: mom, energy, theta, phi                                                           
-   //second index represents what channel we are filling                                                                                  
-  h_muon_overlay[0][j]->Fill(vMuon.Mag(),wgt);
-  h_leading_overlay[0][j]->Fill(vLead.Mag(),wgt);
-  h_recoil_overlay[0][j]->Fill(vRec.Mag(),wgt);
-  
-  h_muon_overlay[1][j]->Fill(std::sqrt(vMuon.Mag2() + std::pow(MASS_MUON,2))-MASS_MUON,wgt);
-  h_leading_overlay[1][j]->Fill(std::sqrt( vLead.Mag2() + std::pow(MASS_PROTON,2))-MASS_PROTON,wgt);
-  h_recoil_overlay[1][j]->Fill(std::sqrt( vRec.Mag2() + std::pow(MASS_PROTON,2))-MASS_PROTON,wgt);
-
-  h_muon_overlay[2][j]->Fill(cos(vMuon.Theta()),wgt);
-  h_leading_overlay[2][j]->Fill(cos(vLead.Theta()),wgt);
-  h_recoil_overlay[2][j]->Fill(cos(vRec.Theta()),wgt);
-
-  h_muon_overlay[3][j]->Fill(vMuon.Phi(),wgt);
-  h_leading_overlay[3][j]->Fill(vLead.Phi(),wgt);
-  h_recoil_overlay[3][j]->Fill(vRec.Phi(),wgt);
-  
-  double EMuon = muon[3];
-  double ELead = lead[3];
-  double ERec = rec[3];
-  double E_tot = (EMuon + MASS_MUON) + ELead + ERec;
-
-  //Beam Stuff
-  //double PT_miss = vMuon.Perp() + vRec.Perp() + vLead.Perp();
-  TVector3 PT_miss(vMuon[0]+vLead[0]+vRec[0],vMuon[1]+vRec[1]+vLead[1],0);
-  double Eneutrino = (EMuon+MASS_MUON) + ELead + ERec +((PT_miss.Mag2())/(2*35.37)) + 0.0304;
-  TVector3 vBeam(0.,0.,Eneutrino); // z-direction is defined along the neutrino direction                                                                         
-  TVector3 vq = vBeam - vMuon; // Momentum transfer                                                                                                               
-  TVector3 vmiss = vLead - vq; // Missing momentum         
-  double E_tot_minus_beam = (E_tot - Eneutrino) * 1000;
-  TVector3 vProton;
-  if(add_protons){
-    vProton.SetXYZ(vLead[0]+vRec[0],vLead[1]+vRec[1],vLead[2]+vRec[2]);
-  }else{
-    vProton.SetXYZ(vLead[0],vLead[1],vLead[2]);
-  }
-
-  open_angle = ((vLead[0]*vRec[0])+(vLead[1]*vRec[1])+(vLead[2]*vRec[2]))/(vLead.Mag()*vRec.Mag()); //note this is the cos(opening angle)                             
-  open_angle_mu = ((vLead[0]*vMuon[0])+(vLead[1]*vMuon[1])+(vLead[2]*vMuon[2]))/(vLead.Mag()*vMuon.Mag()); //note this is the cos(opening angle)   
-  open_angle_mu_proton = ((vProton[0]*vMuon[0])+(vProton[1]*vMuon[1])+(vProton[2]*vMuon[2]))/(vProton.Mag()*vMuon.Mag()); //cos(opening angle) between the total proton momentum vector and the muon
-  En = std::sqrt(std::pow(NEUTRON_MASS,2) + vmiss.Mag2()); //energy of struck nucleon   
-  delta_pT = (vMuon + vProton).Perp(); 
-  delta_phiT = std::acos( (-vMuon.X()*vProton.X() - vMuon.Y()*vProton.Y()) / (vMuon.XYvector().Mod() * vProton.XYvector().Mod()));
-  TVector2 delta_pT_vec = (vMuon + vProton).XYvector();
-  delta_alphaT = std::acos( (-vMuon.X()*delta_pT_vec.X()- vMuon.Y()*delta_pT_vec.Y()) / (vMuon.XYvector().Mod() * delta_pT_vec.Mod()) );
-
-  //TLorentzVector betacm(vmiss[0] + vRec[0] + vBeam[0],vmiss[1] + vRec[1] + vBeam[1], vmiss[2] + vRec[2]+ vBeam[2], En + ERec + Eneutrino); //beta for CM              
-
-   TLorentzVector betacm(vRec[0]+vLead[0]+vMuon[0],vRec[1]+vLead[1]+vMuon[1],vRec[2]+vLead[2]+vMuon[2],ERec+ELead+EMuon);
-   TVector3 boost = betacm.BoostVector(); //the boost vector                                                                                                           
-   lead.Boost(-boost); //boost leading proton                                                                                     
-   rec.Boost(-boost); //boost recoil proton                                                                                       
-   muon.Boost(-boost);
-
-   //std::cout<<"Value of the added vectors x : "<<lead[0]+rec[0]+muon[0]<<std::endl;
-   //std::cout<<"Value of the added vectors y : "<<lead[1]+rec[1]+muon[1]<<std::endl;
-   //std::cout<<"Value of the added vectors z : "<<lead[2]+rec[2]+muon[2]<<std::endl;
-            
-   cos_gamma_cm = cos(lead.Angle(rec.Vect())); //uses Lorentz Vectors                                                                                                  
-
-   //Struck nucleon Momentum:                                                                                                                                           
-   TVector3 vector_sum(vMuon[0] + vLead[0] + vRec[0], vMuon[1] + vLead[1] + vRec[1], vMuon[2] + vLead[2] + vRec[2]);
-   TVector3 p_struck_nuc_vector(vector_sum[0], vector_sum[1], 0);
-   p_struck_nuc = p_struck_nuc_vector.Mag();
-   pz_tot = vLead[2]+vRec[2];
-
-  //Some more specific plots
-  h_opening_angle_protons_overlay[j]->Fill(open_angle,wgt);
-  h_opening_angle_mu_leading_overlay[j]->Fill(open_angle_mu,wgt);
-  h_opening_angle_mu_both_overlay[j]->Fill(open_angle_mu_proton,wgt);
-  h_delta_PT_overlay[j]->Fill(delta_pT,wgt);
-  h_delta_alphaT_overlay[j]->Fill(delta_alphaT*180/3.14,wgt);
-  h_delta_phiT_overlay[j]->Fill(delta_phiT*180./3.14,wgt);
-  h_cos_gamma_cm_overlay[j]->Fill(cos_gamma_cm,wgt);
-  h_mom_struck_nuc_overlay[j]->Fill(p_struck_nuc,wgt);
-  h_tot_pz_overlay[j]->Fill(pz_tot,wgt);
-  h_tot_E_overlay[j]->Fill(E_tot,wgt);
-  h_tot_E_minus_beam_overlay[j]->Fill(E_tot_minus_beam,wgt);
-  h_E_neutrino_overlay[j]->Fill(Eneutrino,wgt);
-  h_E_resolution_overlay[j]->Fill(Eneutrino - double(nu_e) ,wgt);
-  h_PT_squared_overlay[j]->Fill(PT_miss.Mag2(),wgt);
-  
-
-}
-
-void twoproton_pelee_overlay::Fill_Particles_Raquel(int j, TVector3 vMuon, TLorentzVector muon, TVector3 vLead, TLorentzVector lead, TVector3 vRec, TLorentzVector rec, double wgt){
-  //first index indicates which variable is being filled: mom, energy, theta, phi                                                           
-  //second index represents what channel we are filling                                                                                  
-  h_muon_raquel[0][j]->Fill(vMuon.Mag(),wgt);
-  h_leading_raquel[0][j]->Fill(vLead.Mag(),wgt);
-  h_recoil_raquel[0][j]->Fill(vRec.Mag(),wgt);
-  
-  h_muon_raquel[1][j]->Fill(std::sqrt(vMuon.Mag2() + std::pow(MASS_MUON,2))-MASS_MUON,wgt);
-  h_leading_raquel[1][j]->Fill(std::sqrt( vLead.Mag2() + std::pow(MASS_PROTON,2))-MASS_PROTON,wgt);
-  h_recoil_raquel[1][j]->Fill(std::sqrt( vRec.Mag2() + std::pow(MASS_PROTON,2))-MASS_PROTON,wgt);
-
-  h_muon_raquel[2][j]->Fill(cos(vMuon.Theta()),wgt);
-  h_leading_raquel[2][j]->Fill(cos(vLead.Theta()),wgt);
-  h_recoil_raquel[2][j]->Fill(cos(vRec.Theta()),wgt);
-
-  h_muon_raquel[3][j]->Fill(vMuon.Phi(),wgt);
-  h_leading_raquel[3][j]->Fill(vLead.Phi(),wgt);
-  h_recoil_raquel[3][j]->Fill(vRec.Phi(),wgt);
-
-  double EMuon = muon[3];
-  double ELead = lead[3];
-  double ERec = rec[3];
-  double E_tot = (EMuon + MASS_MUON) + ELead + ERec;
-
-  //Beam Stuff
-  //double PT_miss = vMuon.Perp() + vRec.Perp() + vLead.Perp();
-  TVector3 PT_miss(vMuon[0]+vLead[0]+vRec[0],vMuon[1]+vRec[1]+vLead[1],0);
-  double Eneutrino =  (EMuon+MASS_MUON) + ELead + ERec +((PT_miss.Mag2())/(2*35.37)) + 0.0304;
-  TVector3 vBeam(0.,0.,Eneutrino); // z-direction is defined along the neutrino direction                                                                         
-  TVector3 vq = vBeam - vMuon; // Momentum transfer                                                                                                               
-  TVector3 vmiss = vLead - vq; // Missing momentum         
-  double E_tot_minus_beam = (E_tot - Eneutrino) * 1000;
-  TVector3 vProton;
-  if(add_protons){
-    vProton.SetXYZ(vLead[0]+vRec[0],vLead[1]+vRec[1],vLead[2]+vRec[2]);
-  }else{
-    vProton.SetXYZ(vLead[0],vLead[1],vLead[2]);
-  }
-
-  open_angle = ((vLead[0]*vRec[0])+(vLead[1]*vRec[1])+(vLead[2]*vRec[2]))/(vLead.Mag()*vRec.Mag()); //note this is the cos(opening angle)                             
-  open_angle_mu = ((vLead[0]*vMuon[0])+(vLead[1]*vMuon[1])+(vLead[2]*vMuon[2]))/(vLead.Mag()*vMuon.Mag()); //note this is the cos(opening angle)   
-  open_angle_mu_proton = ((vProton[0]*vMuon[0])+(vProton[1]*vMuon[1])+(vProton[2]*vMuon[2]))/(vProton.Mag()*vMuon.Mag()); //cos(opening angle) between the total proton momentum vector and the muon
-  En = std::sqrt(std::pow(NEUTRON_MASS,2) + vmiss.Mag2()); //energy of struck nucleon   
-  delta_pT = (vMuon + vProton).Perp(); 
-  delta_phiT = std::acos( (-vMuon.X()*vProton.X() - vMuon.Y()*vProton.Y()) / (vMuon.XYvector().Mod() * vProton.XYvector().Mod()));
-  TVector2 delta_pT_vec = (vMuon + vProton).XYvector();
-  delta_alphaT = std::acos( (-vMuon.X()*delta_pT_vec.X()- vMuon.Y()*delta_pT_vec.Y()) / (vMuon.XYvector().Mod() * delta_pT_vec.Mod()) );
-
-  //TLorentzVector betacm(vmiss[0] + vRec[0] + vBeam[0],vmiss[1] + vRec[1] + vBeam[1], vmiss[2] + vRec[2]+ vBeam[2], En + ERec + Eneutrino); //beta for CM              
-  
-  TLorentzVector betacm(vRec[0]+vLead[0]+vMuon[0],vRec[1]+vLead[1]+vMuon[1],vRec[2]+vLead[2]+vMuon[2],ERec+ELead+EMuon);
-  TVector3 boost = betacm.BoostVector(); //the boost vector                                                                                                           
-  lead.Boost(-boost); //boost leading proton                                                                                     
-  rec.Boost(-boost); //boost recoil proton                                                                                       
-  muon.Boost(-boost);
-             
-  cos_gamma_cm = cos(lead.Angle(rec.Vect())); //uses Lorentz Vectors                                                                                                  
-
-  //Struck nucleon Momentum:                                                                                                                                           
-  TVector3 vector_sum(vMuon[0] + vLead[0] + vRec[0], vMuon[1] + vLead[1] + vRec[1], vMuon[2] + vLead[2] + vRec[2]);
-  TVector3 p_struck_nuc_vector(vector_sum[0], vector_sum[1], 0);
-  p_struck_nuc = p_struck_nuc_vector.Mag();
-  pz_tot = vLead[2]+vRec[2];
-
-  //Some more specific plots
-  h_opening_angle_protons_raquel[j]->Fill(open_angle,wgt);
-  h_opening_angle_mu_leading_raquel[j]->Fill(open_angle_mu,wgt);
-  h_opening_angle_mu_both_raquel[j]->Fill(open_angle_mu_proton,wgt);
-  h_delta_PT_raquel[j]->Fill(delta_pT,wgt);
-  h_delta_alphaT_raquel[j]->Fill(delta_alphaT*180/3.14,wgt);
-  h_delta_phiT_raquel[j]->Fill(delta_phiT*180./3.14,wgt);
-  h_cos_gamma_cm_raquel[j]->Fill(cos_gamma_cm,wgt);
-  h_mom_struck_nuc_raquel[j]->Fill(p_struck_nuc,wgt);
-  h_tot_pz_raquel[j]->Fill(pz_tot,wgt);
-  h_tot_E_raquel[j]->Fill(E_tot,wgt);
-  h_tot_E_minus_beam_raquel[j]->Fill(E_tot_minus_beam,wgt);
-  h_E_neutrino_raquel[j]->Fill(Eneutrino,wgt);
-  h_E_resolution_raquel[j]->Fill(Eneutrino - double(nu_e) ,wgt);
-  h_PT_squared_raquel[j]->Fill(PT_miss.Mag2(),wgt);
-
-}
-
-void twoproton_pelee_overlay::Fill_Histograms_Particles(int mc_n_threshold_muon, int mc_n_threshold_proton, int mc_n_threshold_pion0, double mc_n_threshold_pionpm, bool fv,TVector3 vMuon, TLorentzVector muon, TVector3 vLead, TLorentzVector lead, TVector3 vRec, TLorentzVector rec, double wgt){
-  Fill_Particles(0,vMuon,muon,vLead,lead,vRec,rec,wgt);
-
-  //cc0p0pi                                                                                                                               
-  if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_proton == 0 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
-    Fill_Particles(1, vMuon,muon,vLead,lead,vRec,rec,wgt);
-    cc0p0pi[number]++;
-    //cc1p0pi                                                                                                                            
-  } else if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_proton == 1 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
-    Fill_Particles(2, vMuon,muon,vLead,lead,vRec,rec,wgt);
-    cc1p0pi[number]++;
-    //cc2p0pi                                                                                                                            
-  } else if (ccnc == 0 && nu_pdg == 14 && mc_n_threshold_proton == 2 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
-    Fill_Particles(3, vMuon,muon,vLead,lead,vRec,rec,wgt);
-    cc2p0pi[number]++;
-    //ccNp0pi                                                                                                                            
-  } else if (ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_proton > 2 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
-    Fill_Particles(4, vMuon,muon,vLead,lead,vRec,rec,wgt);
-    ccNp0pi[number]++;
-    //ccNp1pi                                                                                                                            
-  } else if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_proton >= 0 && (mc_n_threshold_pion0 == 1 || mc_n_threshold_pionpm == 1) && fv == true){
-    Fill_Particles(5, vMuon,muon,vLead,lead,vRec,rec,wgt);
-    ccNp1pi[number]++;
-    //ccNpNpi                                                                                                                            
-  } else if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_proton >= 0 && (mc_n_threshold_pion0 > 1 || mc_n_threshold_pionpm > 1) && fv == true){
-    Fill_Particles(6, vMuon,muon,vLead,lead,vRec,rec,wgt);
-    ccNpNpi[number]++;
-    //CC NUE                                                                                                                             
-  } else if(ccnc == 0 && abs(nu_pdg) == 12 && fv == true){
-    Fill_Particles(7, vMuon,muon,vLead,lead,vRec,rec,wgt);
-    ccnue[number]++;
-  //OUT OF FV                                                                                                                            
-  } else if(fv == false){                                                                                                                     
-    Fill_Particles(8, vMuon,muon,vLead,lead,vRec,rec,wgt);
-    outfv[number]++;
-    //NC                                                                                                                                 
-  } else if(ccnc == 1 && fv == true){
-    Fill_Particles(9, vMuon,muon,vLead,lead,vRec,rec,wgt);
-    nc[number]++;    
-    //else                                                                                                                               
-  } else{
-    Fill_Particles(10, vMuon,muon,vLead,lead,vRec,rec,wgt);
-    other[number]++;
-  }
-}
-
-void twoproton_pelee_overlay::Fill_Histograms_Particles_Raquel(TVector3 vMuon, TLorentzVector muon, TVector3 vLead, TLorentzVector lead, TVector3 vRec, TLorentzVector rec, double wgt, bool fv){
-  Fill_Particles_Raquel(0, vMuon,muon,vLead,lead,vRec,rec,wgt);
-
-  //CCQE
-  if(ccnc == 0 && interaction == 0 && fv==true){
-    Fill_Particles_Raquel(1, vMuon,muon,vLead,lead,vRec,rec,wgt);
-    qel[number]++;
-
-  //CCCoh                                                                                                                                                                                             
-  } else if(ccnc == 0 && interaction == 3 && fv == true){
-    Fill_Particles_Raquel(2, vMuon,muon,vLead,lead,vRec,rec,wgt);
-    coh[number]++;
-
-    //CCMEC                                                                                                                                                                                             
-  } else if(ccnc == 0 && interaction == 10 && fv==true){
-    Fill_Particles_Raquel(3, vMuon,muon,vLead,lead,vRec,rec,wgt);
-    mec[number]++;
-
-    //CCRES                                                                                                                                                                                             
-  } else if(ccnc == 0 && interaction == 1 && fv==true){
-    Fill_Particles_Raquel(4, vMuon,muon,vLead,lead,vRec,rec,wgt);
-    res[number]++;
-
-    //CCDIS                                                                                                                                                                                             
-  } else if(ccnc == 0 && interaction == 2 && fv==true){
-    Fill_Particles_Raquel(5, vMuon,muon,vLead,lead,vRec,rec,wgt);
-    dis[number]++;
-
-    //CCNue                                                                                                                                                                                             
-  } else if(ccnc == 0 && abs(nu_pdg) == 12 && fv ==true){
-    Fill_Particles_Raquel(6, vMuon,muon,vLead,lead,vRec,rec,wgt);
-    ccnue_raquel[number]++;
-
-    //NC                                                                                                                                                                                                
-  } else if(ccnc == 1 && fv == true){
-    Fill_Particles_Raquel(7, vMuon,muon,vLead,lead,vRec,rec,wgt);
-    nc_raquel[number]++;
-
-    //OUT OF FV                                                                                                                                                                                          
-  } else if(fv == false){
-    Fill_Particles_Raquel(8, vMuon,muon,vLead,lead,vRec,rec,wgt);
-    outfv_raquel[number]++;
-
-    //Other                                                                                                                                                                                             
-  }else{
-    Fill_Particles_Raquel(9, vMuon,muon,vLead,lead,vRec,rec,wgt);
-    other_raquel[number]++;
-  } 
-}
-
-void twoproton_pelee_overlay::Write_Histograms(){
-  for(int i=0; i< num2d; i++){
-    h_correlation_overlay[i]->Write();
-  }
-  for(int i = 0; i < h_list.size(); i++){
-    h_list[i]->Write();
-  }
-}
-
-Int_t twoproton_pelee_overlay::GetEntry(Long64_t entry)
+Int_t twoproton_pelee_bnb::GetEntry(Long64_t entry)
 {
 // Read contents of entry.
    if (!fChain) return 0;
    return fChain->GetEntry(entry);
 }
-Long64_t twoproton_pelee_overlay::LoadTree(Long64_t entry)
+Long64_t twoproton_pelee_bnb::LoadTree(Long64_t entry)
 {
 // Set the environment to read one entry
    if (!fChain) return -5;
@@ -2508,7 +1463,7 @@ Long64_t twoproton_pelee_overlay::LoadTree(Long64_t entry)
    return centry;
 }
 
-void twoproton_pelee_overlay::Init(TTree *tree)
+void twoproton_pelee_bnb::Init(TTree *tree)
 {
    // The Init() function is called when the selector needs to initialize
    // a new tree or chain. Typically here the branch addresses and branch
@@ -2584,10 +1539,6 @@ void twoproton_pelee_overlay::Init(TTree *tree)
    mc_completeness = 0;
    mc_purity = 0;
    endmuonprocess = 0;
-   weights = 0;
-   weightsFlux = 0;
-   weightsGenie = 0;
-   weightsReint = 0;
    cosmic_flashmatch_score_v = 0;
    X_SpcPts_v = 0;
    Y_SpcPts_v = 0;
@@ -2728,8 +1679,6 @@ void twoproton_pelee_overlay::Init(TTree *tree)
    fChain->SetBranchAddress("evt", &evt, &b_evt);
    fChain->SetBranchAddress("trk_id", &trk_id, &b_trk_pfp_id);
    fChain->SetBranchAddress("shr_id", &shr_id, &b_shr_pfp_id);
-   fChain->SetBranchAddress("trk2_id", &trk2_id, &b_trk2_pfp_id);
-   fChain->SetBranchAddress("shr2_id", &shr2_id, &b_shr2_pfp_id);
    fChain->SetBranchAddress("shr_energy_tot", &shr_energy_tot, &b_shr_energy_tot);
    fChain->SetBranchAddress("shr_energy", &shr_energy, &b_shr_energy);
    fChain->SetBranchAddress("shr_energy_tot_cali", &shr_energy_tot_cali, &b_shr_energy_tot_cali);
@@ -2780,12 +1729,6 @@ void twoproton_pelee_overlay::Init(TTree *tree)
    fChain->SetBranchAddress("shr_trkfitmedangle", &shr_trkfitmedangle, &b_shr_trkfitmedangle);
    fChain->SetBranchAddress("shrmoliereavg", &shrmoliereavg, &b_shrmoliereavg);
    fChain->SetBranchAddress("shrmoliererms", &shrmoliererms, &b_shrmoliererms);
-   fChain->SetBranchAddress("shr1shr2moliereavg", &shr1shr2moliereavg, &b_shr1shr2moliereavg);
-   fChain->SetBranchAddress("shr1shr2moliererms", &shr1shr2moliererms, &b_shr1shr2moliererms);
-   fChain->SetBranchAddress("shr1trk1moliereavg", &shr1trk1moliereavg, &b_shr1trk1moliereavg);
-   fChain->SetBranchAddress("shr1trk1moliererms", &shr1trk1moliererms, &b_shr1trk1moliererms);
-   fChain->SetBranchAddress("shr1trk2moliereavg", &shr1trk2moliereavg, &b_shr1trk2moliereavg);
-   fChain->SetBranchAddress("shr1trk2moliererms", &shr1trk2moliererms, &b_shr1trk2moliererms);
    fChain->SetBranchAddress("ismerged", &ismerged, &b_ismerged);
    fChain->SetBranchAddress("merge_bestdot", &merge_bestdot, &b_merge_bestdot);
    fChain->SetBranchAddress("merge_bestdist", &merge_bestdist, &b_merge_bestdist);
@@ -2854,17 +1797,9 @@ void twoproton_pelee_overlay::Init(TTree *tree)
    fChain->SetBranchAddress("trk_bragg_pion", &trk_bragg_pion, &b_trk_bragg_pion);
    fChain->SetBranchAddress("trk_hits_max", &trk_hits_max, &b_trk_hits_max);
    fChain->SetBranchAddress("shr_hits_max", &shr_hits_max, &b_shr_hits_max);
-   fChain->SetBranchAddress("trk_hits_2nd", &trk_hits_2nd, &b_trk_hits_2nd);
-   fChain->SetBranchAddress("shr_hits_2nd", &shr_hits_2nd, &b_shr_hits_2nd);
    fChain->SetBranchAddress("trkshrhitdist0", &trkshrhitdist0, &b_trkshrhitdist0);
    fChain->SetBranchAddress("trkshrhitdist1", &trkshrhitdist1, &b_trkshrhitdist1);
    fChain->SetBranchAddress("trkshrhitdist2", &trkshrhitdist2, &b_trkshrhitdist2);
-   fChain->SetBranchAddress("trk2shrhitdist0", &trk2shrhitdist0, &b_trk2shrhitdist0);
-   fChain->SetBranchAddress("trk2shrhitdist1", &trk2shrhitdist1, &b_trk2shrhitdist1);
-   fChain->SetBranchAddress("trk2shrhitdist2", &trk2shrhitdist2, &b_trk2shrhitdist2);
-   fChain->SetBranchAddress("trk1trk2hitdist0", &trk1trk2hitdist0, &b_trk1trk2hitdist0);
-   fChain->SetBranchAddress("trk1trk2hitdist1", &trk1trk2hitdist1, &b_trk1trk2hitdist1);
-   fChain->SetBranchAddress("trk1trk2hitdist2", &trk1trk2hitdist2, &b_trk1trk2hitdist2);
    fChain->SetBranchAddress("total_hits_y", &total_hits_y, &b_total_hits_y);
    fChain->SetBranchAddress("extra_energy_y", &extra_energy_y, &b_extra_energy_y);
    fChain->SetBranchAddress("trk_energy_hits_tot", &trk_energy_hits_tot, &b_trk_energy_hits_tot);
@@ -2941,7 +1876,6 @@ void twoproton_pelee_overlay::Init(TTree *tree)
    fChain->SetBranchAddress("nu_decay_mode", &nu_decay_mode, &b_nu_decay_mode);
    fChain->SetBranchAddress("interaction", &interaction, &b_interaction);
    fChain->SetBranchAddress("nu_e", &nu_e, &b_nu_e);
-   fChain->SetBranchAddress("nu_l", &nu_l, &b_nu_l);
    fChain->SetBranchAddress("nu_pt", &nu_pt, &b_nu_pt);
    fChain->SetBranchAddress("theta", &theta, &b_theta);
    fChain->SetBranchAddress("isVtxInFiducial", &isVtxInFiducial, &b_isVtxInFiducial);
@@ -2986,8 +1920,6 @@ void twoproton_pelee_overlay::Init(TTree *tree)
    fChain->SetBranchAddress("pion_e", &pion_e, &b_pion_e);
    fChain->SetBranchAddress("pion_c", &pion_c, &b_pion_c);
    fChain->SetBranchAddress("pion_p", &pion_p, &b_pion_p);
-   fChain->SetBranchAddress("neta", &neta, &b_neta);
-   fChain->SetBranchAddress("eta_e", &eta_e, &b_eta_e);
    fChain->SetBranchAddress("nslice", &nslice, &b_nslice);
    fChain->SetBranchAddress("crtveto", &crtveto, &b_crtveto);
    fChain->SetBranchAddress("crthitpe", &crthitpe, &b_crthitpe);
@@ -3063,25 +1995,6 @@ void twoproton_pelee_overlay::Init(TTree *tree)
    fChain->SetBranchAddress("filter_ncpi0", &filter_ncpi0, &b_filter_ncpi0);
    fChain->SetBranchAddress("filter_pi0", &filter_pi0, &b_filter_pi0);
    fChain->SetBranchAddress("filter_ccinclusive", &filter_ccinclusive, &b_filter_ccinclusive);
-   fChain->SetBranchAddress("weights", &weights, &b_weights);
-   fChain->SetBranchAddress("weightsFlux", &weightsFlux, &b_weightsFlux);
-   fChain->SetBranchAddress("weightsGenie", &weightsGenie, &b_weightsGenie);
-   fChain->SetBranchAddress("weightsReint", &weightsReint, &b_weightsReint);
-   fChain->SetBranchAddress("weightSpline", &weightSpline, &b_weightSpline);
-   fChain->SetBranchAddress("weightTune", &weightTune, &b_weightTune);
-   fChain->SetBranchAddress("weightSplineTimesTune", &weightSplineTimesTune, &b_weightSplineTimesTune);
-   fChain->SetBranchAddress("knobRPAup", &knobRPAup, &b_knobRPAup);
-   fChain->SetBranchAddress("knobRPAdn", &knobRPAdn, &b_knobRPAdn);
-   fChain->SetBranchAddress("knobCCMECup", &knobCCMECup, &b_knobCCMECup);
-   fChain->SetBranchAddress("knobCCMECdn", &knobCCMECdn, &b_knobCCMECdn);
-   fChain->SetBranchAddress("knobAxFFCCQEup", &knobAxFFCCQEup, &b_knobAxFFCCQEup);
-   fChain->SetBranchAddress("knobAxFFCCQEdn", &knobAxFFCCQEdn, &b_knobAxFFCCQEdn);
-   fChain->SetBranchAddress("knobVecFFCCQEup", &knobVecFFCCQEup, &b_knobVecFFCCQEup);
-   fChain->SetBranchAddress("knobVecFFCCQEdn", &knobVecFFCCQEdn, &b_knobVecFFCCQEdn);
-   fChain->SetBranchAddress("knobDecayAngMECup", &knobDecayAngMECup, &b_knobDecayAngMECup);
-   fChain->SetBranchAddress("knobDecayAngMECdn", &knobDecayAngMECdn, &b_knobDecayAngMECdn);
-   fChain->SetBranchAddress("knobThetaDelta2Npiup", &knobThetaDelta2Npiup, &b_knobThetaDelta2Npiup);
-   fChain->SetBranchAddress("knobThetaDelta2Npidn", &knobThetaDelta2Npidn, &b_knobThetaDelta2Npidn);
    fChain->SetBranchAddress("flash_pe", &flash_pe, &b_flash_pe);
    fChain->SetBranchAddress("flash_time", &flash_time, &b_flash_time);
    fChain->SetBranchAddress("nu_flashmatch_score", &nu_flashmatch_score, &b_nu_flashmatch_score);
@@ -3434,7 +2347,7 @@ void twoproton_pelee_overlay::Init(TTree *tree)
    Notify();
 }
 
-Bool_t twoproton_pelee_overlay::Notify()
+Bool_t twoproton_pelee_bnb::Notify()
 {
    // The Notify() function is called when a new file is opened. This
    // can be either for a new TTree in a TChain or when when a new TTree
@@ -3445,18 +2358,18 @@ Bool_t twoproton_pelee_overlay::Notify()
    return kTRUE;
 }
 
-void twoproton_pelee_overlay::Show(Long64_t entry)
+void twoproton_pelee_bnb::Show(Long64_t entry)
 {
 // Print contents of entry.
 // If entry is not specified, print current entry
    if (!fChain) return;
    fChain->Show(entry);
 }
-Int_t twoproton_pelee_overlay::Cut(Long64_t entry)
+Int_t twoproton_pelee_bnb::Cut(Long64_t entry)
 {
 // This function may be called from Loop.
 // returns  1 if entry is accepted.
 // returns -1 otherwise.
    return 1;
 }
-#endif // #ifdef twoproton_pelee_overlay_cxx
+#endif // #ifdef twoproton_pelee_bnb_cxx
