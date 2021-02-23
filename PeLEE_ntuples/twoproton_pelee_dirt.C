@@ -2,9 +2,12 @@
 #include "twoproton_pelee_dirt.h"
 #include "histogram_funcs.h"
 #include "helper_funcs.h"
+#include <chrono>
+using namespace std::chrono;
 
 void twoproton_pelee_dirt::Loop()
 {
+  auto start = high_resolution_clock::now();   
 
   //Define objects of classes
   ////////////////////////////
@@ -13,11 +16,13 @@ void twoproton_pelee_dirt::Loop()
   
   //Making a new Root File that will contain all the histograms that we will want to plot:                                    
   ///////////////////////////////////////////////////////////////////////////////////////                                      
-  TFile *tfile = new TFile("root_files/histograms_pelee_dirt_wgt.root","RECREATE"); //wgt indicates using the CV MC values
+  Which_Run();
+
+  TFile *tfile = new TFile(Form("root_files/%s/histograms_pelee_dirt_wgt.root",directory),"RECREATE"); //wgt indicates using the CV MC values
 
   //File with RSE's in them                                                                                                   
   ofstream myfile;//File that will contain RSE of good events                                                                 
-  myfile.open("lists/files_filtered_dirt_wgt.list");
+  myfile.open(Form("lists/%s/files_filtered_dirt_wgt.list",directory));
   myfile<<"Run"<<" "<<"Subrun"<<" "<<"Event"<<endl;
 
   //Define all the histograms I am going to fill
@@ -27,7 +32,6 @@ void twoproton_pelee_dirt::Loop()
   //Defining all the constans we will use later                                                                                          
   //////////////////////////////                                                                                                      
   bool _debug = false; //debug statements                                                                        
-  double pot_wgt = 0.141; //POT weight
   double mc_wgt; //spline times tuned cv weight
   double MASS_PROTON = 0.93827208;
   double MASS_MUON = 0.10565837;
@@ -252,5 +256,9 @@ void twoproton_pelee_dirt::Loop()
   hist.Write_Histograms(false); //function that writes all our histograms                                                              
   tfile->Close(); //write the root file that contains our histograms                                                         
   myfile.close(); //Write the file that contains the RSE of good events                                                     
+
+  auto stop = high_resolution_clock::now();
+  auto duration = duration_cast<minutes>(stop - start); 
+  std::cout<<"Program Run Time: "<<duration.count()<<std::endl;
 
 } //end of progrm

@@ -12,16 +12,18 @@ void twoproton_pelee_overlay::Loop()
   histogram_funcs hist; //histogram_funcs.h
   helper_funcs cuts; //helper_funcs.h   
 
+  Which_Run();
+
   //Making a new Root File that will contain all the histograms that we will want to plot:
   ///////////////////////////////////////////////////////////////////////////////////////
-  TFile *tfile = new TFile("root_files/histograms_pelee_overlay_wgt.root","RECREATE"); //wgt indicates applying cenntral value MC value
+  TFile *tfile = new TFile(Form("root_files/%s/histograms_pelee_overlay_wgt.root",directory),"RECREATE"); //wgt indicates applying cenntral value MC value
 
   //Files with RSE's in them                                                                            
   ofstream myfile;//File that will contain RSE of good events                                          
   ofstream cc2p; //File that will contain good cc2p events                                                                          
   //ofstream ccNp0pi_file;     
-  myfile.open("lists/files_filtered_wgt.list");
-  cc2p.open("lists/files_filtered_wgt_cc2p.list");
+  myfile.open(Form("lists/%s/files_filtered_wgt.list",directory));
+  cc2p.open(Form("lists/%s/files_filtered_wgt_cc2p.list",directory));
   //ccNp0pi_file.open("lists/files_filtered_wgt_ccNp0pi.list"); 
   myfile<<"Run"<<" "<<"Subrun"<<" "<<"Event"<<endl;
   cc2p<<"Run"<<" "<<"Subrun"<<" "<<"Event"<<endl;
@@ -34,7 +36,6 @@ void twoproton_pelee_overlay::Loop()
   //Defining all the constans we will use later
   //////////////////////////////
   bool _debug = false; //debug statements
-  double pot_wgt = 0.0347; //POT weight
   double mc_wgt; //mc cv weight
 
   //cut values

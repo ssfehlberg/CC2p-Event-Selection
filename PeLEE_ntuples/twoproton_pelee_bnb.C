@@ -2,11 +2,14 @@
 #include "twoproton_pelee_bnb.h"
 #include "histogram_funcs.h"
 #include "helper_funcs.h"
+#include <chrono> 
+using namespace std::chrono;
 
 void twoproton_pelee_bnb::Loop()
 {
-
-  //Define objects of classes
+  auto start = high_resolution_clock::now();
+ 
+ //Define objects of classes
   ////////////////////////////
   histogram_funcs hist; //histogram_funcs.h
   helper_funcs cuts; //helper_funcs.h
@@ -242,5 +245,9 @@ void twoproton_pelee_bnb::Loop()
   hist.Write_Histograms(false); //function that writes all our histograms                                                              
   tfile->Close(); //write the root file that contains our histograms                                                         
   myfile.close(); //Write the file that contains the RSE of good events                                                     
+  
+  auto stop = high_resolution_clock::now();
+  auto duration = duration_cast<minutes>(stop - start); 
+  std::cout<<"Program Run Time: "<<duration.count()<<std::endl;
 
 } //end of progrm

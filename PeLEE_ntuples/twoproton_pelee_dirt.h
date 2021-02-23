@@ -1461,25 +1461,62 @@ public :
    virtual void     Loop();
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
+   virtual void     Which_Run();
+
+ private:
+   char response;
+   const char* directory;
+   const char* file;
+   double pot_wgt;
+
 };
 
 #endif
 
+void twoproton_pelee_dirt::Which_Run(){
+  if(response =='1'){
+    directory = "Run1";
+    pot_wgt = 1;
+  } else if(response == '2'){
+    directory = "Run2";
+    pot_wgt = 1;
+  } else if(response == '3'){
+    directory ="Run3";
+    pot_wgt = 1;
+  }  
+} //end of which_run
+
 #ifdef twoproton_pelee_dirt_cxx
 twoproton_pelee_dirt::twoproton_pelee_dirt(TTree *tree) : fChain(0) 
 {
-// if parameter tree is not specified (or zero), connect the file
-// used to generate this class and read the Tree.
-   if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/pnfs/uboone/persistent/users/davidc/searchingfornues/v08_00_00_43/0928/prodgenie_bnb_dirt_overlay_mcc9.1_v08_00_00_26_run1_reco2_reco2.root");
-      if (!f || !f->IsOpen()) {
-         f = new TFile("/pnfs/uboone/persistent/users/davidc/searchingfornues/v08_00_00_43/0928/prodgenie_bnb_dirt_overlay_mcc9.1_v08_00_00_26_run1_reco2_reco2.root");
-      }
-      TDirectory * dir = (TDirectory*)f->Get("/pnfs/uboone/persistent/users/davidc/searchingfornues/v08_00_00_43/0928/prodgenie_bnb_dirt_overlay_mcc9.1_v08_00_00_26_run1_reco2_reco2.root:/nuselection");
-      dir->GetObject("NeutrinoSelectionFilter",tree);
+  // if parameter tree is not specified (or zero), connect the file
+  // used to generate this class and read the Tree.
+  std::cout<<"Which Run Are we Looking at?"<<std::endl;
+  std::cout<<" 1 = Run 1 \n 2 = Run 2 \n 3 = Run 3"<<std::endl;
+  std::cin>>response;
+  
+  if(response =='1'){
+    file = "/pnfs/uboone/persistent/users/davidc/searchingfornues/v08_00_00_43/0928/prodgenie_bnb_dirt_overlay_mcc9.1_v08_00_00_26_run1_reco2_reco2.root";
+  } else if(response == '2'){
+    file = "/pnfs/uboone/persistent/users/davidc/searchingfornues/v08_00_00_43/0928/prodgenie_dirt_overlay_v08_00_00_35_all_run2_reco2_reco2.root";
+  } else if(response == '3'){
+    file = "/pnfs/uboone/persistent/users/davidc/searchingfornues/v08_00_00_43/0928/prodgenie_bnb_dirt_overlay_mcc9.1_v08_00_00_26_run3_reco2_reco2.root";
+  } else{
+    std::cout<<"Invalid Response. Please Type 1, 2, or 3 for Run 1,Run 2, and Run 3 samples respectively."<<std::endl;
+  }
+  
+  if (tree == 0) {
+    TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject(Form("%s",file));
+    if (!f || !f->IsOpen()) {
+      f = new TFile(Form("%s",file));
+    }
+    TDirectory * dir = (TDirectory*)f->Get(Form("%s:/nuselection",file));
+    dir->GetObject("NeutrinoSelectionFilter",tree);
+  }
+  Init(tree);
 
-   }
-   Init(tree);
+  //Run the program with the correct file
+  Loop();
 }
 
 twoproton_pelee_dirt::~twoproton_pelee_dirt()
