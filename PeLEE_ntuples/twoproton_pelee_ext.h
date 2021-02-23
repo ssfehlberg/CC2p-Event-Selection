@@ -1397,13 +1397,13 @@ public :
 void twoproton_pelee_ext::Which_Run(){
   if(response =='1'){
     directory = "Run1";
-    pot_wgt = 1;
+    pot_wgt = 0.552;
   } else if(response == '2'){
     directory = "Run2";
-    pot_wgt = 1;
+    pot_wgt = 0.407;
   } else if(response == '3'){
     directory ="Run3";
-    pot_wgt = 1;
+    pot_wgt = 0.284;
   }  
 } //end of which_run
 

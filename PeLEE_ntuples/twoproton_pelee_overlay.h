@@ -1681,13 +1681,13 @@ public :
 void twoproton_pelee_overlay::Which_Run(){
   if(response =='1'){
     directory = "Run1";
-    pot_wgt = 1;
+    pot_wgt = 0.124;
   } else if(response == '2'){
     directory = "Run2";
-    pot_wgt = 1;
+    pot_wgt = 0.257;
   } else if(response == '3'){
     directory ="Run3";
-    pot_wgt = 1;
+    pot_wgt = 0.190;
   }  
 } //end of which_run
 
