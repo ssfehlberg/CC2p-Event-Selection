@@ -1545,11 +1545,30 @@ public :
   TGraph* eff_graph = new TGraph(number); //efficiency as function of cuts
   TGraph* pur_graph = new TGraph(number); //efficiency as function of purity
   static const int num_threshold = 6;
-  const char* threshold[num_threshold] = {"_muon_contained","_muon_uncontained","_proton","_pion_plus","_pion_minus","_pion0"};
+  const char* threshold[num_threshold] = {"_muon_contained","_muon_uncontained","_proton","_pion_plus","_pion_minus","_pion0"}; //determining the particle thresholds
   TH1D* h_mom_threshold_num[num_threshold]; //these are for the threshold determination plots: numerator of the the efficiency
   TH1D* h_mom_threshold_denom[num_threshold]; //same as above but the denominator of the efficinecy
   int num_bins_eff[num_threshold] = {50,50,50,50,50,50};
   float x_high_eff[num_threshold] = {2.0,2.0,2.0,0.5,0.5,0.5};
+
+  /*do I actually need to do this?
+  //efficiency plots of our selected particles to determine potential xsec candidates
+  static const int num_particles_eff_plots = 3;
+  const char particles_eff = {"_momentum","_costheta","_phi"};
+  static const int num_particles_eff = 5;
+  const char particles_eff = {"_muon","_muon_contained","_muon_uncontainied","_lead_proton","recoil_proton"};
+  TH1D* h_particle_num[num_particles_eff_plots][num_particles_eff]; //particles for 
+  TH1D* h_particle_num[num_partciles_eff_plots][num_particles_eff];
+  */
+
+  //efficiency plots of other variables to determine potential xsec candidates
+  static const int num_other_eff = 7;
+  const char* other_eff[num_other_eff] = {"_opening_angle_protons_lab","_opening_angle_protons_com","_opening_angle_mu_leading","_opening_angle_mu_both","_delta_PT","_delta_alphaT","_delta_phiT"};
+  TH1D* h_other_eff_num[num_other_eff];
+  TH1D* h_other_eff_denom[num_other_eff];
+  int num_bins_other_eff[num_other_eff] = {30,30,30,30,15,10,10};
+  float x_low_other_eff[num_other_eff] = {-1.5,-1.5,-1.5,-1.5,0,0,0};
+  float x_high_other_eff[num_other_eff] = {1.5,1.5,1.5,1.5,180,180,180};
 
   //Track related variables
   static const int num_part = 10;
