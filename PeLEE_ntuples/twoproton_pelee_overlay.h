@@ -1455,10 +1455,12 @@ public :
    virtual Long64_t LoadTree(Long64_t entry);
    virtual void     Init(TTree *tree);
    virtual void     Loop();
+   virtual void     Print_Hello();
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
    virtual void     Which_Run();
    virtual void     Define_Histograms(); //defines histograms. works for all samples
+   virtual void     Fill_Efficiency(const char* fraction);
    virtual void     Fill_Histograms_Mine(int i, double wgt, int mc_n_threshold_muon, int mc_n_threshold_proton, int mc_n_threshold_pion0, double mc_n_threshold_pionpm, bool fv);
    virtual void     Fill_Histograms_Raquel(int i, double wgt, bool fv);
    virtual double   GetTrackMomentum(double trkrange, int pdg) const;
@@ -1544,12 +1546,12 @@ public :
   //Efficinecy Plots
   TGraph* eff_graph = new TGraph(number); //efficiency as function of cuts
   TGraph* pur_graph = new TGraph(number); //efficiency as function of purity
-  static const int num_threshold = 6;
-  const char* threshold[num_threshold] = {"_muon_contained","_muon_uncontained","_proton","_pion_plus","_pion_minus","_pion0"}; //determining the particle thresholds
+  static const int num_threshold = 9;
+  const char* threshold[num_threshold] = {"_muon_all","_muon_contained","_muon_uncontained","_proton_all","_proton_leading","_proton_recoil","_pion_plus","_pion_minus","_pion0"}; //determining the particle thresholds
   TH1D* h_mom_threshold_num[num_threshold]; //these are for the threshold determination plots: numerator of the the efficiency
   TH1D* h_mom_threshold_denom[num_threshold]; //same as above but the denominator of the efficinecy
-  int num_bins_eff[num_threshold] = {50,50,50,50,50,50};
-  float x_high_eff[num_threshold] = {2.0,2.0,2.0,0.5,0.5,0.5};
+  int num_bins_eff[num_threshold] = {50,50,50,50,50,50,50,50,50};
+  float x_high_eff[num_threshold] = {2.0,2.0,2.0,2.0,2.0,2.0,0.5,0.5,0.5};
 
   /*do I actually need to do this?
   //efficiency plots of our selected particles to determine potential xsec candidates
@@ -1710,6 +1712,11 @@ void twoproton_pelee_overlay::Which_Run(){
   }  
 } //end of which_run
 
+#ifdef func_cxx
+#define func_cxx
+#endif
+
+
 #ifdef twoproton_pelee_overlay_cxx
 twoproton_pelee_overlay::twoproton_pelee_overlay(TTree *tree) : fChain(0) 
 {
@@ -1742,9 +1749,6 @@ twoproton_pelee_overlay::twoproton_pelee_overlay(TTree *tree) : fChain(0)
   //Run the program with the correct file
   Loop();
 }
-
-
-
 
 twoproton_pelee_overlay::~twoproton_pelee_overlay()
 {
@@ -1956,6 +1960,20 @@ void twoproton_pelee_overlay::Define_Histograms(){
     // h_list_2D[i]->Sumw2();
     // }
 }
+
+void twoproton_pelee_overlay::Fill_Efficiency(const char* fraction){
+
+  if(strcmp(fraction,"numerator") == 0){
+    
+
+
+  } else if (strcmp(fraction,"denominator") == 0){
+  }
+
+
+}
+
+
 
 double twoproton_pelee_overlay::GetTrackMomentum(double trkrange, int pdg) const
 {

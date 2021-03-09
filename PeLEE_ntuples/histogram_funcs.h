@@ -13,27 +13,17 @@ class histogram_funcs
   virtual void Fill_Histograms(int i, TVector3 reco_nu_vertex, double CosmicIP, double topological_score,double wgt); //only fills the bnb, ext, & dirt. i indicates cut
   //virtual void Fill_Particles(TVector4 muon, TVector4 p1, TVector4 p2, double wgt); //only fills the bnb, ext, & dirt. Muon ID, Leding ID, Recoil ID
   virtual void Fill_Particles(TVector3 vMuon, TLorentzVector muon, TVector3 vLead, TLorentzVector lead, TVector3 vRec, TLorentzVector rec, double wgt);
-  virtual void Write_Histograms(bool truth); //writes histograms. works for all samples
+  virtual void Write_Histograms(); //writes histograms. works for all samples
 
   //Total Histograms                                                                                                                
   static const int num = 4;
   const char * total[num] = {"npfp","vtx_npfp","ntrack","nshower"};
-  TH1D * h_pfp_overlay[num]; //overlay
   TH1D* h_pfp[num]; //bnb, ext, dirt
-
-  //Correlation Histograms                                                                                                          
-  static const int num2d = 3;
-  const char * total2d[num2d] = {"reco","truth","truth_sce"};
-  const char * labelx[num2d] = {"reco x","true x","true x + sce"};
-  const char * labely[num2d] = {"reco y","true y","true y + sce"};
-  TH2D *h_correlation_overlay[num2d];
 
   //Now to define all the specific channels and their histograms                                                                   
   //Since I am basically a plot factory now, I am going to try and do this the smart way                                           
   ///////////////////////////////////////////////////////////////////////////////////////                                          
   static const int  number=6; //number cuts                                                                        
-  static const int  number2 = 11; //categories I defined                                                            
-  static const int  number3 = 10; //categories raquel defined
   const char * point[number] ={"_before_selection","_after_fv","_after_three_pfps","_after_track_cut","_after_connection_cut","_after_pid"}; //this defines histograms after each cut    
   TH1D* h_vtx_x[number]; //reco x: bnb, ext, dirt                                                                                   
   TH1D* h_vtx_y[number]; //reco y: bnb, ext, dirt                                                                                  
@@ -284,17 +274,8 @@ void histogram_funcs::Fill_Particles(TVector3 vMuon, TLorentzVector muon, TVecto
   
 } //end of Fill Particles
 
-void histogram_funcs::Write_Histograms(bool truth){ 
-  if(truth == true){
-    for(int i=0; i< num2d; i++){
-      h_correlation_overlay[i]->Write();
-    }
-    for(int i = 0; i < h_list.size(); i++){
-      h_list[i]->Write();
-    }
-  } else if (truth == false){
-    for(int i = 0; i < h_list.size(); i++){
-      h_list[i]->Write();
-    }
+void histogram_funcs::Write_Histograms(){ 
+  for(int i = 0; i < h_list.size(); i++){
+    h_list[i]->Write();
   }
 }

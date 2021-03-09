@@ -60,11 +60,6 @@ void twoproton_pelee_overlay::Loop()
   int threetrkcntr = 0; //Number of events with three tracks    
   int threetrk_connected = 0; //Number of Events with three tracks attached to the vertex
   int pid = 0; //Number of events with 1 track with PID > 0.6 and 2 tracks with PID < 0.6
-  /* don't know if we need these counters yet
-  int n_mom_mu = 0; //number of events after muon momentum cut
-  int n_mom_p1 = 0; //number of events after leading proton momentum cut
-  int n_mom_p2 = 0;//number of events after recoil proton momentum cut
-  */
   int events_remaining = 0; //sanity check for number of events remaining
 
   //neutrino slice counters
@@ -77,7 +72,7 @@ void twoproton_pelee_overlay::Loop()
   int uhoh = 0;
 
   if (fChain == 0) return;
-  Long64_t nentries = fChain->GetEntriesFast();
+  Long64_t nentries = 100;//fChain->GetEntriesFast();
   std::cout<<"Total Number of Entries: "<<nentries<<std::endl;
   Long64_t nbytes = 0, nb = 0;
   for (Long64_t jentry=0; jentry<nentries;jentry++) {
@@ -101,7 +96,7 @@ void twoproton_pelee_overlay::Loop()
     }
 
     //Definig the MC Weight  & filling the damn mc values
-    ///////////////////////////////////////////////////////////                                                                                                                                                                        
+    ///////////////////////////////////////////////////////////                                                                                                                                                                      
     if(std::isfinite(weightTune) && weightTune <= 100.) {
       mc_wgt = weightSplineTimesTune;
     } else {
@@ -173,28 +168,51 @@ void twoproton_pelee_overlay::Loop()
     Fill_Histograms_Mine(1, pot_wgt*mc_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv); 
     Fill_Histograms_Raquel(1, pot_wgt*mc_wgt,cuts.fv);
 
+    //studd for efficiency
+    std::vector<double> mc_proton_mom;
     if(ccnc == 0 && abs(nu_pdg) == 14 && nproton == 2 && nmuon == 1 && npion == 0 && npi0 == 0){
+
+      //grabbing proton momentum first
+      for(int j=0; j < n_pfps; j++){
+	if (std::abs(backtracked_pdg->at(j)) == 2212){
+	  TVector3 backtracker_mom_vector(backtracked_px->at(j),backtracked_py->at(j),backtracked_pz->at(j));
+	  mc_proton_mom.push_back(backtracker_mom_vector.Mag());
+	}
+      }
+      sort(mc_proton_mom.begin(),mc_proton_mom.end());
+
+      //now for the rest
       for(int j=0; j < n_pfps; j++){
 	TVector3 backtracker_mom_vector(backtracked_px->at(j),backtracked_py->at(j),backtracked_pz->at(j));
 	if(std::abs(backtracked_pdg->at(j)) == 13){
+	  h_mom_threshold_denom[0]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //muon all  
 	  bool contained_start = cuts.In_FV(10,10,10,10,10,10,trk_start_x_v->at(j),trk_start_y_v->at(j),trk_start_z_v->at(j));
           bool contained_end = cuts.In_FV(10,10,10,10,10,10,trk_end_x_v->at(j),trk_end_y_v->at(j),trk_end_z_v->at(j));
 	  if(contained_start == true && contained_end == true){
-	    h_mom_threshold_denom[0]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //muon contained
+	    h_mom_threshold_denom[1]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //muon contained
 	  }else if(contained_start == true && contained_end == false){
-	    h_mom_threshold_denom[1]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //muon uncontained 
+	    h_mom_threshold_denom[2]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //muon uncontained 
 	  } 
 	}else if (std::abs(backtracked_pdg->at(j)) == 2212){
-	  h_mom_threshold_denom[2]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //proton   
+	  h_mom_threshold_denom[3]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //proton all
+	  if(mc_proton_mom.size() == 2){
+	    if(backtracker_mom_vector.Mag() == mc_proton_mom[1]){
+	      h_mom_threshold_denom[4]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //proton leading
+	    } else if (backtracker_mom_vector.Mag() == mc_proton_mom[0]){
+	      h_mom_threshold_denom[5]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //proton recoil 
+	    }
+	  }
 	}else if (backtracked_pdg->at(j) == 211){
-	  h_mom_threshold_denom[3]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //pion+
+	  h_mom_threshold_denom[6]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //pion+
 	}else if (backtracked_pdg->at(j) == -211){
-	  h_mom_threshold_denom[4]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //pion-
+	  h_mom_threshold_denom[7]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //pion-
 	}else if(std::abs(backtracked_pdg->at(j)) == 111){
-	  h_mom_threshold_denom[5]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //pion0  
+	  h_mom_threshold_denom[8]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //pion0  
 	} //end of else if
       } //end of for
     } //end of if
+
+    mc_proton_mom.clear();
 
     //2) There are exactly 3 PFP's in the Event 
     ///////////////////////////////////////////////////////
@@ -226,6 +244,7 @@ void twoproton_pelee_overlay::Loop()
 	protons++;                                             
       }                                                                                                       
     }                                                                                                     
+   
     //Three pfps with track score above 0.8
     if(y != 3) continue; 
     threetrkcntr++;
@@ -251,119 +270,52 @@ void twoproton_pelee_overlay::Loop()
     Fill_Histograms_Mine(5, pot_wgt*mc_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv);
     Fill_Histograms_Raquel(5, pot_wgt*mc_wgt, cuts.fv);
     
+    //filling the numerator of the efficiency
     if(ccnc == 0 && abs(nu_pdg) == 14 && nproton == 2 && nmuon == 1 && npion == 0 && npi0 == 0){
-    for(int j=0; j < n_pfps; j++){
-      TVector3 backtracker_mom_vector(backtracked_px->at(j),backtracked_py->at(j),backtracked_pz->at(j));
-      if(std::abs(backtracked_pdg->at(j)) == 13){
-	bool contained_start = cuts.In_FV(10,10,10,10,10,10,trk_start_x_v->at(j),trk_start_y_v->at(j),trk_start_z_v->at(j));
-	bool contained_end = cuts.In_FV(10,10,10,10,10,10,trk_end_x_v->at(j),trk_end_y_v->at(j),trk_end_z_v->at(j));
-	if(contained_start == true && contained_end == true){
-	  h_mom_threshold_num[0]->Fill(backtracker_mom_vector.Mag(),1); //muon contained
-	}else if(contained_start == true && contained_end == false){
-	  h_mom_threshold_num[1]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //muon uncontained 
-	} 
-      }else if (std::abs(backtracked_pdg->at(j)) == 2212){
-	h_mom_threshold_num[2]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //proton   
-      }else if (backtracked_pdg->at(j) == 211){
-	h_mom_threshold_num[3]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //pion+
-      }else if (backtracked_pdg->at(j) == -211){
-	h_mom_threshold_num[4]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //pion-
-      }else if(std::abs(backtracked_pdg->at(j)) == -111){
-	h_mom_threshold_num[5]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //pion0  
-      } //end of else if
-    } //end of for
+
+      //grabbing proton momentum first                                                                                                                                                                                               
+      for(int j=0; j < n_pfps; j++){
+	if (std::abs(backtracked_pdg->at(j)) == 2212){
+	  TVector3 backtracker_mom_vector(backtracked_px->at(j),backtracked_py->at(j),backtracked_pz->at(j));
+	  mc_proton_mom.push_back(backtracker_mom_vector.Mag());
+	}
+      }
+      sort(mc_proton_mom.begin(),mc_proton_mom.end());
+
+      for(int j=0; j < n_pfps; j++){
+	TVector3 backtracker_mom_vector(backtracked_px->at(j),backtracked_py->at(j),backtracked_pz->at(j));
+	if(std::abs(backtracked_pdg->at(j)) == 13){
+	  h_mom_threshold_num[0]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //muon all 
+	  bool contained_start = cuts.In_FV(10,10,10,10,10,10,trk_start_x_v->at(j),trk_start_y_v->at(j),trk_start_z_v->at(j));
+	  bool contained_end = cuts.In_FV(10,10,10,10,10,10,trk_end_x_v->at(j),trk_end_y_v->at(j),trk_end_z_v->at(j));
+	  if(contained_start == true && contained_end == true){
+	    h_mom_threshold_num[1]->Fill(backtracker_mom_vector.Mag(),1); //muon contained
+	  }else if(contained_start == true && contained_end == false){
+	    h_mom_threshold_num[2]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //muon uncontained 
+	  } 
+	}else if (std::abs(backtracked_pdg->at(j)) == 2212){
+	  h_mom_threshold_num[3]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //proton all
+	  if(mc_proton_mom.size() == 2){
+	    if(backtracker_mom_vector.Mag() == mc_proton_mom[1]){
+	      h_mom_threshold_num[4]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //proton leading                                                                                                                                  
+	    } else if (backtracker_mom_vector.Mag() == mc_proton_mom[0]){
+	      h_mom_threshold_num[5]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //proton recoil                                                                                                                                   
+	    }
+	  }
+	}else if (backtracked_pdg->at(j) == 211){
+	  h_mom_threshold_num[6]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //pion+
+	}else if (backtracked_pdg->at(j) == -211){
+	  h_mom_threshold_num[7]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //pion-
+	}else if(std::abs(backtracked_pdg->at(j)) == -111){
+	  h_mom_threshold_num[8]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //pion0  
+	} //end of else if
+      } //end of for
     } //end of the if
-    
 
-    ///////////////////////////////////////////////////////////////////////////////////////////
-    //Huzzah! We are done with the inital selection. Now to make some particle specific plots:
-    //////////////////////////////////////////////////////////////////////////////////////////
-    /*    std::cout<<"Before Id'ing the particles"<<std::endl;
-    int muon_id;
-    int leading_proton_id;
-    int recoil_proton_id;
-    std::vector<int> proton_id_vector;
-    for(int i=0; i < trk_pfp_id_v->size(); i++){
-      int trk_id = trk_pfp_id_v->at(i);
-      std::cout<<"trkid: "<<trk_id<<std::endl;
-      double trk_pid = trk_llr_pid_score_v->at(i);	
-      std::cout<<"trk_pid_score"<<trk_pid<<std::endl;
-      std::cout<<"BackTrackerPDG at trk_id "<<trk_id<<": "<<backtracked_pdg->at(i)<<std::endl;
-      if(trk_pid < -1) continue;
-      if(trk_pid > 1) continue;
-      if(trk_pid > cuts.PID_CUT) {
-	muon_id = trk_id - 1;
-      }
-      if(trk_pid < cuts.PID_CUT){
-	proton_id_vector.push_back(trk_id);
-      }
-    }
+    mc_proton_mom.clear();
 
-    std::cout<<"Proton_id_vector[0]: "<<proton_id_vector[0]<<std::endl;
-    std::cout<<"Proton_id_vector[1]: "<<proton_id_vector[1]<<std::endl;
-
-    if(proton_id_vector[0] == 0 || proton_id_vector[1] ==0) continue; 
-    uhoh++;
-
-    std::cout<<"Right before proton id: "<<std::endl;
-
-    float mom0 = trk_energy_proton_v->at(proton_id_vector[0]-1);//std::sqrt(std::pow(trk_energy_proton_v->at(proton_id_vector[0]-1),2)-std::pow(MASS_PROTON,2));
-    std::cout<<"Right before mom1"<<std::endl;
-    float mom1 = trk_energy_proton_v->at(proton_id_vector[1]-1);//std::sqrt(std::pow(trk_energy_proton_v->at(proton_id_vector[1]-1),2)-std::pow(MASS_PROTON,2));
-    std::cout<<"Right before the mom if loop"<<std::endl;
-
-    if (abs(mom0) > abs(mom1)){
-      leading_proton_id = proton_id_vector[0] - 1; //you have to do the -1 cause of course the id's are indexed at one like fucking losers
-      recoil_proton_id = proton_id_vector[1] - 1;
-    }else{
-      leading_proton_id = proton_id_vector[1] - 1;
-      recoil_proton_id = proton_id_vector[0] - 1;
-    }
-
-    std::cout<<"After Id'ing the Particles"<<std::endl;
-
-    //Finally. Let's define some stuff then fill some variables!
-    ////////////////////////////////////////////////////////////    
-    
-    //Muon
-    TVector3 vMuon(1,1,1);
-    bool muon_start_contained = cuts.In_FV(10,10,10,10,10,10,trk_sce_start_x_v->at(muon_id),trk_sce_start_y_v->at(muon_id),trk_sce_start_z_v->at(muon_id));
-    bool muon_end_contained = cuts.In_FV(10,10,10,10,10,10,trk_sce_end_x_v->at(muon_id),trk_sce_end_y_v->at(muon_id),trk_sce_end_z_v->at(muon_id));
-    double EMuon = 0;
-    if(muon_start_contained == true && muon_end_contained == true){
-      EMuon = std::sqrt(std::pow(trk_range_muon_mom_v->at(muon_id),2)+std::pow(MASS_MUON,2));
-      vMuon.SetMag(trk_range_muon_mom_v->at(muon_id));
-    } else if (muon_start_contained == true && muon_end_contained == false){
-      EMuon = std::sqrt(std::pow(trk_mcs_muon_mom_v->at(muon_id),2)+std::pow(MASS_MUON,2));
-      vMuon.SetMag(trk_mcs_muon_mom_v->at(muon_id));
-    }
-    vMuon.SetTheta(trk_theta_v->at(muon_id));
-    vMuon.SetPhi(trk_phi_v->at(muon_id));
-    TLorentzVector muon(vMuon[0],vMuon[1],vMuon[2],EMuon);    
-    
-    std::cout<<"After Defining Muon"<<std::endl;
-
-    //Leading Proton
-    TVector3 vLead(1,1,1);
-    float ELead = trk_energy_proton_v->at(leading_proton_id) + std::pow(MASS_PROTON,2);
-    vLead.SetMag(std::sqrt(std::pow(ELead,2) - std::pow(MASS_PROTON,2)));
-    vLead.SetTheta(trk_theta_v->at(leading_proton_id));
-    vLead.SetPhi(trk_phi_v->at(leading_proton_id));
-    TLorentzVector lead(vLead[0],vLead[1],vLead[2],ELead);    
-
-    std::cout<<"After Defining Lead Proton"<<std::endl;
-
-    //Recoil Proton
-    TVector3 vRec(1,1,1);
-    float ERec = trk_energy_proton_v->at(recoil_proton_id) + std::pow(MASS_PROTON,2);
-    vRec.SetMag(std::sqrt(std::pow(ERec,2) - std::pow(MASS_PROTON,2)));
-    vRec.SetTheta(trk_theta_v->at(recoil_proton_id));
-    vRec.SetPhi(trk_phi_v->at(recoil_proton_id));
-    TLorentzVector rec(vRec[0],vRec[1],vRec[2],ERec);    
-
-    std::cout<<"After Defining Rec"<<std::endl;
-    */
-
+    //Identifying the Partciles
+    ///////////////////////////
     int muon_id;
     int leading_proton_id;
     int recoil_proton_id;
@@ -461,11 +413,6 @@ void twoproton_pelee_overlay::Loop()
   std::cout << "[ANALYZER] Number of Events with 3 Tracks: "<<threetrkcntr<<" Fraction of Total: "<<float(100.*float(threetrkcntr)/float(nentries))<<"%"<<std::endl;
   std::cout << "[ANALYZER] Number of Events with 3 Tracks Connected to Vertex: "<<threetrk_connected<<" Fraction of Total: "<<float(100.*float(threetrk_connected)/float(nentries))<<"%"<<std::endl; 
   std::cout << "[ANALYZER] Number of Events with 1 Muon and 2 Protons: "<<pid<<" Fraction of Total: "<<float(100.*float(pid)/float(nentries))<<"%"<<std::endl;
-  /* not sure it we will need these yet
-  std::cout<<  "[ANALYZER] Muon Momentum Quality Cut: "<<n_mom_mu<<std::endl;
-  std::cout<<  "[ANALYZER] Leading Proton Momentum Quality Cut: "<<n_mom_p1<<std::endl;
-  std::cout<<  "[ANALYZER] Recoil Proton Momentum Quality Cut: "<<n_mom_p2<<std::endl;
-  */
   std::cout << "[ANALYZER] Sanity Check of the Total Number of Events Remaining: "<<events_remaining<<std::endl;
   std::cout <<"-----CLOSING TIME. YOU DON'T HAVE TO GO HOME, BUT YOU CAN'T STAY HERE-----"<<std::endl;
    

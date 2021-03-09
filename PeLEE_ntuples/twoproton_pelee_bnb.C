@@ -2,25 +2,23 @@
 #include "twoproton_pelee_bnb.h"
 #include "histogram_funcs.h"
 #include "helper_funcs.h"
+#include "constants.h"
 #include <chrono> 
+using namespace Constants;
 using namespace std::chrono;
 
 void twoproton_pelee_bnb::Loop()
 {
   auto start = high_resolution_clock::now();
  
- //Define objects of classes
+  //Define objects of classes
   ////////////////////////////
   histogram_funcs hist; //histogram_funcs.h
   helper_funcs cuts; //helper_funcs.h
   
-  //Making a new Root File that will contain all the histograms that we will want to plot:                                    
-  ///////////////////////////////////////////////////////////////////////////////////////                        
+  //Making a new Root File that will contain all the histograms that we will want to plot and file with good RSEs:                       ///////////////////////////////////////////////////////////////////////////////////////                        
   Which_Run();
-              
-  TFile *tfile = new TFile(Form("root_files/%s/histograms_pelee_bnb.root",directory),"RECREATE");
-
-  //File with RSE's in them                                                                                                   
+  TFile *tfile = new TFile(Form("root_files/%s/histograms_pelee_bnb.root",directory),"RECREATE"); //root file
   ofstream myfile;//File that will contain RSE of good events                                                                 
   myfile.open(Form("lists/%s/files_filtered_bnb.list",directory));
   myfile<<"Run"<<" "<<"Subrun"<<" "<<"Event"<<endl;
@@ -28,30 +26,6 @@ void twoproton_pelee_bnb::Loop()
   //Define all the histograms I am going to fill
   ////////////////////////////////////////////                                                                     
   hist.Define_Histograms("bnb");
-
-  //Defining all the constans we will use later                                                                   
-  //////////////////////////////                                                                                  
-  bool _debug = false; //debug statements                                                                       
-  double MASS_PROTON = 0.93827208;
-  double MASS_MUON = 0.10565837;
-
-  //Counters                                                                                               
-  int fvcntr = 0; //Number of events with reconstructed vertex within the FV                                      
-  int threepfps = 0; //Number of Events with Three PFPs
-  int threetrkcntr = 0; //Number of events with three tracks    
-  int threetrk_connected = 0; //Number of Events with three tracks attached to the vertex
-  int pid = 0; //Number of events with 1 track with PID > 0.6 and 2 tracks with PID < 0.6
-  /* don't know if we need these counters yet
-  int n_mom_mu = 0; //number of events after muon momentum cut
-  int n_mom_p1 = 0; //number of events after leading proton momentum cut
-  int n_mom_p2 = 0;//number of events after recoil proton momentum cut
-  */
-  int events_remaining = 0; //sanity check for number of events remaining
-
-  //neutrino counters                                                                                     
-  int neutrinos_0 = 0;
-  int neutrinos_1 = 0;
-  int neutrinos_else = 0;
 
   if (fChain == 0) return;
   Long64_t nentries = fChain->GetEntriesFast();
@@ -68,7 +42,6 @@ void twoproton_pelee_bnb::Loop()
     //Filling histograms before any selection is made
     ////////////////////////////////////////////////
     hist.Fill_Histograms(0, TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z),CosmicIP, topological_score, pot_wgt);
-    //hist.Fill_Histograms(0, pot_wgt);
     
     //Just casually checking how many neutrino slices we have
     if(nslice == 0){
@@ -227,11 +200,6 @@ void twoproton_pelee_bnb::Loop()
   std::cout << "[ANALYZER] Number of Events with 3 Tracks: "<<threetrkcntr<<" Fraction of Total: "<<float(100.*float(threetrkcntr)/float(nentries))<<"%"<<std::endl;
   std::cout << "[ANALYZER] Number of Events with 3 Tracks Connected to Vertex: "<<threetrk_connected<<" Fraction of Total: "<<float(100.*float(threetrk_connected)/float(nentries))<<"%"<<std::endl; 
   std::cout << "[ANALYZER] Number of Events with 1 Muon and 2 Protons: "<<pid<<" Fraction of Total: "<<float(100.*float(pid)/float(nentries))<<"%"<<std::endl;
-  /* not sure it we will need these yet
-  std::cout<<  "[ANALYZER] Muon Momentum Quality Cut: "<<n_mom_mu<<std::endl;
-  std::cout<<  "[ANALYZER] Leading Proton Momentum Quality Cut: "<<n_mom_p1<<std::endl;
-  std::cout<<  "[ANALYZER] Recoil Proton Momentum Quality Cut: "<<n_mom_p2<<std::endl;
-  */
   std::cout << "[ANALYZER] Sanity Check of the Total Number of Events Remaining: "<<events_remaining<<std::endl;
   std::cout <<"-----CLOSING TIME. YOU DON'T HAVE TO GO HOME, BUT YOU CAN'T STAY HERE-----"<<std::endl;
   
@@ -242,7 +210,7 @@ void twoproton_pelee_bnb::Loop()
   //Don't forget to write all of your histograms before you leave!                                                                       
   ///////////////////////////////////////////////////////////////                                                                 
   tfile->cd();
-  hist.Write_Histograms(false); //function that writes all our histograms                                                              
+  hist.Write_Histograms(); //function that writes all our histograms                                                              
   tfile->Close(); //write the root file that contains our histograms                                                         
   myfile.close(); //Write the file that contains the RSE of good events                                                     
   

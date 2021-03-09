@@ -2,7 +2,9 @@
 #include "twoproton_pelee_dirt.h"
 #include "histogram_funcs.h"
 #include "helper_funcs.h"
+#include "constants.h"
 #include <chrono>
+using namespace Constants;
 using namespace std::chrono;
 
 void twoproton_pelee_dirt::Loop()
@@ -14,46 +16,16 @@ void twoproton_pelee_dirt::Loop()
   histogram_funcs hist; //histogram_funcs.h
   helper_funcs cuts; //helper_funcs.h  
   
-  //Making a new Root File that will contain all the histograms that we will want to plot:                                    
-  ///////////////////////////////////////////////////////////////////////////////////////                                      
+  //Making a new Root File that will contain all the histograms that we will want to plot and file with good RSEs:                       ///////////////////////////////////////////////////////////////////////////////////////                                      
   Which_Run();
-
-  TFile *tfile = new TFile(Form("root_files/%s/histograms_pelee_dirt_wgt.root",directory),"RECREATE"); //wgt indicates using the CV MC values
-
-  //File with RSE's in them                                                                                                   
+  TFile *tfile = new TFile(Form("root_files/%s/histograms_pelee_dirt_wgt.root",directory),"RECREATE"); //wgt means using the CV MC values
   ofstream myfile;//File that will contain RSE of good events                                                                 
   myfile.open(Form("lists/%s/files_filtered_dirt_wgt.list",directory));
   myfile<<"Run"<<" "<<"Subrun"<<" "<<"Event"<<endl;
 
   //Define all the histograms I am going to fill
- ////////////////////////////////////////////                                                                                
+  ////////////////////////////////////////////                                                                                
   hist.Define_Histograms("dirt_wgt");
-
-  //Defining all the constans we will use later                                                                                          
-  //////////////////////////////                                                                                                      
-  bool _debug = false; //debug statements                                                                        
-  double mc_wgt; //spline times tuned cv weight
-  double MASS_PROTON = 0.93827208;
-  double MASS_MUON = 0.10565837;
-                     
-  //Counters                                                                                                               
-  int fvcntr = 0; //Number of events with reconstructed vertex within the FV                                      
-  int threepfps = 0; //Number of Events with Three PFPs
-  int threetrkcntr = 0; //Number of events with three tracks    
-  int threetrk_connected = 0; //Number of Events with three tracks attached to the vertex
-  int pid = 0; //Number of events with 1 track with PID > 0.6 and 2 tracks with PID < 0.6
-
-  /* don't know if we need these counters yet
-  int n_mom_mu = 0; //number of events after muon momentum cut
-  int n_mom_p1 = 0; //number of events after leading proton momentum cut
-  int n_mom_p2 = 0;//number of events after recoil proton momentum cut
-  */
-  int events_remaining = 0; //sanity check for number of events remaining
-
-  //neutrino counters                                                                                                                 
-  int neutrinos_0 = 0;
-  int neutrinos_1 = 0;
-  int neutrinos_else = 0;
 
    if (fChain == 0) return;
    Long64_t nentries = fChain->GetEntriesFast();
@@ -230,30 +202,24 @@ void twoproton_pelee_dirt::Loop()
 
    } //end of Loop over events
 
-
-   //Don't forget to write all of your histograms before you leave!                                                                       
-   ///////////////////////////////////////////////////////////////                                         
-  std::cout<<"-----MODULE SUMMARY-----"<<std::endl;
+ std::cout<<"-----MODULE SUMMARY-----"<<std::endl;
   std::cout << "[ANALYZER] Initial Number of Events: "<<nentries<<" Fraction of Total: "<<float(100.*float(nentries)/float(nentries))<<"%"<<std::endl;
   std::cout << "[ANALYZER] Number of Events with Vertex in FV: "<<fvcntr<<" Fraction of Total: "<<float(100.*float(fvcntr)/float(nentries))<<"%"<<std::endl;
   std::cout << "[ANALYZER] Number of Events with 3 PFPs: "<<threepfps<<" Fraction of Total: "<<float(100.*float(threepfps)/float(nentries))<<"%"<<std::endl;
   std::cout << "[ANALYZER] Number of Events with 3 Tracks: "<<threetrkcntr<<" Fraction of Total: "<<float(100.*float(threetrkcntr)/float(nentries))<<"%"<<std::endl;
   std::cout << "[ANALYZER] Number of Events with 3 Tracks Connected to Vertex: "<<threetrk_connected<<" Fraction of Total: "<<float(100.*float(threetrk_connected)/float(nentries))<<"%"<<std::endl; 
   std::cout << "[ANALYZER] Number of Events with 1 Muon and 2 Protons: "<<pid<<" Fraction of Total: "<<float(100.*float(pid)/float(nentries))<<"%"<<std::endl;
-  /* not sure it we will need these yet
-  std::cout<<  "[ANALYZER] Muon Momentum Quality Cut: "<<n_mom_mu<<std::endl;
-  std::cout<<  "[ANALYZER] Leading Proton Momentum Quality Cut: "<<n_mom_p1<<std::endl;
-  std::cout<<  "[ANALYZER] Recoil Proton Momentum Quality Cut: "<<n_mom_p2<<std::endl;
-  */
   std::cout << "[ANALYZER] Sanity Check of the Total Number of Events Remaining: "<<events_remaining<<std::endl;
   std::cout <<"-----CLOSING TIME. YOU DON'T HAVE TO GO HOME, BUT YOU CAN'T STAY HERE-----"<<std::endl;
 
   std::cout<<"Neutrinos 0: "<<neutrinos_0<<std::endl;
   std::cout<<"Neutrinos 1: "<<neutrinos_1<<std::endl;
   std::cout<<"Neutrinos Else: "<<neutrinos_else<<std::endl;
-                        
+
+   //Don't forget to write all of your histograms before you leave!                                                                       
+   ///////////////////////////////////////////////////////////////                                         
   tfile->cd();
-  hist.Write_Histograms(false); //function that writes all our histograms                                                              
+  hist.Write_Histograms(); //function that writes all our histograms                                                              
   tfile->Close(); //write the root file that contains our histograms                                                         
   myfile.close(); //Write the file that contains the RSE of good events                                                     
 
