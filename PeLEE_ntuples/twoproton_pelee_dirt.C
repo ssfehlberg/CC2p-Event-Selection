@@ -23,9 +23,10 @@ void twoproton_pelee_dirt::Loop()
   myfile.open(Form("lists/%s/files_filtered_dirt_wgt.list",directory));
   myfile<<"Run"<<" "<<"Subrun"<<" "<<"Event"<<endl;
 
-  //Define all the histograms I am going to fill
-  ////////////////////////////////////////////                                                                                
+  //Define all the histograms I am going to fill and the mc_wgt
+  ///////////////////////////////////////////////////////////////                                                                     
   hist.Define_Histograms("dirt_wgt");
+  double mc_wgt; 
 
    if (fChain == 0) return;
    Long64_t nentries = fChain->GetEntriesFast();

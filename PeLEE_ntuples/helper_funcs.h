@@ -5,10 +5,7 @@ class helper_funcs{
   virtual bool In_FV(float x_low_edge, float x_up_edge, float y_low_edge, float y_up_edge, float z_low_edge, float z_up_edge, float x, float y, float z);
   virtual double real_sqrt(double x);
 
-  double TRACK_SCORE_CUT = 0.8;
-  double TRACK_DIST_CUT = 4;
-  double PID_CUT = 0.2;
-  bool fv;
+  bool fv; //is event in FV?
 
 };//end of class definition
 

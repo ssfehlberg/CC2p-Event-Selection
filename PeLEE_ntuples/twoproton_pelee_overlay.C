@@ -1,6 +1,8 @@
 #define twoproton_pelee_overlay_cxx
 #include "twoproton_pelee_overlay.h"
+#include "constants.h"
 #include <chrono>
+using namespace Constants;
 using namespace std::chrono;
 
 void twoproton_pelee_overlay::Loop()
@@ -12,67 +14,24 @@ void twoproton_pelee_overlay::Loop()
   histogram_funcs hist; //histogram_funcs.h
   helper_funcs cuts; //helper_funcs.h   
 
+  //Making a new Root File that will contain all the histograms that we will want to plot and files with good RSEs:
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////
   Which_Run();
-
-  //Making a new Root File that will contain all the histograms that we will want to plot:
-  ///////////////////////////////////////////////////////////////////////////////////////
-  TFile *tfile = new TFile(Form("root_files/%s/histograms_pelee_overlay_wgt.root",directory),"RECREATE"); //wgt indicates applying cenntral value MC value
-
-  //Files with RSE's in them                                                                            
+  TFile *tfile = new TFile(Form("root_files/%s/histograms_pelee_overlay_wgt.root",directory),"RECREATE"); //wgt means applying cenntral value MC value
   ofstream myfile;//File that will contain RSE of good events                                          
   ofstream cc2p; //File that will contain good cc2p events                                                                          
-  //ofstream ccNp0pi_file;     
   myfile.open(Form("lists/%s/files_filtered_wgt.list",directory));
   cc2p.open(Form("lists/%s/files_filtered_wgt_cc2p.list",directory));
-  //ccNp0pi_file.open("lists/files_filtered_wgt_ccNp0pi.list"); 
   myfile<<"Run"<<" "<<"Subrun"<<" "<<"Event"<<endl;
   cc2p<<"Run"<<" "<<"Subrun"<<" "<<"Event"<<endl;
-  //ccNp0pi_file<<"Run"<<" "<<"Subrun"<<" "<<"Event"<<endl;  
 
-  //Define all the histograms I am going to fill                                
-  ////////////////////////////////////////////
+  //Define all the histograms I am going to fill and the mc_wgt                                
+  /////////////////////////////////////////////////////////////
   Define_Histograms();
-
-  //Defining all the constans we will use later
-  //////////////////////////////
-  bool _debug = false; //debug statements
   double mc_wgt; //mc cv weight
 
-  //cut values
-  double TRACK_SCORE_CUT = 0.8;
-  double TRACK_DIST_CUT = 4;
-  double PID_CUT = 0.2;
-
-  //momentum cut values & masses
-  double MUON_MOM_CUT = 0.1;
-  double PROTON_MOM_CUT = 0.25;
-  double CHARGED_PI_MOM_CUT = 0.065;
-  double PION0_MOM_CUT = 0.065;
-  double MASS_PROTON = 0.93827208;
-  double MASS_MUON = 0.10565837;
-  double MASS_PION0 = 0.13497666;
-  double MASS_PIONPM =0.13957000;
-  double NEUTRON_MASS = 0.93956541; // GeV  
-
-  //Counters
-  int fvcntr = 0; //Number of events with reconstructed vertex within the FV                                      
-  int threepfps = 0; //Number of Events with Three PFPs
-  int threetrkcntr = 0; //Number of events with three tracks    
-  int threetrk_connected = 0; //Number of Events with three tracks attached to the vertex
-  int pid = 0; //Number of events with 1 track with PID > 0.6 and 2 tracks with PID < 0.6
-  int events_remaining = 0; //sanity check for number of events remaining
-
-  //neutrino slice counters
-  int neutrinos_0 = 0;
-  int neutrinos_1 = 0;
-  int neutrinos_else = 0;
-
-  //stupid counters
-  int nue = 0;
-  int uhoh = 0;
-
   if (fChain == 0) return;
-  Long64_t nentries = 100;//fChain->GetEntriesFast();
+  Long64_t nentries = fChain->GetEntriesFast();
   std::cout<<"Total Number of Entries: "<<nentries<<std::endl;
   Long64_t nbytes = 0, nb = 0;
   for (Long64_t jentry=0; jentry<nentries;jentry++) {

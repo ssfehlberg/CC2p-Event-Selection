@@ -1455,7 +1455,6 @@ public :
    virtual Long64_t LoadTree(Long64_t entry);
    virtual void     Init(TTree *tree);
    virtual void     Loop();
-   virtual void     Print_Hello();
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
    virtual void     Which_Run();
@@ -1711,11 +1710,6 @@ void twoproton_pelee_overlay::Which_Run(){
     pot_wgt = 0.190;
   }  
 } //end of which_run
-
-#ifdef func_cxx
-#define func_cxx
-#endif
-
 
 #ifdef twoproton_pelee_overlay_cxx
 twoproton_pelee_overlay::twoproton_pelee_overlay(TTree *tree) : fChain(0) 
