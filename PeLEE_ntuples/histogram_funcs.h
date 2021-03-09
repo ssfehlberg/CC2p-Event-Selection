@@ -52,11 +52,11 @@ class histogram_funcs
   //All the single particle plots
   static const int num_var = 4;
   const char* var[num_var] = {"_mom","_E","_theta","_phi"};
-  int num_bins[num_var] = {50,50,30,10};
-  double xlim_low[num_var] = {0.0,0.0,-1.5,-3.15}; //0.0 normally first
+  int num_bins[num_var] = {50,50,30,10}; //50 first bin, 10 last bin
+  double xlim_low[num_var] = {0,0,-1.5,-3.15}; //0.2 normally first -1.5
   double xlim_high_recoil[num_var] = {0.8,0.35,1.5,3.15};
-  double xlim_high_leading[num_var] = {1.2,0.6,1.5,3.15}; //1.5 normally in first
-  double xlim_high_muon[num_var]={2.5,1,1.5,3.15};
+  double xlim_high_leading[num_var] = {1.2,0.6,1.5,3.15}; //1.5 normally in first, 1.2
+  double xlim_high_muon[num_var]={2.5,1,1.5,3.15}; //2.5 first, 1.5 third
   const char* xlabel[num_var] ={"P [GeV/c]","E [GeV]","cos(#theta)","#phi [Rad]"};
 
   TH1D* h_muon[num_var]; //bnb,ext,dirt
