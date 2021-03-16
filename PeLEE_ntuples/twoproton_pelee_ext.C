@@ -82,16 +82,16 @@ void twoproton_pelee_ext::Loop()
       float track_score = trk_score_v->at(i); 
       float track_distance = trk_distance_v->at(i);
       float track_pid = trk_llr_pid_score_v->at(i);
-      if(track_score >= cuts.TRACK_SCORE_CUT){
+      if(track_score >= TRACK_SCORE_CUT){
 	y++;                                                                                            
       }        
-      if(track_distance <= cuts.TRACK_DIST_CUT){
+      if(track_distance <= TRACK_DIST_CUT){
 	y1++;
       }                                            
-      if(track_pid > cuts.PID_CUT){
+      if(track_pid > PID_CUT){
 	muons++;
       }
-      if(track_pid < cuts.PID_CUT){
+      if(track_pid < PID_CUT){
 	protons++;                                             
       }  
     }                                                                                                     
@@ -133,10 +133,10 @@ void twoproton_pelee_ext::Loop()
       if(trk_pid > 1 || trk_pid < -1){
 	std::cout<<"FUCKING SHIT"<<std::endl;  
       }
-      if(trk_pid > cuts.PID_CUT) {
+      if(trk_pid > PID_CUT) {
 	muon_id = trk_id - 1;
       }
-      if(trk_pid < cuts.PID_CUT){
+      if(trk_pid < PID_CUT){
 	proton_id_vector.push_back(trk_id);
       }
     }

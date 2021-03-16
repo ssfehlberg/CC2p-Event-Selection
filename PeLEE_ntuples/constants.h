@@ -12,7 +12,8 @@ namespace Constants{
 
   //Momentum Cut Values (only used by the overlay)
   double MUON_MOM_CUT = 0.1;
-  double PROTON_MOM_CUT = 0.25;
+  double PROTON_MOM_CUT_LOW = 0.25;
+  double PROTON_MOM_CUT_HIGH = 1.2;
   double CHARGED_PI_MOM_CUT = 0.065;
   double PION0_MOM_CUT = 0.065;
 
@@ -40,6 +41,10 @@ namespace Constants{
   //stupid counters used only by overlay
   int nue = 0; //checking the number of nue's
   int uhoh = 0; //helps to diagnose the proton id
+  int denom_contained =0; //checking number of events that are uncontained and contained
+  int denom_uncontained = 0;
+  int num_contained = 0;
+  int num_uncontained = 0;
 
 }
 #endif

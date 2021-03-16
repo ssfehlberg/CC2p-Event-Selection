@@ -77,7 +77,7 @@ void twoproton_pelee_overlay::Loop()
 	}
       } else if ( pdg == 2212 ) {
 	double mom = cuts.real_sqrt( std::pow(energy, 2) - std::pow(MASS_PROTON, 2) );
-	if ( mom > PROTON_MOM_CUT ) 
+	if ( mom > PROTON_MOM_CUT_LOW && mom < PROTON_MOM_CUT_HIGH) 
 	  mc_n_threshold_proton++;
       } else if ( pdg == 111 ) {
 	double mom = cuts.real_sqrt( std::pow(energy, 2) - std::pow(MASS_PION0, 2) );
@@ -127,51 +127,58 @@ void twoproton_pelee_overlay::Loop()
     Fill_Histograms_Mine(1, pot_wgt*mc_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv); 
     Fill_Histograms_Raquel(1, pot_wgt*mc_wgt,cuts.fv);
 
-    //studd for efficiency
+    //Stuff for efficiency
+    std::vector<int> mc_protons_id;
     std::vector<double> mc_proton_mom;
+    std::vector<std::pair<double,int>> zipped;
     if(ccnc == 0 && abs(nu_pdg) == 14 && nproton == 2 && nmuon == 1 && npion == 0 && npi0 == 0){
 
-      //grabbing proton momentum first
-      for(int j=0; j < n_pfps; j++){
-	if (std::abs(backtracked_pdg->at(j)) == 2212){
-	  TVector3 backtracker_mom_vector(backtracked_px->at(j),backtracked_py->at(j),backtracked_pz->at(j));
+      for(int j=0; j < mc_pdg->size(); j++){
+
+	if (std::abs(mc_pdg->at(j)) == 2212){
+	  TVector3 backtracker_mom_vector(mc_px->at(j),mc_py->at(j),mc_pz->at(j));
+	  std::cout<<"Value of backtracker_mom: "<<backtracker_mom_vector.Mag()<<std::endl;
 	  mc_proton_mom.push_back(backtracker_mom_vector.Mag());
+	  mc_protons_id.push_back(j);
+	  zipped.push_back(std::make_pair(backtracker_mom_vector.Mag(),j));   
 	}
       }
-      sort(mc_proton_mom.begin(),mc_proton_mom.end());
+      if(mc_proton_mom.size() != 2 && mc_protons_id.size() != 2) continue;
+      std::sort(zipped.begin(), zipped.end(), greater());
 
-      //now for the rest
-      for(int j=0; j < n_pfps; j++){
-	TVector3 backtracker_mom_vector(backtracked_px->at(j),backtracked_py->at(j),backtracked_pz->at(j));
-	if(std::abs(backtracked_pdg->at(j)) == 13){
-	  h_mom_threshold_denom[0]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //muon all  
-	  bool contained_start = cuts.In_FV(10,10,10,10,10,10,trk_start_x_v->at(j),trk_start_y_v->at(j),trk_start_z_v->at(j));
-          bool contained_end = cuts.In_FV(10,10,10,10,10,10,trk_end_x_v->at(j),trk_end_y_v->at(j),trk_end_z_v->at(j));
-	  if(contained_start == true && contained_end == true){
-	    h_mom_threshold_denom[1]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //muon contained
-	  }else if(contained_start == true && contained_end == false){
-	    h_mom_threshold_denom[2]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //muon uncontained 
-	  } 
-	}else if (std::abs(backtracked_pdg->at(j)) == 2212){
-	  h_mom_threshold_denom[3]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //proton all
-	  if(mc_proton_mom.size() == 2){
-	    if(backtracker_mom_vector.Mag() == mc_proton_mom[1]){
-	      h_mom_threshold_denom[4]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //proton leading
-	    } else if (backtracker_mom_vector.Mag() == mc_proton_mom[0]){
-	      h_mom_threshold_denom[5]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //proton recoil 
-	    }
-	  }
-	}else if (backtracked_pdg->at(j) == 211){
-	  h_mom_threshold_denom[6]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //pion+
-	}else if (backtracked_pdg->at(j) == -211){
-	  h_mom_threshold_denom[7]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //pion-
-	}else if(std::abs(backtracked_pdg->at(j)) == 111){
-	  h_mom_threshold_denom[8]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //pion0  
-	} //end of else if
+      for(int j=0; j < mc_protons_id.size(); j++){
+	mc_proton_mom[j] = zipped[j].first;
+	mc_protons_id[j] = zipped[j].second;
+      }
+
+
+      for(int i=0; i < mc_proton_mom.size(); i++){
+	std::cout<<"Value of mc_proton: "<<mc_proton_mom[i]<<std::endl;
+      }
+      int leading_id = mc_protons_id[0];
+      int recoil_id = mc_protons_id[1];
+
+      std::cout<<"Value of leading_id: "<<leading_id<<std::endl;
+      std::cout<<"Value of recoil_id: "<<recoil_id<<std::endl;
+
+      for(int j=0; j < mc_pdg->size(); j++){
+	std::cout<<"Value of j: "<<std::endl;
+	TVector3 backtracker_mom_vector(mc_px->at(j),mc_py->at(j),mc_pz->at(j));
+	std::cout<<"Filled backtracker"<<std::endl;
+	TVector3 leading(mc_px->at(leading_id),mc_py->at(leading_id),mc_pz->at(leading_id));
+	std::cout<<"Leading"<<std::endl;
+	TVector3 recoil(mc_px->at(recoil_id),mc_py->at(recoil_id),mc_pz->at(recoil_id));
+	std::cout<<"recoil"<<std::endl;
+	bool contained_start = cuts.In_FV(10,10,10,10,10,10,mc_vx->at(j),mc_vy->at(j),mc_vz->at(j));
+	std::cout<<"contained"<<std::endl;
+	bool contained_end = cuts.In_FV(0,0,0,0,0,0,mc_endx->at(j),mc_endy->at(j),mc_endz->at(j));
+	std::cout<<"contained end"<<std::endl;
+	Fill_Efficiency(true, mc_pdg->at(j), contained_start, contained_end, leading, recoil, backtracker_mom_vector, mc_wgt);
       } //end of for
     } //end of if
-
+    mc_protons_id.clear();
     mc_proton_mom.clear();
+    zipped.clear();
 
     //2) There are exactly 3 PFP's in the Event 
     ///////////////////////////////////////////////////////
@@ -228,50 +235,38 @@ void twoproton_pelee_overlay::Loop()
     pid++;
     Fill_Histograms_Mine(5, pot_wgt*mc_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv);
     Fill_Histograms_Raquel(5, pot_wgt*mc_wgt, cuts.fv);
-    
-    //filling the numerator of the efficiency
-    if(ccnc == 0 && abs(nu_pdg) == 14 && nproton == 2 && nmuon == 1 && npion == 0 && npi0 == 0){
 
-      //grabbing proton momentum first                                                                                                                                                                                               
+    //Stuff for numerator of efficiency
+    if(ccnc == 0 && abs(nu_pdg) == 14 && nproton == 2 && nmuon == 1 && npion == 0 && npi0 == 0){
       for(int j=0; j < n_pfps; j++){
 	if (std::abs(backtracked_pdg->at(j)) == 2212){
 	  TVector3 backtracker_mom_vector(backtracked_px->at(j),backtracked_py->at(j),backtracked_pz->at(j));
 	  mc_proton_mom.push_back(backtracker_mom_vector.Mag());
+	  mc_protons_id.push_back(j);
+	  zipped.push_back(std::make_pair(backtracker_mom_vector.Mag(),j));   
 	}
       }
-      sort(mc_proton_mom.begin(),mc_proton_mom.end());
+      if(mc_proton_mom.size() != 2 && mc_protons_id.size() != 2) continue;
+      std::sort(zipped.begin(), zipped.end(), greater());
+      for(int j=0; j < mc_protons_id.size(); j++){
+	mc_proton_mom[j] = zipped[j].first;
+	mc_protons_id[j] = zipped[j].second;
+      }
+      int leading_id = mc_protons_id[0];
+      int recoil_id = mc_protons_id[1];
 
       for(int j=0; j < n_pfps; j++){
 	TVector3 backtracker_mom_vector(backtracked_px->at(j),backtracked_py->at(j),backtracked_pz->at(j));
-	if(std::abs(backtracked_pdg->at(j)) == 13){
-	  h_mom_threshold_num[0]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //muon all 
-	  bool contained_start = cuts.In_FV(10,10,10,10,10,10,trk_start_x_v->at(j),trk_start_y_v->at(j),trk_start_z_v->at(j));
-	  bool contained_end = cuts.In_FV(10,10,10,10,10,10,trk_end_x_v->at(j),trk_end_y_v->at(j),trk_end_z_v->at(j));
-	  if(contained_start == true && contained_end == true){
-	    h_mom_threshold_num[1]->Fill(backtracker_mom_vector.Mag(),1); //muon contained
-	  }else if(contained_start == true && contained_end == false){
-	    h_mom_threshold_num[2]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //muon uncontained 
-	  } 
-	}else if (std::abs(backtracked_pdg->at(j)) == 2212){
-	  h_mom_threshold_num[3]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //proton all
-	  if(mc_proton_mom.size() == 2){
-	    if(backtracker_mom_vector.Mag() == mc_proton_mom[1]){
-	      h_mom_threshold_num[4]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //proton leading                                                                                                                                  
-	    } else if (backtracker_mom_vector.Mag() == mc_proton_mom[0]){
-	      h_mom_threshold_num[5]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //proton recoil                                                                                                                                   
-	    }
-	  }
-	}else if (backtracked_pdg->at(j) == 211){
-	  h_mom_threshold_num[6]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //pion+
-	}else if (backtracked_pdg->at(j) == -211){
-	  h_mom_threshold_num[7]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //pion-
-	}else if(std::abs(backtracked_pdg->at(j)) == -111){
-	  h_mom_threshold_num[8]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //pion0  
-	} //end of else if
+	TVector3 leading(backtracked_px->at(leading_id),backtracked_py->at(leading_id),backtracked_pz->at(leading_id));
+	TVector3 recoil(backtracked_px->at(recoil_id),backtracked_py->at(recoil_id),backtracked_pz->at(recoil_id));
+	bool contained_start = cuts.In_FV(10,10,10,10,10,10,trk_start_x_v->at(j),trk_start_y_v->at(j),trk_start_z_v->at(j));
+	bool contained_end = cuts.In_FV(0,0,0,0,0,0,trk_end_x_v->at(j),trk_end_y_v->at(j),trk_end_z_v->at(j));
+	Fill_Efficiency(false, backtracked_pdg->at(j), contained_start, contained_end, leading, recoil, backtracker_mom_vector, mc_wgt);
       } //end of for
-    } //end of the if
-
+    } //end of if
+    mc_protons_id.clear();
     mc_proton_mom.clear();
+    zipped.clear();
 
     //Identifying the Partciles
     ///////////////////////////
@@ -284,10 +279,10 @@ void twoproton_pelee_overlay::Loop()
       double trk_pid = trk_llr_pid_score_v->at(i);	
       if(trk_pid > 1 || trk_pid < -1) continue;
 
-      if(trk_pid > cuts.PID_CUT) {
+      if(trk_pid > PID_CUT) {
 	muon_id = trk_id - 1;
       }
-      if(trk_pid < cuts.PID_CUT){
+      if(trk_pid < PID_CUT){
 	proton_id_vector.push_back(trk_id);
       }
     }
@@ -451,6 +446,11 @@ void twoproton_pelee_overlay::Loop()
   std::cout<<"cc2p0pi 0: "<<cc2p0pi[0]<<std::endl;
   std::cout<<"cc2p0pi 1: "<<cc2p0pi[1]<<std::endl;
   std::cout<<"cc2p0pi 2: "<<cc2p0pi[2]<<std::endl;
+
+  std::cout<<"Denom Contained: "<<denom_contained<<std::endl;
+  std::cout<<"Denom Uncontained: "<<denom_uncontained<<std::endl;
+  std::cout<<"Num Contained: "<<num_contained<<std::endl;
+  std::cout<<"Num Contained: "<<num_uncontained<<std::endl;
 
   //Don't forget to write all of your histograms before you leave!                                                                       
   ///////////////////////////////////////////////////////////////                                                                 

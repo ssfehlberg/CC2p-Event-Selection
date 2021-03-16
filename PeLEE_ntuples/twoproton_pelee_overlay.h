@@ -18,6 +18,7 @@
 #include "vector"
 #include "histogram_funcs.h"
 #include "helper_funcs.h"
+//#include "efficiency.h"
 
 class twoproton_pelee_overlay {
 public :
@@ -1459,7 +1460,7 @@ public :
    virtual void     Show(Long64_t entry = -1);
    virtual void     Which_Run();
    virtual void     Define_Histograms(); //defines histograms. works for all samples
-   virtual void     Fill_Efficiency(const char* fraction);
+   virtual void     Fill_Efficiency(bool denom, int backtracked_pdg, bool contained_start, bool contained_end, TVector3 leading, TVector3 recoil,TVector3 backtracker_mom_vector,double mc_wgt = 1.0);
    virtual void     Fill_Histograms_Mine(int i, double wgt, int mc_n_threshold_muon, int mc_n_threshold_proton, int mc_n_threshold_pion0, double mc_n_threshold_pionpm, bool fv);
    virtual void     Fill_Histograms_Raquel(int i, double wgt, bool fv);
    virtual double   GetTrackMomentum(double trkrange, int pdg) const;
@@ -1543,6 +1544,7 @@ public :
   TH1D* h_mec_wgt[number];
   
   //Efficinecy Plots
+  ////////////////////////////
   TGraph* eff_graph = new TGraph(number); //efficiency as function of cuts
   TGraph* pur_graph = new TGraph(number); //efficiency as function of purity
   static const int num_threshold = 9;
@@ -1550,28 +1552,30 @@ public :
   TH1D* h_mom_threshold_num[num_threshold]; //these are for the threshold determination plots: numerator of the the efficiency
   TH1D* h_mom_threshold_denom[num_threshold]; //same as above but the denominator of the efficinecy
   int num_bins_eff[num_threshold] = {50,50,50,50,50,50,50,50,50};
-  float x_high_eff[num_threshold] = {2.0,2.0,2.0,2.0,2.0,2.0,0.5,0.5,0.5};
+  float x_high_eff[num_threshold] = {2.5,2.5,2.5,2.0,2.0,2.0,0.5,0.5,0.5};
 
-  /*do I actually need to do this?
   //efficiency plots of our selected particles to determine potential xsec candidates
-  static const int num_particles_eff_plots = 3;
-  const char particles_eff = {"_momentum","_costheta","_phi"};
+  static const int num_particles_eff_plots = 2;
+  const char* particles_eff_variables[num_particles_eff_plots] = {"_costheta","_phi"};
   static const int num_particles_eff = 5;
-  const char particles_eff = {"_muon","_muon_contained","_muon_uncontainied","_lead_proton","recoil_proton"};
-  TH1D* h_particle_num[num_particles_eff_plots][num_particles_eff]; //particles for 
-  TH1D* h_particle_num[num_partciles_eff_plots][num_particles_eff];
-  */
+  const char* particles_eff[num_particles_eff] = {"_muon_all","_muon_contained","_muon_uncontainied","_lead_proton","_recoil_proton"};
+  TH1D* h_particle_num[num_particles_eff][num_particles_eff_plots];
+  TH1D* h_particle_denom[num_particles_eff][num_particles_eff_plots];
+  int num_bins_particles_eff[num_particles_eff_plots] = {30,10};
+  float x_low_particles_eff[num_particles_eff_plots] = {-1.5,-3.15};
+  float x_high_particles_eff[num_particles_eff_plots] = {1.5,3.15}; //muon
 
   //efficiency plots of other variables to determine potential xsec candidates
   static const int num_other_eff = 7;
   const char* other_eff[num_other_eff] = {"_opening_angle_protons_lab","_opening_angle_protons_com","_opening_angle_mu_leading","_opening_angle_mu_both","_delta_PT","_delta_alphaT","_delta_phiT"};
   TH1D* h_other_eff_num[num_other_eff];
   TH1D* h_other_eff_denom[num_other_eff];
-  int num_bins_other_eff[num_other_eff] = {30,30,30,30,15,10,10};
-  float x_low_other_eff[num_other_eff] = {-1.5,-1.5,-1.5,-1.5,0,0,0};
-  float x_high_other_eff[num_other_eff] = {1.5,1.5,1.5,1.5,180,180,180};
+  int num_bins_other_eff[num_other_eff] = {30, 30, 30, 30, 15,10,10};
+  float x_low_other_eff[num_other_eff] = {-1.5, -1.5, -1.5 ,-1.5, 0,0,0};
+  float x_high_other_eff[num_other_eff] = {1.5, 1.5, 1.5, 1.5, 180,180,180};
 
   //Track related variables
+  ////////////////////////////////////
   static const int num_part = 10;
   const char* particle[num_part] = {"_total","_proton_contained","_proton_uncontained","_muon","_pionpm","_pion0","_electron","_gamma","_kaon","_other"};
   static const int num_track = 4;
@@ -1639,7 +1643,8 @@ public :
   //defining class stuff
   histogram_funcs hist;
   helper_funcs cuts; //helper_funcs.h 
-  
+  //Efficiency Eff;
+
   //masses
   double MASS_PROTON = 0.93827208;
   double MASS_MUON = 0.10565837;
@@ -1693,6 +1698,13 @@ public :
   int total_protons = 0;
   int contain = 0;
   int uncontain = 0;
+
+  int denom_contained =0; //checking number of events that are uncontained and contained
+  int denom_uncontained = 0;
+  int num_contained = 0;
+  int num_uncontained = 0;
+
+
 
 };
 
@@ -1845,8 +1857,9 @@ void twoproton_pelee_overlay::Define_Histograms(){
 	h_list.push_back(h_track_overlay[j][i]);
       }
     }
-
+    
     //Efficiency plots
+    ///////////////////////////////////////
     for(int i =0; i < num_threshold; i++){
       h_mom_threshold_num[i] = new TH1D(Form("h_mom_threshold_num%s",threshold[i]),Form("h_mom_threshold_num%s",threshold[i]),num_bins_eff[i],0,x_high_eff[i]);
       h_mom_threshold_denom[i] = new TH1D(Form("h_mom_threshold_denom%s",threshold[i]),Form("h_mom_threshold_denom%s",threshold[i]),num_bins_eff[i],0,x_high_eff[i]);
@@ -1854,7 +1867,24 @@ void twoproton_pelee_overlay::Define_Histograms(){
       h_list.push_back(h_mom_threshold_denom[i]);
     }
 
+    for(int i=0; i < num_particles_eff; i++){
+      for(int j=0; j < num_particles_eff_plots; j++){
+	h_particle_num[i][j] = new TH1D(Form("h_particle_num%s%s",particles_eff[i],particles_eff_variables[j]),Form("h_particle_num%s%s",particles_eff[i],particles_eff_variables[j]),num_bins_particles_eff[j],x_low_particles_eff[j],x_high_particles_eff[j]);
+	h_particle_denom[i][j] = new TH1D(Form("h_particle_denom%s%s",particles_eff[i],particles_eff_variables[j]),Form("h_particle_denom%s%s",particles_eff[i],particles_eff_variables[j]),num_bins_particles_eff[j],x_low_particles_eff[j],x_high_particles_eff[j]);
+	h_list.push_back(h_particle_num[i][j]);
+	h_list.push_back(h_particle_denom[i][j]);
+      }
+    }
+    
+    for(int i = 0; i < num_other_eff; i++){
+      h_other_eff_num[i] = new TH1D(Form("h_other_eff_num%s",other_eff[i]),Form("h_other_eff_num%s",other_eff[i]),num_bins_other_eff[i],x_low_other_eff[i],x_high_other_eff[i]);
+      h_other_eff_denom[i] = new TH1D(Form("h_other_eff_denom%s",other_eff[i]),Form("h_other_eff_denom%s",other_eff[i]),num_bins_other_eff[i],x_low_other_eff[i],x_high_other_eff[i]);
+      h_list.push_back(h_other_eff_num[i]);
+      h_list.push_back(h_other_eff_denom[i]);
+    }
+    
     //particle specific plots
+    /////////////////////////
     for(int j = 0; j < num_var; j++){
       for(int k = 0; k < number2; k++){
 	h_muon_overlay[j][k] = new TH1D(Form("h_muon%s%s",var[j],channel[k]),Form(" h_muon%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_muon[j]);
@@ -1955,18 +1985,118 @@ void twoproton_pelee_overlay::Define_Histograms(){
     // }
 }
 
-void twoproton_pelee_overlay::Fill_Efficiency(const char* fraction){
-
-  if(strcmp(fraction,"numerator") == 0){
-    
-
-
-  } else if (strcmp(fraction,"denominator") == 0){
+void twoproton_pelee_overlay::Fill_Efficiency(bool denom, int backtracked_pdg, bool contained_start, bool contained_end, TVector3 leading, TVector3 recoil,TVector3 backtracker_mom_vector,double mc_wgt = 1.0){
+  
+  Double_t open_angle_protons_lab = leading.Angle(recoil);
+  //double open_angle_protons_com =;
+  double open_angle_mu_leading;
+  double open_angle_mu_both;
+  TVector3 Protons = leading + recoil;
+  if(std::abs(backtracked_pdg) == 13){
+    open_angle_mu_leading = backtracker_mom_vector.Angle(leading);
+    open_angle_mu_both = backtracker_mom_vector.Angle(Protons);
   }
 
+  if(denom == true){
+  
+    h_other_eff_denom[0]->Fill(cos(open_angle_protons_lab),mc_wgt); //opening angle protons lab
+    //h_other_eff_denom[1]->Fill(,mc_wgt); //opening angle protons com 
+    h_other_eff_denom[2]->Fill(cos(open_angle_mu_leading),mc_wgt); //opening angle mu leading 
+    h_other_eff_denom[3]->Fill(cos(open_angle_mu_both),mc_wgt); //opening angle mu both 
+    //h_other_eff_denom[4]->Fill(,mc_wgt); //delta pt 
+    //h_other_eff_denom[5]->Fill(,mc_wgt); //delta alphat 
+    //h_other_eff_denom[6]->Fill(,mc_wgt); //delta phit 
 
-}
+    if(std::abs(backtracked_pdg) == 13){
+      h_mom_threshold_denom[0]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //muon all  
+      h_particle_denom[0][0]->Fill(cos(backtracker_mom_vector.Theta()),mc_wgt); //muon costheta
+      h_particle_denom[0][1]->Fill(backtracker_mom_vector.Phi(),mc_wgt); //muon phi
 
+      if(contained_start == true && contained_end == true){
+	h_mom_threshold_denom[1]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //muon contained
+	h_particle_denom[1][0]->Fill(cos(backtracker_mom_vector.Theta()),mc_wgt); //muon costheta                 
+	h_particle_denom[1][1]->Fill(backtracker_mom_vector.Phi(),mc_wgt); //muon phi  
+	denom_contained++;
+
+      } else if(contained_start == true && contained_end == false){
+	h_mom_threshold_denom[2]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //muon uncontained 
+	h_particle_denom[2][0]->Fill(cos(backtracker_mom_vector.Theta()),mc_wgt); //muon costheta                 
+	h_particle_denom[2][1]->Fill(backtracker_mom_vector.Phi(),mc_wgt); //muon phi
+	denom_uncontained++;
+      } 
+
+    }else if (std::abs(backtracked_pdg) == 2212){
+      h_mom_threshold_denom[3]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //proton all
+
+      if(backtracker_mom_vector.Mag() == leading.Mag()){
+	h_mom_threshold_denom[4]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //proton leading
+	h_particle_denom[3][0]->Fill(cos(backtracker_mom_vector.Theta()),mc_wgt); //proton costheta                                      
+	h_particle_denom[3][1]->Fill(backtracker_mom_vector.Phi(),mc_wgt); //proton phi 
+
+      } else if (backtracker_mom_vector.Mag() == recoil.Mag()){
+	h_mom_threshold_denom[5]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //proton recoil 
+	h_particle_denom[4][0]->Fill(cos(backtracker_mom_vector.Theta()),mc_wgt); //proton costheta                                     
+	h_particle_denom[4][1]->Fill(backtracker_mom_vector.Phi(),mc_wgt); //proton phi 
+      }
+    }else if (backtracked_pdg == 211){
+      h_mom_threshold_denom[6]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //pion+
+    }else if (backtracked_pdg == -211){
+      h_mom_threshold_denom[7]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //pion-
+    }else if(backtracked_pdg == 111){
+      h_mom_threshold_denom[8]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //pion0  
+    } //end of else if pion
+
+    
+  } else if (denom == false){
+
+    h_other_eff_num[0]->Fill(cos(open_angle_protons_lab),mc_wgt); //opening angle protons lab
+    //h_other_eff_num[1]->Fill(,mc_wgt); //opening angle protons com 
+    h_other_eff_num[2]->Fill(cos(open_angle_mu_leading),mc_wgt); //opening angle mu leading 
+    h_other_eff_num[3]->Fill(cos(open_angle_mu_both),mc_wgt); //opening angle mu both 
+    //h_other_eff_num[4]->Fill(,mc_wgt); //delta pt 
+    //h_other_eff_num[5]->Fill(,mc_wgt); //delta alphat 
+    //h_other_eff_num[6]->Fill(,mc_wgt); //delta phit 
+
+    if(std::abs(backtracked_pdg) == 13){
+      h_mom_threshold_num[0]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //muon all  
+      h_particle_num[0][0]->Fill(cos(backtracker_mom_vector.Theta()),mc_wgt); //muon costheta
+      h_particle_num[0][1]->Fill(backtracker_mom_vector.Phi(),mc_wgt); //muon phi
+
+      if(contained_start == true && contained_end == true){
+	h_mom_threshold_num[1]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //muon contained
+	h_particle_num[1][0]->Fill(cos(backtracker_mom_vector.Theta()),mc_wgt); //muon costheta                   
+	h_particle_num[1][1]->Fill(backtracker_mom_vector.Phi(),mc_wgt); //muon phi  
+	num_contained++;
+
+      } else if(contained_start == true && contained_end == false){
+	h_mom_threshold_num[2]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //muon uncontained 
+	h_particle_num[2][0]->Fill(cos(backtracker_mom_vector.Theta()),mc_wgt); //muon costheta                   
+	h_particle_num[2][1]->Fill(backtracker_mom_vector.Phi(),mc_wgt); //muon phi
+	num_uncontained++;
+      } 
+
+    }else if (std::abs(backtracked_pdg) == 2212){
+      h_mom_threshold_num[3]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //proton all
+
+      if(backtracker_mom_vector.Mag() == leading.Mag()){
+	h_mom_threshold_num[4]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //proton leading
+	h_particle_num[3][0]->Fill(cos(backtracker_mom_vector.Theta()),mc_wgt); //proton costheta                                      
+	h_particle_num[3][1]->Fill(backtracker_mom_vector.Phi(),mc_wgt); //proton phi 
+
+      } else if (backtracker_mom_vector.Mag() == recoil.Mag()){
+	h_mom_threshold_num[5]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //proton recoil 
+	h_particle_num[4][0]->Fill(cos(backtracker_mom_vector.Theta()),mc_wgt); //proton costheta                                     
+	h_particle_num[4][1]->Fill(backtracker_mom_vector.Phi(),mc_wgt); //proton phi 
+      }
+    }else if (backtracked_pdg == 211){
+      h_mom_threshold_num[6]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //pion+
+    }else if (backtracked_pdg == -211){
+      h_mom_threshold_num[7]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //pion-
+    }else if(backtracked_pdg == 111){
+      h_mom_threshold_num[8]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //pion0  
+    } //end of else if pion
+  } //end of num loop
+}//end of Fill_Eff
 
 
 double twoproton_pelee_overlay::GetTrackMomentum(double trkrange, int pdg) const
