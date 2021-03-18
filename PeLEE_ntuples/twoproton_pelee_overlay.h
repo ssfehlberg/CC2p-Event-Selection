@@ -1566,13 +1566,13 @@ public :
   float x_high_particles_eff[num_particles_eff_plots] = {1.5,3.15}; //muon
 
   //efficiency plots of other variables to determine potential xsec candidates
-  static const int num_other_eff = 7;
-  const char* other_eff[num_other_eff] = {"_opening_angle_protons_lab","_opening_angle_protons_com","_opening_angle_mu_leading","_opening_angle_mu_both","_delta_PT","_delta_alphaT","_delta_phiT"};
+  static const int num_other_eff = 8;
+  const char* other_eff[num_other_eff] = {"_opening_angle_protons_lab","_opening_angle_protons_com","_opening_angle_mu_leading","_opening_angle_mu_both","_delta_PT","_delta_alphaT","_delta_phiT","_nu_E"};
   TH1D* h_other_eff_num[num_other_eff];
   TH1D* h_other_eff_denom[num_other_eff];
-  int num_bins_other_eff[num_other_eff] = {30, 30, 30, 30, 15,10,10};
-  float x_low_other_eff[num_other_eff] = {-1.5, -1.5, -1.5 ,-1.5, 0,0,0};
-  float x_high_other_eff[num_other_eff] = {1.5, 1.5, 1.5, 1.5, 180,180,180};
+  int num_bins_other_eff[num_other_eff] = {30, 30, 30, 30, 15,10,10,50};
+  float x_low_other_eff[num_other_eff] = {-1.5, -1.5, -1.5 ,-1.5, 0,0,0,0};
+  float x_high_other_eff[num_other_eff] = {1.5, 1.5, 1.5, 1.5, 1.0 ,180,180,2.5};
 
   //Track related variables
   ////////////////////////////////////
@@ -1988,24 +1988,47 @@ void twoproton_pelee_overlay::Define_Histograms(){
 void twoproton_pelee_overlay::Fill_Efficiency(bool denom, int backtracked_pdg, bool contained_start, bool contained_end, TVector3 leading, TVector3 recoil,TVector3 backtracker_mom_vector,double mc_wgt = 1.0){
   
   Double_t open_angle_protons_lab = leading.Angle(recoil);
-  //double open_angle_protons_com =;
+  double open_angle_protons_com;
   double open_angle_mu_leading;
   double open_angle_mu_both;
+  double delta_PT;
+  double delta_phiT;
+  double delta_alphaT;
   TVector3 Protons = leading + recoil;
+
   if(std::abs(backtracked_pdg) == 13){
+    double EMuon = std::sqrt(backtracker_mom_vector.Mag2()+std::pow(MASS_MUON,2)) - MASS_MUON;
+    double ERec = std::sqrt(recoil.Mag2()+std::pow(MASS_PROTON,2)) - MASS_PROTON;
+    double ELead = std::sqrt(leading.Mag2()+std::pow(MASS_PROTON,2)) - MASS_PROTON;
+    TLorentzVector lead(leading[0],leading[1],leading[2],ELead);
+    TLorentzVector rec(recoil[0],recoil[1],recoil[2],ERec);
+
+    TLorentzVector betacm(recoil[0]+leading[0]+backtracker_mom_vector[0],recoil[1]+leading[1]+backtracker_mom_vector[1],recoil[2]+leading[2]+backtracker_mom_vector[2],ERec+ELead+EMuon);
+    TVector3 boost = betacm.BoostVector(); //the boost vector                                                                                                                                                                         
+    lead.Boost(-boost); //boost leading proton                                                                                                                                                                                        
+    rec.Boost(-boost); //boost recoil proton                                                                                                                                                                                           
+
+    open_angle_protons_com =lead.Angle(rec.Vect());
     open_angle_mu_leading = backtracker_mom_vector.Angle(leading);
     open_angle_mu_both = backtracker_mom_vector.Angle(Protons);
+
+    delta_PT = (backtracker_mom_vector + Protons).Perp();
+    delta_phiT = std::acos( (-backtracker_mom_vector.X()*Protons.X() - backtracker_mom_vector.Y()*Protons.Y()) / (backtracker_mom_vector.XYvector().Mod() * Protons.XYvector().Mod()));
+    TVector2 delta_pT_vec = (backtracker_mom_vector + Protons).XYvector();
+    delta_alphaT = std::acos( (-backtracker_mom_vector.X()*delta_pT_vec.X()- backtracker_mom_vector.Y()*delta_pT_vec.Y()) / (backtracker_mom_vector.XYvector().Mod() * delta_pT_vec.Mod()));
+    
   }
 
   if(denom == true){
   
     h_other_eff_denom[0]->Fill(cos(open_angle_protons_lab),mc_wgt); //opening angle protons lab
-    //h_other_eff_denom[1]->Fill(,mc_wgt); //opening angle protons com 
+    h_other_eff_denom[1]->Fill(cos(open_angle_protons_com),mc_wgt); //opening angle protons com 
     h_other_eff_denom[2]->Fill(cos(open_angle_mu_leading),mc_wgt); //opening angle mu leading 
     h_other_eff_denom[3]->Fill(cos(open_angle_mu_both),mc_wgt); //opening angle mu both 
-    //h_other_eff_denom[4]->Fill(,mc_wgt); //delta pt 
-    //h_other_eff_denom[5]->Fill(,mc_wgt); //delta alphat 
-    //h_other_eff_denom[6]->Fill(,mc_wgt); //delta phit 
+    h_other_eff_denom[4]->Fill(delta_PT,mc_wgt); //delta pt 
+    h_other_eff_denom[5]->Fill(delta_alphaT*180/3.14,mc_wgt); //delta alphat 
+    h_other_eff_denom[6]->Fill(delta_phiT*180/3.14,mc_wgt); //delta phit 
+    h_other_eff_denom[7]->Fill(nu_e,mc_wgt); //neutrino energy
 
     if(std::abs(backtracked_pdg) == 13){
       h_mom_threshold_denom[0]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //muon all  
@@ -2050,12 +2073,13 @@ void twoproton_pelee_overlay::Fill_Efficiency(bool denom, int backtracked_pdg, b
   } else if (denom == false){
 
     h_other_eff_num[0]->Fill(cos(open_angle_protons_lab),mc_wgt); //opening angle protons lab
-    //h_other_eff_num[1]->Fill(,mc_wgt); //opening angle protons com 
+    h_other_eff_num[1]->Fill(cos(open_angle_protons_com),mc_wgt); //opening angle protons com 
     h_other_eff_num[2]->Fill(cos(open_angle_mu_leading),mc_wgt); //opening angle mu leading 
     h_other_eff_num[3]->Fill(cos(open_angle_mu_both),mc_wgt); //opening angle mu both 
-    //h_other_eff_num[4]->Fill(,mc_wgt); //delta pt 
-    //h_other_eff_num[5]->Fill(,mc_wgt); //delta alphat 
-    //h_other_eff_num[6]->Fill(,mc_wgt); //delta phit 
+    h_other_eff_num[4]->Fill(delta_PT,mc_wgt); //delta pt 
+    h_other_eff_num[5]->Fill(delta_alphaT*180/3.14,mc_wgt); //delta alphat 
+    h_other_eff_num[6]->Fill(delta_phiT*180/3.14,mc_wgt); //delta phit 
+    h_other_eff_num[7]->Fill(nu_e,mc_wgt); //neutrino energy
 
     if(std::abs(backtracked_pdg) == 13){
       h_mom_threshold_num[0]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //muon all  

@@ -41,6 +41,8 @@ namespace Constants{
   //stupid counters used only by overlay
   int nue = 0; //checking the number of nue's
   int uhoh = 0; //helps to diagnose the proton id
+  int contained = 0;
+  int uncontained = 0;
   int denom_contained =0; //checking number of events that are uncontained and contained
   int denom_uncontained = 0;
   int num_contained = 0;
