@@ -1460,7 +1460,9 @@ public :
    virtual void     Show(Long64_t entry = -1);
    virtual void     Which_Run();
    virtual void     Define_Histograms(); //defines histograms. works for all samples
+   //virtual void     MC_Definitions();
    virtual void     Fill_Efficiency(bool denom, int backtracked_pdg, bool contained_start, bool contained_end, TVector3 leading, TVector3 recoil,TVector3 backtracker_mom_vector,double mc_wgt = 1.0);
+   virtual void     Fill_Matrices(TVector3 vMuon, TVector3 muon,TVector3 vLead, TVector3 lead,TVector3 vRec, TVector3 rec, bool contained_start, bool true_contained_start,bool contained_end, bool true_contained_end,double mc_wgt);
    virtual void     Fill_Histograms_Mine(int i, double wgt, int mc_n_threshold_muon, int mc_n_threshold_proton, int mc_n_threshold_pion0, double mc_n_threshold_pionpm, bool fv);
    virtual void     Fill_Histograms_Raquel(int i, double wgt, bool fv);
    virtual double   GetTrackMomentum(double trkrange, int pdg) const;
@@ -1481,6 +1483,7 @@ public :
    const char* directory;
    const char* file;
    double pot_wgt;
+   double mc_wgt;
 
    //Defining all the histograms becaues I wrote the classes stupidly
    //////////////////////////////////////////////////////////////////
@@ -1574,6 +1577,32 @@ public :
   float x_low_other_eff[num_other_eff] = {-1.5, -1.5, -1.5 ,-1.5, 0,0,0,0};
   float x_high_other_eff[num_other_eff] = {1.5, 1.5, 1.5, 1.5, 1.0 ,180,180,2.5};
 
+  //Cross-Section Migration Matrices
+  //////////////////////////////////
+  static const int num_particles_matrices_plots = 3;
+  const char* particles_matrices_plots[num_particles_matrices_plots] ={"_mom","_costheta","_phi"};
+  static const int num_particles_matrices = 5;  
+  const char* particles_matrices[num_particles_matrices] = {"_muon_all","_muon_contained","_muon_uncontainied","_lead_proton","_recoil_proton"};
+  TH2D* h_particle_matrices[num_particles_matrices][num_particles_matrices_plots];
+  int num_bins_particles_matrices[num_particles_matrices_plots] = {50,20,10};
+  float x_low_particles_matrices[num_particles_matrices][num_particles_matrices_plots] = {{0.1,-1.0,-3.15},//muon all
+											   {0.1,-1.0,-3.15},//muon contained
+											   {0.1,-1.0,-3.15},//muon uncontained
+											   {0.25,-1.0,-3.15},//leading proton
+											   {0.25,-1.0,-3.15}}; //recoil proton
+  float x_high_particles_matrices[num_particles_matrices][num_particles_matrices_plots] = {{2.5, 1.0, 3.15}, //muon all
+											   {2.5, 1.0, 3.15}, //muon contained
+											   {2.5, 1.0, 3.15}, //muon uncontained
+											   {1.2, 1.0, 3.15},//lead proton
+											   {1.2, 1.0, 3.15}};//recoil proton
+  static const int num_other_matrices =8;
+  const char* other_matrices[num_other_matrices] = {"_opening_angle_protons_lab","_opening_angle_protons_com","_opening_angle_mu_leading","_opening_angle_mu_both","_delta_PT","_delta_alphaT","_delta_phiT","_nu_E"};
+  TH2D* h_other_matrices[num_other_matrices];
+  int num_bins_other_matrices[num_other_matrices] = { 20,   20,   20,   20,  15,    10,    10,    50};
+  float x_low_other_matrices[num_other_matrices] = {-1.0, -1.0, -1.0, -1.0, 0.0,   0.0,   0.0,   0.0};
+  float x_high_other_matrices[num_other_matrices] = {1.0,  1.0,  1.0,  1.0, 1.0, 180.0, 180.0,   2.5};
+  TH1D* h_test;
+
   //Track related variables
   ////////////////////////////////////
   static const int num_part = 10;
@@ -1637,18 +1666,23 @@ public :
   TH1D* h_E_resolution_raquel[number3];
   TH1D* h_PT_squared_raquel[number3];
 
-
-  vector<TH1*> h_list; //list of all the 1D histograms
+  vector<TH1*> h_list; //vector of all the 1D histograms
+  vector<TH2*> h_list_2D; //vector of all the 2D histograms
 
   //defining class stuff
   histogram_funcs hist;
   helper_funcs cuts; //helper_funcs.h 
-  //Efficiency Eff;
 
   //masses
   double MASS_PROTON = 0.93827208;
   double MASS_MUON = 0.10565837;
   double NEUTRON_MASS = 0.93956541; // GeV  
+
+  //Definitions of MC Thresholds
+  int mc_n_threshold_muon = 0;
+  int mc_n_threshold_proton = 0;
+  int mc_n_threshold_pion0 = 0;
+  int mc_n_threshold_pionpm = 0;
 
   //add the protons together in the stv calculations
   bool add_protons = true;
@@ -1704,24 +1738,9 @@ public :
   int num_contained = 0;
   int num_uncontained = 0;
 
-
-
 };
 
 #endif
-
-void twoproton_pelee_overlay::Which_Run(){
-  if(response =='1'){
-    directory = "Run1";
-    pot_wgt = 0.124;
-  } else if(response == '2'){
-    directory = "Run2";
-    pot_wgt = 0.257;
-  } else if(response == '3'){
-    directory ="Run3";
-    pot_wgt = 0.190;
-  }  
-} //end of which_run
 
 #ifdef twoproton_pelee_overlay_cxx
 twoproton_pelee_overlay::twoproton_pelee_overlay(TTree *tree) : fChain(0) 
@@ -1762,6 +1781,19 @@ twoproton_pelee_overlay::~twoproton_pelee_overlay()
    delete fChain->GetCurrentFile();
 }
 
+void twoproton_pelee_overlay::Which_Run(){
+  if(response =='1'){
+    directory = "Run1";
+    pot_wgt = 0.124;
+  } else if(response == '2'){
+    directory = "Run2";
+    pot_wgt = 0.257;
+  } else if(response == '3'){
+    directory ="Run3";
+    pot_wgt = 0.190;
+  }  
+} //end of which_run
+
 void twoproton_pelee_overlay::Define_Histograms(){
 
     //Total Histograms                                                                                                       
@@ -1773,6 +1805,7 @@ void twoproton_pelee_overlay::Define_Histograms(){
     //Correlation Histograms                                                                                                           
     for(int i=0; i < num2d; i++){
       h_correlation_overlay[i] = new TH2D(Form("h_correlation_overlay_%s",total2d[i]),Form(";%s ;%s",labelx[i],labely[i]),40,0,275,40,-125,-125);
+      h_list_2D.push_back(h_correlation_overlay[i]);
     }
   
     //Now to do the channel seperated histograms
@@ -1882,7 +1915,25 @@ void twoproton_pelee_overlay::Define_Histograms(){
       h_list.push_back(h_other_eff_num[i]);
       h_list.push_back(h_other_eff_denom[i]);
     }
-    
+
+    h_test = new TH1D("h_test","h_test",50,-2.5,2.5);
+    h_list.push_back(h_test);
+
+    //XSec Matrices
+    ////////////////////
+    for(int i=0; i < num_particles_matrices; i++){
+      for(int j=0; j < num_particles_matrices_plots; j++){
+	h_particle_matrices[i][j] = new TH2D(Form("h_particle_matrices%s%s",particles_matrices[i],particles_matrices_plots[j]),Form("h_particle_matrices%s%s",particles_matrices[i],particles_matrices_plots[j]),num_bins_particles_matrices[j],x_low_particles_matrices[i][j],x_high_particles_matrices[i][j],num_bins_particles_matrices[j],x_low_particles_matrices[i][j],x_high_particles_matrices[i][j]);
+	h_list_2D.push_back(h_particle_matrices[i][j]);
+      }
+    }
+
+    for(int i=0; i < num_other_matrices; i++){
+      std::cout<<"Value of i: "<<i<<std::endl;
+      h_other_matrices[i] = new TH2D(Form("h_other_matrices%s",other_matrices[i]),Form("h_other_matrices%s",other_matrices[i]),num_bins_other_matrices[i],x_low_other_matrices[i],x_high_other_matrices[i],num_bins_other_matrices[i],x_low_other_matrices[i],x_high_other_matrices[i]);
+      h_list_2D.push_back(h_other_matrices[i]);
+    }
+
     //particle specific plots
     /////////////////////////
     for(int j = 0; j < num_var; j++){
@@ -1980,11 +2031,45 @@ void twoproton_pelee_overlay::Define_Histograms(){
     for (int i = 0; i < h_list.size(); i++){
       h_list[i]->Sumw2();
     }
-    ///for(int i = 0; i < h_list_2D.size(); i++){
-    // h_list_2D[i]->Sumw2();
-    // }
+    for(int i = 0; i < h_list_2D.size(); i++){
+     h_list_2D[i]->Sumw2();
+    }
 }
+/*
+void twoproton_pelee_overlay::MC_Definitions(){
 
+  if(std::isfinite(weightTune) && weightTune <= 100.) {
+    mc_wgt = weightSplineTimesTune;
+  } else {
+    mc_wgt = 1 * weightSpline;
+  }
+
+  for ( size_t p = 0u; p < mc_pdg->size(); ++p ) {
+    int pdg = mc_pdg->at( p );
+    float energy = mc_E->at( p );
+    if ( pdg == 13) {
+      double mom = cuts.real_sqrt( std::pow(energy, 2) - std::pow(MASS_MUON, 2) );
+      if ( mom > MUON_MOM_CUT ) {
+	mc_n_threshold_muon++;
+      }
+    } else if ( pdg == 2212 ) {
+      double mom = cuts.real_sqrt( std::pow(energy, 2) - std::pow(MASS_PROTON, 2) );
+      if ( mom > PROTON_MOM_CUT_LOW && mom < PROTON_MOM_CUT_HIGH) 
+	mc_n_threshold_proton++;
+    } else if ( pdg == 111 ) {
+      double mom = cuts.real_sqrt( std::pow(energy, 2) - std::pow(MASS_PION0, 2) );
+      if ( mom > PION0_MOM_CUT) 
+	mc_n_threshold_pion0++;
+    } else if ( std::abs(pdg) == 211 ) {
+      double mom = cuts.real_sqrt( std::pow(energy, 2) - std::pow(MASS_PIONPM, 2) );
+      if ( mom > CHARGED_PI_MOM_CUT ) {
+	mc_n_threshold_pionpm++;
+      }
+    }
+  }
+
+}//MC_definitions
+*/
 void twoproton_pelee_overlay::Fill_Efficiency(bool denom, int backtracked_pdg, bool contained_start, bool contained_end, TVector3 leading, TVector3 recoil,TVector3 backtracker_mom_vector,double mc_wgt = 1.0){
   
   Double_t open_angle_protons_lab = leading.Angle(recoil);
@@ -2002,7 +2087,6 @@ void twoproton_pelee_overlay::Fill_Efficiency(bool denom, int backtracked_pdg, b
     double ELead = std::sqrt(leading.Mag2()+std::pow(MASS_PROTON,2)) - MASS_PROTON;
     TLorentzVector lead(leading[0],leading[1],leading[2],ELead);
     TLorentzVector rec(recoil[0],recoil[1],recoil[2],ERec);
-
     TLorentzVector betacm(recoil[0]+leading[0]+backtracker_mom_vector[0],recoil[1]+leading[1]+backtracker_mom_vector[1],recoil[2]+leading[2]+backtracker_mom_vector[2],ERec+ELead+EMuon);
     TVector3 boost = betacm.BoostVector(); //the boost vector                                                                                                                                                                         
     lead.Boost(-boost); //boost leading proton                                                                                                                                                                                        
@@ -2122,6 +2206,146 @@ void twoproton_pelee_overlay::Fill_Efficiency(bool denom, int backtracked_pdg, b
   } //end of num loop
 }//end of Fill_Eff
 
+
+void twoproton_pelee_overlay::Fill_Matrices(TVector3 vMuon, TVector3 muon,TVector3 vLead, TVector3 lead,TVector3 vRec, TVector3 rec, bool contained_start, bool true_contained_start,bool contained_end, bool true_contained_end,double mc_wgt){
+
+  //Define all the reconstructed quantities
+  ////////////////////////////////////////
+  double reco_muon_mom = vMuon.Mag();
+  double reco_muon_theta = cos(vMuon.Theta());
+  double reco_muon_phi = vMuon.Phi();
+  double reco_lead_mom = vLead.Mag();
+  double reco_lead_theta = cos(vLead.Theta());
+  double reco_lead_phi = vLead.Phi();
+  double reco_recoil_mom = vRec.Mag();
+  double reco_recoil_theta = cos(vRec.Theta());
+  double reco_recoil_phi =  vRec.Phi();
+  double reco_opening_angle_protons_lab = std::cos(vLead.Angle(vRec)); //((vLead[0]*vRec[0])+(vLead[1]*vRec[1])+(vLead[2]*vRec[2]))/(vLead.Mag()*vRec.Mag()); //vLead.Angle(vRec); 
+  double reco_opening_angle_protons_mu_leading = std::cos(vMuon.Angle(vLead)); //((vLead[0]*vMuon[0])+(vLead[1]*vMuon[1])+(vLead[2]*vMuon[2]))/(vLead.Mag()*vMuon.Mag()); 
+  TVector3 reco_vProton;
+  if(add_protons){
+    reco_vProton.SetXYZ(vLead[0]+vRec[0],vLead[1]+vRec[1],vLead[2]+vRec[2]);
+  }else{
+    reco_vProton.SetXYZ(vLead[0],vLead[1],vLead[2]);
+  }
+  double reco_opening_angle_protons_mu_both = std::cos(vMuon.Angle(reco_vProton)); //((vProton[0]*vMuon[0])+(vProton[1]*vMuon[1])+(vProton[2]*vMuon[2]))/(vProton.Mag()*vMuon.Mag());
+  double reco_delta_PT = (vMuon + reco_vProton).Perp(); //perp takes the magnitude as well. stv delta pt;
+
+  double reco_delta_phiT = double(180.0/3.14)* std::acos( (-vMuon.X()*reco_vProton.X() - vMuon.Y()*reco_vProton.Y()) / (vMuon.XYvector().Mod() * reco_vProton.XYvector().Mod())); //stv delta phi t;
+  TVector2 reco_delta_pT_vec = (vMuon + reco_vProton).XYvector();
+
+  double reco_delta_alphaT = double(180.0/3.14)* std::acos( (-vMuon.X()*reco_delta_pT_vec.X()- vMuon.Y()*reco_delta_pT_vec.Y()) / (vMuon.XYvector().Mod() * reco_delta_pT_vec.Mod()) ); //stv delta alpha T;  
+
+  //delta_phiT = std::acos( (-vMuon.X()*vProton.X() - vMuon.Y()*vProton.Y()) / (vMuon.XYvector().Mod() * vProton.XYvector().Mod()));
+  //TVector2 delta_pT_vec = (vMuon + vProton).XYvector();
+  //delta_alphaT = std::acos( (-vMuon.X()*delta_pT_vec.X()- vMuon.Y()*delta_pT_vec.Y()) / (vMuon.XYvector().Mod() * delta_pT_vec.Mod()) );
+
+  std::cout<<"Reco Delta Alpha T: "<<reco_delta_alphaT<<std::endl;
+
+  double reco_EMuon = std::sqrt(vMuon.Mag2() + std::pow(MASS_MUON,2)) - MASS_MUON; //KE
+  double reco_ELead = std::sqrt(vLead.Mag2() + std::pow(MASS_PROTON,2)) - MASS_PROTON;
+  double reco_ERec = std::sqrt(vRec.Mag2() + std::pow(MASS_PROTON,2)) - MASS_PROTON;
+  TVector3 reco_PT_miss(vMuon[0]+vLead[0]+vRec[0],vMuon[1]+vRec[1]+vLead[1],0);
+  double reco_nu_E = (reco_EMuon+MASS_MUON) + reco_ELead + reco_ERec +((reco_PT_miss.Mag2())/(2.0*35.37)) + 0.0304;
+
+  std::cout<<"Value of reco_nu_E: "<<reco_nu_E<<std::endl;
+
+  TLorentzVector reco_LEAD(vLead[0],vLead[1],vLead[2],reco_ELead);
+  TLorentzVector reco_REC(vRec[0],vRec[1],vRec[2],reco_ERec);
+  TLorentzVector reco_betacm(vRec[0]+vLead[0]+vMuon[0],vRec[1]+vLead[1]+vMuon[1],vRec[2]+vLead[2]+vMuon[2],reco_ERec+reco_ELead+reco_EMuon); 
+  TVector3 reco_boost = reco_betacm.BoostVector(); //the boost vector                                                          
+  reco_LEAD.Boost(-reco_boost); //boost leading proton                                                                         
+  reco_REC.Boost(-reco_boost); //boost recoil proton    
+  double reco_opening_angle_protons_COM = cos(reco_LEAD.Angle(reco_REC.Vect()));  
+ 
+  //define all the true quantities
+  //////////////////////////////////
+  double true_muon_mom = muon.Mag();
+  double true_muon_theta = cos(muon.Theta());
+  double true_muon_phi = muon.Phi();
+  double true_lead_mom = lead.Mag();
+  double true_lead_theta = cos(lead.Theta());
+  double true_lead_phi = lead.Phi();
+  double true_recoil_mom = rec.Mag();
+  double true_recoil_theta = cos(rec.Theta());
+  double true_recoil_phi = rec.Phi();
+  
+  double true_opening_angle_protons_lab = std::cos(lead.Angle(rec)); //((lead[0]*rec[0])+(lead[1]*rec[1])+(lead[2]*rec[2]))/(lead.Mag()*rec.Mag());
+  double true_opening_angle_protons_mu_leading = std::cos(muon.Angle(lead)); //((lead[0]*vMuon[0])+(lead[1]*vMuon[1])+(lead[2]*vMuon[2]))/(lead.Mag()*vMuon.Mag());
+  TVector3 vproton;
+  if(add_protons){
+    vproton.SetXYZ(lead[0]+rec[0],lead[1]+rec[1],lead[2]+rec[2]);
+  }else{
+    vproton.SetXYZ(lead[0],lead[1],lead[2]);
+  }
+  double true_opening_angle_protons_mu_both = std::cos(muon.Angle(vproton)); //((vproton[0]*muon[0])+(vproton[1]*muon[1])+(vproton[2]*muon[2]))/(vproton.Mag()*muon.Mag()); //cos(opening angle) between the total proton momentum vector and the muon; 
+  double true_delta_PT = (muon + vproton).Perp(); //perp takes the magnitude as well. stv delta pt;                                                                                                                     
+  double true_delta_phiT = double(180.0/3.14)*std::acos( (-muon.X()*vproton.X() - muon.Y()*vproton.Y()) / (muon.XYvector().Mod() * vproton.XYvector().Mod())); //stv delta phi t;                                                 
+  TVector2 true_delta_pT_vec = (muon + vproton).XYvector();
+  double true_delta_alphaT = double(180.0/3.14)*std::acos( (-muon.X()*true_delta_pT_vec.X()- muon.Y()*true_delta_pT_vec.Y()) / (muon.XYvector().Mod() * true_delta_pT_vec.Mod()) ); //stv delta alpha T;                         
+
+  std::cout<<"True Delta Alpha T: "<<true_delta_alphaT<<std::endl;
+
+  double true_EMuon = std::sqrt(muon.Mag2() + std::pow(MASS_MUON,2));
+
+  std::cout<<"Value of true_E_muon: "<<true_EMuon<<std::endl;
+  std::cout<<"Value of other: "<<std::sqrt(std::pow(muon.Mag(),2) + std::pow(MASS_MUON,2))<<std::endl;
+  double true_ELead = std::sqrt(lead.Mag2() + std::pow(MASS_PROTON,2));
+  double true_ERec = std::sqrt(rec.Mag2() + std::pow(MASS_PROTON,2));
+  TVector3 true_PT_miss(muon[0]+lead[0]+rec[0],muon[1]+rec[1]+lead[1],0);
+  double true_nu_E = nu_e;//(true_EMuon+MASS_MUON) + true_ELead + true_ERec +((true_PT_miss.Mag2())/(2.0*35.37)) + 0.0304;
+
+  std::cout<<"Value of true_nu_E: "<<true_nu_E<<std::endl;
+
+  TLorentzVector true_LEAD(lead[0],lead[1],lead[2],true_ELead);
+  TLorentzVector true_REC(rec[0],rec[1],rec[2],true_ERec);
+  TLorentzVector true_betacm(rec[0]+lead[0]+muon[0],rec[1]+lead[1]+muon[1],rec[2]+lead[2]+muon[2],true_ERec+true_ELead+true_EMuon);
+  TVector3 true_boost = true_betacm.BoostVector(); //the boost vector                                                                                                                                                  
+  true_LEAD.Boost(-reco_boost); //boost leading proton                                                                                                                                                                
+  true_REC.Boost(-reco_boost); //boost recoil proton                                                                                                                                                                   
+  double true_opening_angle_protons_COM = std::cos(true_LEAD.Angle(true_REC.Vect()));
+
+  //Now to do all the fancy filling stuff
+  //////////////////////////////////////////
+  h_particle_matrices[0][0]->Fill(true_muon_mom,reco_muon_mom,mc_wgt); //muon mom
+  h_particle_matrices[0][1]->Fill(true_muon_theta,reco_muon_theta,mc_wgt); //muon theta
+  h_particle_matrices[0][2]->Fill(true_muon_phi,reco_muon_phi,mc_wgt); //muon phi
+
+  if(contained_start == true && contained_end == true && true_contained_start == true && true_contained_end == true){
+    h_particle_matrices[1][0]->Fill(true_muon_mom,reco_muon_mom,mc_wgt); //muon contained mom  
+    h_particle_matrices[1][1]->Fill(true_muon_theta,reco_muon_theta,mc_wgt); //muon contained theta  
+    h_particle_matrices[1][2]->Fill(true_muon_phi,reco_muon_phi,mc_wgt); //muon contained phi  
+  } else if(contained_start == true && contained_end == false && true_contained_start == true && true_contained_end == false){
+    h_particle_matrices[2][0]->Fill(true_muon_mom,reco_muon_mom,mc_wgt); //muon uncontained mom  
+    h_particle_matrices[2][1]->Fill(true_muon_theta,reco_muon_theta,mc_wgt); //muon uncontained theta  
+    h_particle_matrices[2][2]->Fill(true_muon_phi,reco_muon_phi,mc_wgt); //muon uncontained phi  
+  }
+
+  h_particle_matrices[3][0]->Fill(true_lead_mom,reco_lead_mom,mc_wgt); //lead proton mom  
+  h_particle_matrices[3][1]->Fill(true_lead_theta,reco_lead_theta,mc_wgt); //lead proton theta  
+  h_particle_matrices[3][2]->Fill(true_lead_phi,reco_lead_phi,mc_wgt); //lead proton phi  
+  
+  h_particle_matrices[4][0]->Fill(true_recoil_mom,reco_recoil_mom,mc_wgt); //recoil proton mom  
+  h_particle_matrices[4][1]->Fill(true_recoil_theta,reco_recoil_theta,mc_wgt); //recoil proton theta  
+  h_particle_matrices[4][2]->Fill(true_recoil_phi,reco_recoil_phi,mc_wgt); //recoil proton phi  
+  
+  h_other_matrices[0]->Fill(true_opening_angle_protons_lab,reco_opening_angle_protons_lab,mc_wgt); //opening_angle_protons_lab
+  h_other_matrices[1]->Fill(true_opening_angle_protons_COM,reco_opening_angle_protons_COM,mc_wgt); //opening_angle_protons_COM
+  h_other_matrices[2]->Fill(true_opening_angle_protons_mu_leading,reco_opening_angle_protons_mu_leading,mc_wgt); //opening_angle_protons_mu_leading
+  h_other_matrices[3]->Fill(true_opening_angle_protons_mu_both,reco_opening_angle_protons_mu_both,mc_wgt); //opening_angle_protons_mu_both
+  h_other_matrices[4]->Fill(true_delta_PT,reco_delta_PT, mc_wgt); //Delta_PT
+ 
+
+  h_test->Fill(reco_delta_alphaT-true_delta_alphaT,mc_wgt);
+
+  h_other_matrices[5]->Fill(true_delta_alphaT, reco_delta_alphaT, mc_wgt);//, mc_wgt); //Delta_alphaT
+  h_other_matrices[6]->Fill(true_delta_phiT, reco_delta_phiT, mc_wgt);//, mc_wgt); //Delta_phiT
+
+
+
+  h_other_matrices[7]->Fill(true_nu_E, reco_nu_E, mc_wgt); //neutrino energy
+
+}
 
 double twoproton_pelee_overlay::GetTrackMomentum(double trkrange, int pdg) const
 {
@@ -2706,8 +2930,8 @@ void twoproton_pelee_overlay::Fill_Histograms_Particles_Raquel(TVector3 vMuon, T
 }
 
 void twoproton_pelee_overlay::Write_Histograms(){
-  for(int i=0; i< num2d; i++){
-    h_correlation_overlay[i]->Write();
+  for(int i=0; i< h_list_2D.size(); i++){
+    h_list_2D[i]->Write();
   }
   for(int i = 0; i < h_list.size(); i++){
     h_list[i]->Write();
