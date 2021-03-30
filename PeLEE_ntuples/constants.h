@@ -5,7 +5,7 @@ namespace Constants{
   //debug statements
   bool _debug = false; 
 
-  //Are we adding protons together?
+  //Are we adding protons together in the STVs?
   bool add_protons = true;
 
   //Cut Values

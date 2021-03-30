@@ -168,8 +168,7 @@ void histogram_funcs::Fill_Particles(TVector3 vMuon, TVector3 vLead, TVector3 vR
   // 1) vector: momenta(muon_mom,lead_mom,rec_mom);
   // 2) vector: Energies(KE_muon, TotE_muon, KE_Lead, TotE_Lead, KE_Rec, TotE_Rec);    
   // 3) vector: detector_angles(muon_theta,muon_phi,lead_theta,lead_phi,recoil_theta,recoil_phi);
-  // 4) vector: opening_angles(opening_angle_protons_lab,opening_angle_protons_mu_leading,opening_angle_protons_mu_both);  
-  // 5) double: opening_angle_protons_COM 
+  // 4) vector: opening_angles(opening_angle_protons_lab,opening_angle_protons_mu_leading,opening_angle_protons_mu_both);  // 5) double: opening_angle_protons_COM 
   // 6) vector: STVS(delta_pT,delta_alphaT,delta_phiT); 
   // 7) double: calculated_nu_E
 

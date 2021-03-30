@@ -11,14 +11,11 @@
 #include <TROOT.h>
 #include <TChain.h>
 #include <TFile.h>
-
-// Header file for the classes stored in the TTree if any.
 #include "string"
 #include "map"
 #include "vector"
-#include "histogram_funcs.h"
-#include "helper_funcs.h"
-//#include "efficiency.h"
+#include "variables.h"
+using namespace Constants;
 
 class twoproton_pelee_overlay {
 public :
@@ -1465,7 +1462,6 @@ public :
    virtual void     Fill_Matrices(TVector3 vMuon, TVector3 muon,TVector3 vLead, TVector3 lead,TVector3 vRec, TVector3 rec, bool contained_start, bool true_contained_start,bool contained_end, bool true_contained_end,double mc_wgt);
    virtual void     Fill_Histograms_Mine(int i, double wgt, int mc_n_threshold_muon, int mc_n_threshold_proton, int mc_n_threshold_pion0, double mc_n_threshold_pionpm, bool fv);
    virtual void     Fill_Histograms_Raquel(int i, double wgt, bool fv);
-   virtual double   GetTrackMomentum(double trkrange, int pdg) const;
    virtual void     Fill_Track_Plots(float value, int pdg, bool contained_start,bool contained_end, double wgt); //fills the track variables 
    virtual void     Fill_Histograms_Particles(int mc_n_threshold_muon, int mc_n_threshold_proton, int mc_n_threshold_pion0, double mc_n_threshold_pionpm, bool fv,TVector3 vMuon, TLorentzVector muon, TVector3 vLead, TLorentzVector lead, TVector3 vRec, TLorentzVector rec, double wgt);
    virtual void     Fill_Histograms_Particles_Raquel(TVector3 vMuon, TLorentzVector muon, TVector3 vLead, TLorentzVector lead, TVector3 vRec, TLorentzVector rec, double wgt, bool fv);
@@ -1601,7 +1597,6 @@ public :
   int num_bins_other_matrices[num_other_matrices] = { 20,   20,   20,   20,  15,    10,    10,    50};
   float x_low_other_matrices[num_other_matrices] = {-1.0, -1.0, -1.0, -1.0, 0.0,   0.0,   0.0,   0.0};
   float x_high_other_matrices[num_other_matrices] = {1.0,  1.0,  1.0,  1.0, 1.0, 180.0, 180.0,   2.5};
-  TH1D* h_test;
 
   //Track related variables
   ////////////////////////////////////
@@ -1670,22 +1665,13 @@ public :
   vector<TH2*> h_list_2D; //vector of all the 2D histograms
 
   //defining class stuff
-  histogram_funcs hist;
-  helper_funcs cuts; //helper_funcs.h 
-
-  //masses
-  double MASS_PROTON = 0.93827208;
-  double MASS_MUON = 0.10565837;
-  double NEUTRON_MASS = 0.93956541; // GeV  
+  variables variables; //variables_funcs.h
 
   //Definitions of MC Thresholds
   int mc_n_threshold_muon = 0;
   int mc_n_threshold_proton = 0;
   int mc_n_threshold_pion0 = 0;
   int mc_n_threshold_pionpm = 0;
-
-  //add the protons together in the stv calculations
-  bool add_protons = true;
 
   //Other parameters:                                                                                                                                                                                  
   double open_angle; //note this is the cos(opening angle)                                                                                                                                             
@@ -1916,8 +1902,6 @@ void twoproton_pelee_overlay::Define_Histograms(){
       h_list.push_back(h_other_eff_denom[i]);
     }
 
-    h_test = new TH1D("h_test","h_test",50,-2.5,2.5);
-    h_list.push_back(h_test);
 
     //XSec Matrices
     ////////////////////
@@ -2070,6 +2054,7 @@ void twoproton_pelee_overlay::MC_Definitions(){
 
 }//MC_definitions
 */
+
 void twoproton_pelee_overlay::Fill_Efficiency(bool denom, int backtracked_pdg, bool contained_start, bool contained_end, TVector3 leading, TVector3 recoil,TVector3 backtracker_mom_vector,double mc_wgt = 1.0){
   
   Double_t open_angle_protons_lab = leading.Angle(recoil);
@@ -2204,99 +2189,73 @@ void twoproton_pelee_overlay::Fill_Efficiency(bool denom, int backtracked_pdg, b
       h_mom_threshold_num[8]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //pion0  
     } //end of else if pion
   } //end of num loop
+
 }//end of Fill_Eff
 
 
 void twoproton_pelee_overlay::Fill_Matrices(TVector3 vMuon, TVector3 muon,TVector3 vLead, TVector3 lead,TVector3 vRec, TVector3 rec, bool contained_start, bool true_contained_start,bool contained_end, bool true_contained_end,double mc_wgt){
 
+  //Going to use Calculate Variables function inside of variables.h. Returns Following
+  // 1) vector: momenta(muon_mom,lead_mom,rec_mom);
+  // 2) vector: Energies(KE_muon, TotE_muon, KE_Lead, TotE_Lead, KE_Rec, TotE_Rec);    
+  // 3) vector: detector_angles(muon_theta,muon_phi,lead_theta,lead_phi,recoil_theta,recoil_phi);
+  // 4) vector: opening_angles(opening_angle_protons_lab,opening_angle_protons_mu_leading,opening_angle_protons_mu_both);   // 5) double: opening_angle_protons_COM 
+  // 6) vector: STVS(delta_pT,delta_alphaT,delta_phiT); 
+  // 7) double: calculated_nu_E
+
   //Define all the reconstructed quantities
   ////////////////////////////////////////
-  double reco_muon_mom = vMuon.Mag();
-  double reco_muon_theta = cos(vMuon.Theta());
-  double reco_muon_phi = vMuon.Phi();
-  double reco_lead_mom = vLead.Mag();
-  double reco_lead_theta = cos(vLead.Theta());
-  double reco_lead_phi = vLead.Phi();
-  double reco_recoil_mom = vRec.Mag();
-  double reco_recoil_theta = cos(vRec.Theta());
-  double reco_recoil_phi =  vRec.Phi();
-  double reco_opening_angle_protons_lab = std::cos(vLead.Angle(vRec)); //((vLead[0]*vRec[0])+(vLead[1]*vRec[1])+(vLead[2]*vRec[2]))/(vLead.Mag()*vRec.Mag()); //vLead.Angle(vRec); 
-  double reco_opening_angle_protons_mu_leading = std::cos(vMuon.Angle(vLead)); //((vLead[0]*vMuon[0])+(vLead[1]*vMuon[1])+(vLead[2]*vMuon[2]))/(vLead.Mag()*vMuon.Mag()); 
-  TVector3 reco_vProton;
-  if(add_protons){
-    reco_vProton.SetXYZ(vLead[0]+vRec[0],vLead[1]+vRec[1],vLead[2]+vRec[2]);
-  }else{
-    reco_vProton.SetXYZ(vLead[0],vLead[1],vLead[2]);
-  }
-  double reco_opening_angle_protons_mu_both = std::cos(vMuon.Angle(reco_vProton)); //((vProton[0]*vMuon[0])+(vProton[1]*vMuon[1])+(vProton[2]*vMuon[2]))/(vProton.Mag()*vMuon.Mag());
-  double reco_delta_PT = (vMuon + reco_vProton).Perp(); //perp takes the magnitude as well. stv delta pt;
-
-  double reco_delta_phiT = double(180.0/3.14)* std::acos( (-vMuon.X()*reco_vProton.X() - vMuon.Y()*reco_vProton.Y()) / (vMuon.XYvector().Mod() * reco_vProton.XYvector().Mod())); //stv delta phi t;
-  TVector2 reco_delta_pT_vec = (vMuon + reco_vProton).XYvector();
-
-  double reco_delta_alphaT = double(180.0/3.14)* std::acos( (-vMuon.X()*reco_delta_pT_vec.X()- vMuon.Y()*reco_delta_pT_vec.Y()) / (vMuon.XYvector().Mod() * reco_delta_pT_vec.Mod()) ); //stv delta alpha T;  
-
-  //delta_phiT = std::acos( (-vMuon.X()*vProton.X() - vMuon.Y()*vProton.Y()) / (vMuon.XYvector().Mod() * vProton.XYvector().Mod()));
-  //TVector2 delta_pT_vec = (vMuon + vProton).XYvector();
-  //delta_alphaT = std::acos( (-vMuon.X()*delta_pT_vec.X()- vMuon.Y()*delta_pT_vec.Y()) / (vMuon.XYvector().Mod() * delta_pT_vec.Mod()) );
-
-  std::cout<<"Reco Delta Alpha T: "<<reco_delta_alphaT<<std::endl;
-
-  double reco_EMuon = std::sqrt(vMuon.Mag2() + std::pow(MASS_MUON,2)) - MASS_MUON; //KE
-  double reco_ELead = std::sqrt(vLead.Mag2() + std::pow(MASS_PROTON,2)) - MASS_PROTON;
-  double reco_ERec = std::sqrt(vRec.Mag2() + std::pow(MASS_PROTON,2)) - MASS_PROTON;
-  TVector3 reco_PT_miss(vMuon[0]+vLead[0]+vRec[0],vMuon[1]+vRec[1]+vLead[1],0);
-  double reco_nu_E = (reco_EMuon+MASS_MUON) + reco_ELead + reco_ERec +((reco_PT_miss.Mag2())/(2.0*35.37)) + 0.0304;
-
-  std::cout<<"Value of reco_nu_E: "<<reco_nu_E<<std::endl;
-
-  TLorentzVector reco_LEAD(vLead[0],vLead[1],vLead[2],reco_ELead);
-  TLorentzVector reco_REC(vRec[0],vRec[1],vRec[2],reco_ERec);
-  TLorentzVector reco_betacm(vRec[0]+vLead[0]+vMuon[0],vRec[1]+vLead[1]+vMuon[1],vRec[2]+vLead[2]+vMuon[2],reco_ERec+reco_ELead+reco_EMuon); 
-  TVector3 reco_boost = reco_betacm.BoostVector(); //the boost vector                                                          
-  reco_LEAD.Boost(-reco_boost); //boost leading proton                                                                         
-  reco_REC.Boost(-reco_boost); //boost recoil proton    
-  double reco_opening_angle_protons_COM = cos(reco_LEAD.Angle(reco_REC.Vect()));  
- 
-  //define all the true quantities
-  //////////////////////////////////
-  double true_muon_mom = muon.Mag();
-  double true_muon_theta = cos(muon.Theta());
-  double true_muon_phi = muon.Phi();
-  double true_lead_mom = lead.Mag();
-  double true_lead_theta = cos(lead.Theta());
-  double true_lead_phi = lead.Phi();
-  double true_recoil_mom = rec.Mag();
-  double true_recoil_theta = cos(rec.Theta());
-  double true_recoil_phi = rec.Phi();
+  variables.Calculate_Variables(vMuon,vLead,vRec,add_protons);
   
-  double true_opening_angle_protons_lab = std::cos(lead.Angle(rec)); //((lead[0]*rec[0])+(lead[1]*rec[1])+(lead[2]*rec[2]))/(lead.Mag()*rec.Mag());
-  double true_opening_angle_protons_mu_leading = std::cos(muon.Angle(lead)); //((lead[0]*vMuon[0])+(lead[1]*vMuon[1])+(lead[2]*vMuon[2]))/(lead.Mag()*vMuon.Mag());
-  TVector3 vproton;
-  if(add_protons){
-    vproton.SetXYZ(lead[0]+rec[0],lead[1]+rec[1],lead[2]+rec[2]);
-  }else{
-    vproton.SetXYZ(lead[0],lead[1],lead[2]);
-  }
-  double true_opening_angle_protons_mu_both = std::cos(muon.Angle(vproton)); //((vproton[0]*muon[0])+(vproton[1]*muon[1])+(vproton[2]*muon[2]))/(vproton.Mag()*muon.Mag()); //cos(opening angle) between the total proton momentum vector and the muon; 
-  double true_delta_PT = (muon + vproton).Perp(); //perp takes the magnitude as well. stv delta pt;                                                                                                                     
-  double true_delta_phiT = double(180.0/3.14)*std::acos( (-muon.X()*vproton.X() - muon.Y()*vproton.Y()) / (muon.XYvector().Mod() * vproton.XYvector().Mod())); //stv delta phi t;                                                 
-  TVector2 true_delta_pT_vec = (muon + vproton).XYvector();
-  double true_delta_alphaT = double(180.0/3.14)*std::acos( (-muon.X()*true_delta_pT_vec.X()- muon.Y()*true_delta_pT_vec.Y()) / (muon.XYvector().Mod() * true_delta_pT_vec.Mod()) ); //stv delta alpha T;                         
-
-  double true_EMuon = std::sqrt(muon.Mag2() + std::pow(MASS_MUON,2)) - MASS_MUON;
-  double true_ELead = std::sqrt(lead.Mag2() + std::pow(MASS_PROTON,2)) - MASS_PROTON;
-  double true_ERec = std::sqrt(rec.Mag2() + std::pow(MASS_PROTON,2)) - MASS_PROTON;
-  TVector3 true_PT_miss(muon[0]+lead[0]+rec[0],muon[1]+rec[1]+lead[1],0);
-  double true_nu_E = nu_e;//(true_EMuon+MASS_MUON) + true_ELead + true_ERec +((true_PT_miss.Mag2())/(2.0*35.37)) + 0.0304;
-
-  TLorentzVector true_LEAD(lead[0],lead[1],lead[2],true_ELead);
-  TLorentzVector true_REC(rec[0],rec[1],rec[2],true_ERec);
-  TLorentzVector true_betacm(rec[0]+lead[0]+muon[0],rec[1]+lead[1]+muon[1],rec[2]+lead[2]+muon[2],true_ERec+true_ELead+true_EMuon);
-  TVector3 true_boost = true_betacm.BoostVector(); //the boost vector                                                                                                                                                  
-  true_LEAD.Boost(-reco_boost); //boost leading proton                                                                                                                                                                
-  true_REC.Boost(-reco_boost); //boost recoil proton                                                                                                                                                                   
-  double true_opening_angle_protons_COM = std::cos(true_LEAD.Angle(true_REC.Vect()));
+  double reco_muon_mom = variables.momenta[0];
+  double reco_muon_theta = variables.detector_angles[0];
+  double reco_muon_phi = variables.detector_angles[1];
+  double reco_lead_mom = variables.momenta[1];
+  double reco_lead_theta = variables.detector_angles[2];
+  double reco_lead_phi = variables.detector_angles[3];
+  double reco_recoil_mom = variables.momenta[2];
+  double reco_recoil_theta = variables.detector_angles[4];
+  double reco_recoil_phi =  variables.detector_angles[5];
+  double reco_opening_angle_protons_lab = variables.opening_angles[0]; 
+  double reco_opening_angle_protons_COM = variables.opening_angle_protons_COM;
+  double reco_opening_angle_protons_mu_leading = variables.opening_angles[1];
+  double reco_opening_angle_protons_mu_both = variables.opening_angles[2];
+  double reco_delta_PT = variables.stvs[0];
+  double reco_delta_alphaT = variables.stvs[1];
+  double reco_delta_phiT = variables.stvs[2];
+  double reco_EMuon = variables.Energies[0];
+  double reco_ELead = variables.Energies[2];
+  double reco_ERec = variables.Energies[4];
+  TVector3 reco_PT_miss(vMuon[0]+vLead[0]+vRec[0],vMuon[1]+vRec[1]+vLead[1],0);
+  double reco_nu_E = variables.calculated_nu_E;
+  std::cout<<"Value of reco_nu_E: "<<reco_nu_E<<std::endl;
+ 
+  //Define all the true quantities
+  //////////////////////////////////
+  variables.Calculate_Variables(muon,lead,rec,add_protons);
+  
+  double true_muon_mom = variables.momenta[0];
+  double true_muon_theta = variables.detector_angles[0];
+  double true_muon_phi = variables.detector_angles[1];
+  double true_lead_mom = variables.momenta[1];
+  double true_lead_theta = variables.detector_angles[2];
+  double true_lead_phi = variables.detector_angles[3];
+  double true_recoil_mom = variables.momenta[2];
+  double true_recoil_theta = variables.detector_angles[4];
+  double true_recoil_phi =  variables.detector_angles[5];
+  double true_opening_angle_protons_lab = variables.opening_angles[0]; 
+  double true_opening_angle_protons_COM = variables.opening_angle_protons_COM;
+  double true_opening_angle_protons_mu_leading = variables.opening_angles[1];
+  double true_opening_angle_protons_mu_both = variables.opening_angles[2];
+  double true_delta_PT = variables.stvs[0];
+  double true_delta_alphaT = variables.stvs[1];
+  double true_delta_phiT = variables.stvs[2];
+  double true_EMuon = variables.Energies[0];
+  double true_ELead = variables.Energies[2];
+  double true_ERec = variables.Energies[4];
+  TVector3 true_PT_miss(vMuon[0]+vLead[0]+vRec[0],vMuon[1]+vRec[1]+vLead[1],0);
+  double true_nu_E = nu_e;
+  std::cout<<"Value of true nu E: "<<true_nu_E<<std::endl;
 
   //Now to do all the fancy filling stuff
   //////////////////////////////////////////
@@ -2327,106 +2286,11 @@ void twoproton_pelee_overlay::Fill_Matrices(TVector3 vMuon, TVector3 muon,TVecto
   h_other_matrices[2]->Fill(true_opening_angle_protons_mu_leading,reco_opening_angle_protons_mu_leading,mc_wgt); //opening_angle_protons_mu_leading
   h_other_matrices[3]->Fill(true_opening_angle_protons_mu_both,reco_opening_angle_protons_mu_both,mc_wgt); //opening_angle_protons_mu_both
   h_other_matrices[4]->Fill(true_delta_PT,reco_delta_PT, mc_wgt); //Delta_PT
- 
-
-  h_test->Fill(reco_delta_alphaT-true_delta_alphaT,mc_wgt);
-
-  h_other_matrices[5]->Fill(true_delta_alphaT, reco_delta_alphaT, mc_wgt);//, mc_wgt); //Delta_alphaT
-  h_other_matrices[6]->Fill(true_delta_phiT, reco_delta_phiT, mc_wgt);//, mc_wgt); //Delta_phiT
-
-
-
+  h_other_matrices[5]->Fill(true_delta_alphaT, reco_delta_alphaT, mc_wgt);//Delta_alphaT
+  h_other_matrices[6]->Fill(true_delta_phiT, reco_delta_phiT, mc_wgt); //Delta_phiT
   h_other_matrices[7]->Fill(true_nu_E, reco_nu_E, mc_wgt); //neutrino energy
 
-}
-
-double twoproton_pelee_overlay::GetTrackMomentum(double trkrange, int pdg) const
-{
-    /* Muon range-momentum tables from CSDA (Argon density = 1.4 g/cm^3)
-       website:
-       http://pdg.lbl.gov/2012/AtomicNuclearProperties/MUON_ELOSS_TABLES/muonloss_289.pdf
-
-       CSDA table values:
-       float Range_grampercm[30] = {9.833E-1, 1.786E0, 3.321E0,
-       6.598E0, 1.058E1, 3.084E1, 4.250E1, 6.732E1, 1.063E2, 1.725E2,
-       2.385E2, 4.934E2, 6.163E2, 8.552E2, 1.202E3, 1.758E3, 2.297E3,
-       4.359E3, 5.354E3, 7.298E3, 1.013E4, 1.469E4, 1.910E4, 3.558E4,
-       4.326E4, 5.768E4, 7.734E4, 1.060E5, 1.307E5}; float KE_MeV[30] = {10, 14,
-       20, 30, 40, 80, 100, 140, 200, 300, 400, 800, 1000, 1400, 2000, 3000,
-       4000, 8000, 10000, 14000, 20000, 30000, 40000, 80000, 100000, 140000,
-       200000, 300000, 400000};
-
-       Functions below are obtained by fitting polynomial fits to KE_MeV vs
-       Range (cm) graph. A better fit was obtained by splitting the graph into
-       two: Below range<=200cm,a polynomial of power 4 was a good fit; above
-       200cm, a polynomial of power 6 was a good fit
-
-       Fit errors for future purposes:
-       Below 200cm, Forpoly4 fit: p0 err=1.38533;p1 err=0.209626; p2
-       err=0.00650077; p3 err=6.42207E-5; p4 err=1.94893E-7; Above 200cm,
-       Forpoly6 fit: p0 err=5.24743;p1 err=0.0176229; p2 err=1.6263E-5; p3
-       err=5.9155E-9; p4 err=9.71709E-13; p5 err=7.22381E-17;p6
-       err=1.9709E-21;*/
-    ///////////////////////////////////////////////////////////////////////////
-    //*********For muon, the calculations are valid up to 1.91E4 cm range
-    //corresponding to a Muon KE of 40 GeV**********//
-    ///////////////////////////////////////////////////////////////////////////
-    /*Proton range-momentum tables from CSDA (Argon density = 1.4 g/cm^3):
-      website: https://physics.nist.gov/PhysRefData/Star/Text/PSTAR.html
-
-      CSDA values:
-      double KE_MeV_P_Nist[31]={10, 15, 20, 30, 40, 80, 100, 150, 200, 250, 300,
-      350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000,
-      1500, 2000, 2500, 3000, 4000, 5000};
-
-      double Range_gpercm_P_Nist[31]={1.887E-1,3.823E-1, 6.335E-1, 1.296,
-      2.159, 7.375, 1.092E1, 2.215E1, 3.627E1, 5.282E1, 7.144E1,
-      9.184E1, 1.138E2, 1.370E2, 1.614E2, 1.869E2, 2.132E2, 2.403E2,
-      2.681E2, 2.965E2, 3.254E2, 3.548E2, 3.846E2, 4.148E2, 4.454E2,
-      7.626E2, 1.090E3, 1.418E3, 1.745E3, 2.391E3, 3.022E3};
-
-      Functions below are obtained by fitting power and polynomial fits to
-      KE_MeV vs Range (cm) graph. A better fit was obtained by splitting the
-      graph into two: Below range<=80cm,a a*(x^b) was a good fit; above 80cm, a
-      polynomial of power 6 was a good fit
-
-      Fit errors for future purposes:
-      For power function fit: a=0.388873; and b=0.00347075
-      Forpoly6 fit: p0 err=3.49729;p1 err=0.0487859; p2 err=0.000225834; p3
-      err=4.45542E-7; p4 err=4.16428E-10; p5 err=1.81679E-13;p6
-      err=2.96958E-17;*/
-    ///////////////////////////////////////////////////////////////////////////
-    //*********For proton, the calculations are valid up to 3.022E3 cm range
-    //corresponding to a Muon KE of 5 GeV**********//
-    ///////////////////////////////////////////////////////////////////////////
-    if (trkrange < 0 || std::isnan(trkrange)) {
-      return -1.;
-    }
-    double KE, Momentum, M;
-    constexpr double Muon_M = 105.7, Proton_M = 938.272;
-    if (abs(pdg) == 2212) {
-      M = Proton_M;
-      if (trkrange > 0 && trkrange <= 80)
-        KE = 29.9317 * std::pow(trkrange, 0.586304);
-      else if (trkrange > 80 && trkrange <= 3.022E3)
-        KE =
-          149.904 + (3.34146 * trkrange) + (-0.00318856 * trkrange * trkrange) +
-          (4.34587E-6 * trkrange * trkrange * trkrange) +
-          (-3.18146E-9 * trkrange * trkrange * trkrange * trkrange) +
-          (1.17854E-12 * trkrange * trkrange * trkrange * trkrange * trkrange) +
-          (-1.71763E-16 * trkrange * trkrange * trkrange * trkrange * trkrange *
-           trkrange);
-      else
-        KE = -999;
-    } else
-      KE = -999;
-    if (KE < 0)
-      Momentum = -999;
-    else
-      Momentum = std::sqrt((KE * KE) + (2 * M * KE));
-    Momentum = Momentum / 1000;
-    return Momentum;
-} //end of get track momentum
+} //end of fill matrices
 
 void twoproton_pelee_overlay::Fill_Track_Plots(float value, int pdg, bool contained_start, bool contained_end,double wgt){
 
@@ -2699,7 +2563,7 @@ void twoproton_pelee_overlay::Fill_Particles(int j, TVector3 vMuon, TLorentzVect
   open_angle = ((vLead[0]*vRec[0])+(vLead[1]*vRec[1])+(vLead[2]*vRec[2]))/(vLead.Mag()*vRec.Mag()); //note this is the cos(opening angle)                             
   open_angle_mu = ((vLead[0]*vMuon[0])+(vLead[1]*vMuon[1])+(vLead[2]*vMuon[2]))/(vLead.Mag()*vMuon.Mag()); //note this is the cos(opening angle)   
   open_angle_mu_proton = ((vProton[0]*vMuon[0])+(vProton[1]*vMuon[1])+(vProton[2]*vMuon[2]))/(vProton.Mag()*vMuon.Mag()); //cos(opening angle) between the total proton momentum vector and the muon
-  En = std::sqrt(std::pow(NEUTRON_MASS,2) + vmiss.Mag2()); //energy of struck nucleon   
+  En = std::sqrt(std::pow(MASS_NEUTRON,2) + vmiss.Mag2()); //energy of struck nucleon   
   delta_pT = (vMuon + vProton).Perp(); 
   delta_phiT = std::acos( (-vMuon.X()*vProton.X() - vMuon.Y()*vProton.Y()) / (vMuon.XYvector().Mod() * vProton.XYvector().Mod()));
   TVector2 delta_pT_vec = (vMuon + vProton).XYvector();
@@ -2786,7 +2650,7 @@ void twoproton_pelee_overlay::Fill_Particles_Raquel(int j, TVector3 vMuon, TLore
   open_angle = ((vLead[0]*vRec[0])+(vLead[1]*vRec[1])+(vLead[2]*vRec[2]))/(vLead.Mag()*vRec.Mag()); //note this is the cos(opening angle)                             
   open_angle_mu = ((vLead[0]*vMuon[0])+(vLead[1]*vMuon[1])+(vLead[2]*vMuon[2]))/(vLead.Mag()*vMuon.Mag()); //note this is the cos(opening angle)   
   open_angle_mu_proton = ((vProton[0]*vMuon[0])+(vProton[1]*vMuon[1])+(vProton[2]*vMuon[2]))/(vProton.Mag()*vMuon.Mag()); //cos(opening angle) between the total proton momentum vector and the muon
-  En = std::sqrt(std::pow(NEUTRON_MASS,2) + vmiss.Mag2()); //energy of struck nucleon   
+  En = std::sqrt(std::pow(MASS_NEUTRON,2) + vmiss.Mag2()); //energy of struck nucleon   
   delta_pT = (vMuon + vProton).Perp(); 
   delta_phiT = std::acos( (-vMuon.X()*vProton.X() - vMuon.Y()*vProton.Y()) / (vMuon.XYvector().Mod() * vProton.XYvector().Mod()));
   TVector2 delta_pT_vec = (vMuon + vProton).XYvector();

@@ -1,6 +1,5 @@
 #define twoproton_pelee_overlay_cxx
 #include "twoproton_pelee_overlay.h"
-#include "constants.h"
 #include <chrono>
 using namespace Constants;
 using namespace std::chrono;
@@ -11,7 +10,6 @@ void twoproton_pelee_overlay::Loop()
 
   //Define objects of classes
   ////////////////////////////
-  histogram_funcs hist; //histogram_funcs.h
   helper_funcs cuts; //helper_funcs.h   
 
   //Making a new Root File that will contain all the histograms that we will want to plot and files with good RSEs:
