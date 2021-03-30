@@ -1,7 +1,6 @@
 #define twoproton_pelee_ext_cxx
 #include "twoproton_pelee_ext.h"
 #include "histogram_funcs.h"
-#include "helper_funcs.h"
 #include "constants.h"
 #include <chrono> 
 using namespace Constants;
@@ -168,7 +167,6 @@ void twoproton_pelee_ext::Loop()
     }
     vMuon.SetTheta(trk_theta_v->at(muon_id));
     vMuon.SetPhi(trk_phi_v->at(muon_id));
-    TLorentzVector muon(vMuon[0],vMuon[1],vMuon[2],EMuon);    
     
     //Leading Proton
     TVector3 vLead(1,1,1);
@@ -176,7 +174,6 @@ void twoproton_pelee_ext::Loop()
     vLead.SetMag(std::sqrt(std::pow(ELead + MASS_PROTON,2) - std::pow(MASS_PROTON,2)));
     vLead.SetTheta(trk_theta_v->at(leading_proton_id));
     vLead.SetPhi(trk_phi_v->at(leading_proton_id));
-    TLorentzVector lead(vLead[0],vLead[1],vLead[2],ELead);    
 
     //Recoil Proton
     TVector3 vRec(1,1,1);
@@ -184,9 +181,8 @@ void twoproton_pelee_ext::Loop()
     vRec.SetMag(std::sqrt(std::pow(ERec + MASS_PROTON,2) - std::pow(MASS_PROTON,2)));
     vRec.SetTheta(trk_theta_v->at(recoil_proton_id));
     vRec.SetPhi(trk_phi_v->at(recoil_proton_id));
-    TLorentzVector rec(vRec[0],vRec[1],vRec[2],ERec);    
 
-    hist.Fill_Particles(vMuon,muon,vLead,lead,vRec,rec,pot_wgt);
+    hist.Fill_Particles(vMuon,vLead,vRec,pot_wgt);
 
     //Make sure to clean up before you finish
     proton_id_vector.clear();

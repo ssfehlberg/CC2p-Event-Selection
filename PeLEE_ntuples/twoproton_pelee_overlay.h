@@ -2284,18 +2284,11 @@ void twoproton_pelee_overlay::Fill_Matrices(TVector3 vMuon, TVector3 muon,TVecto
   TVector2 true_delta_pT_vec = (muon + vproton).XYvector();
   double true_delta_alphaT = double(180.0/3.14)*std::acos( (-muon.X()*true_delta_pT_vec.X()- muon.Y()*true_delta_pT_vec.Y()) / (muon.XYvector().Mod() * true_delta_pT_vec.Mod()) ); //stv delta alpha T;                         
 
-  std::cout<<"True Delta Alpha T: "<<true_delta_alphaT<<std::endl;
-
-  double true_EMuon = std::sqrt(muon.Mag2() + std::pow(MASS_MUON,2));
-
-  std::cout<<"Value of true_E_muon: "<<true_EMuon<<std::endl;
-  std::cout<<"Value of other: "<<std::sqrt(std::pow(muon.Mag(),2) + std::pow(MASS_MUON,2))<<std::endl;
-  double true_ELead = std::sqrt(lead.Mag2() + std::pow(MASS_PROTON,2));
-  double true_ERec = std::sqrt(rec.Mag2() + std::pow(MASS_PROTON,2));
+  double true_EMuon = std::sqrt(muon.Mag2() + std::pow(MASS_MUON,2)) - MASS_MUON;
+  double true_ELead = std::sqrt(lead.Mag2() + std::pow(MASS_PROTON,2)) - MASS_PROTON;
+  double true_ERec = std::sqrt(rec.Mag2() + std::pow(MASS_PROTON,2)) - MASS_PROTON;
   TVector3 true_PT_miss(muon[0]+lead[0]+rec[0],muon[1]+rec[1]+lead[1],0);
   double true_nu_E = nu_e;//(true_EMuon+MASS_MUON) + true_ELead + true_ERec +((true_PT_miss.Mag2())/(2.0*35.37)) + 0.0304;
-
-  std::cout<<"Value of true_nu_E: "<<true_nu_E<<std::endl;
 
   TLorentzVector true_LEAD(lead[0],lead[1],lead[2],true_ELead);
   TLorentzVector true_REC(rec[0],rec[1],rec[2],true_ERec);

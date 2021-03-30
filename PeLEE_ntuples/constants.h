@@ -5,6 +5,9 @@ namespace Constants{
   //debug statements
   bool _debug = false; 
 
+  //Are we adding protons together?
+  bool add_protons = true;
+
   //Cut Values
   double TRACK_SCORE_CUT = 0.8;
   double TRACK_DIST_CUT = 4;
