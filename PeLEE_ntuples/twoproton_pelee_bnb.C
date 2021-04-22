@@ -69,7 +69,13 @@ void twoproton_pelee_bnb::Loop()
     if(n_pfps != 3) continue;
     threepfps++;
     hist.Fill_Histograms(2, TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z),CosmicIP, topological_score, pot_wgt);
-
+     for(int i = 0; i < n_pfps; i++){
+      hist.h_track[0][0]->Fill(trk_score_v->at(i),pot_wgt);
+      hist.h_track[1][0]->Fill(trk_distance_v->at(i),pot_wgt);
+      hist.h_track[2][0]->Fill(trk_len_v->at(i),pot_wgt);
+      hist.h_track[3][0]->Fill(trk_llr_pid_score_v->at(i),pot_wgt);
+    }
+    
     //3) Require that there are exactly 3 tracks whose vertex distance attachment is less than 4 cm
     /////////////////////////////////////////////////////////////////////////////////////////////
     int y = 0;
@@ -93,23 +99,26 @@ void twoproton_pelee_bnb::Loop()
 	protons++;                                             
       }  
     }                                                                                                              
-
-    //3 PFPS
+    //3 PFPS with track score above 0.8
     if(y != 3) continue;
     threetrkcntr++;
     hist.Fill_Histograms(3, TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z),CosmicIP, topological_score, pot_wgt);
+    for(int i = 0; i < n_pfps; i++){
+      hist.h_track[0][1]->Fill(trk_score_v->at(i),pot_wgt);
+      hist.h_track[1][1]->Fill(trk_distance_v->at(i),pot_wgt);
+      hist.h_track[2][1]->Fill(trk_len_v->at(i),pot_wgt);
+      hist.h_track[3][1]->Fill(trk_llr_pid_score_v->at(i),pot_wgt);
+    }
 
     //3 tracks attached to vertex
     if(y1 != 3) continue; 
     threetrk_connected++;
     hist.Fill_Histograms(4, TVector3(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z),CosmicIP, topological_score, pot_wgt);
-
-    //Filling Some Cut Variables to be Used in Optimizing Cuts
     for(int i = 0; i < n_pfps; i++){
-      hist.h_track[0]->Fill(trk_score_v->at(i),pot_wgt);
-      hist.h_track[1]->Fill(trk_distance_v->at(i),pot_wgt);
-      hist.h_track[2]->Fill(trk_len_v->at(i),pot_wgt);
-      hist.h_track[3]->Fill(trk_llr_pid_score_v->at(i),pot_wgt);
+      hist.h_track[0][2]->Fill(trk_score_v->at(i),pot_wgt);
+      hist.h_track[1][2]->Fill(trk_distance_v->at(i),pot_wgt);
+      hist.h_track[2][2]->Fill(trk_len_v->at(i),pot_wgt);
+      hist.h_track[3][2]->Fill(trk_llr_pid_score_v->at(i),pot_wgt);
     }
     
     //5) PID: One track with PID > 0.6 and 2 tracks with PID < 0.6
@@ -166,13 +175,15 @@ void twoproton_pelee_bnb::Loop()
     }
     vMuon.SetTheta(trk_theta_v->at(muon_id));
     vMuon.SetPhi(trk_phi_v->at(muon_id));
-    
+    TLorentzVector muon(vMuon[0],vMuon[1],vMuon[2],EMuon);
+
     //Leading Proton
     TVector3 vLead(1,1,1);
     float ELead = trk_energy_proton_v->at(leading_proton_id);
     vLead.SetMag(std::sqrt(std::pow(ELead + MASS_PROTON,2) - std::pow(MASS_PROTON,2)));
     vLead.SetTheta(trk_theta_v->at(leading_proton_id));
     vLead.SetPhi(trk_phi_v->at(leading_proton_id));
+    TLorentzVector lead(vLead[0],vLead[1],vLead[2],ELead);
 
     //Recoil Proton
     TVector3 vRec(1,1,1);
@@ -180,8 +191,14 @@ void twoproton_pelee_bnb::Loop()
     vRec.SetMag(std::sqrt(std::pow(ERec + MASS_PROTON,2) - std::pow(MASS_PROTON,2)));
     vRec.SetTheta(trk_theta_v->at(recoil_proton_id));
     vRec.SetPhi(trk_phi_v->at(recoil_proton_id));
+    TLorentzVector rec(vRec[0],vRec[1],vRec[2],ERec);
 
-    hist.Fill_Particles(vMuon,vLead,vRec,pot_wgt);
+    
+    hist.Fill_Particles(vMuon,muon,vLead,lead,vRec,rec,pot_wgt);
+
+    //One last thing: Make sure to ssave the RSE for the good events before you end your loop                                                                                                                                                                    
+    myfile << run << " " << sub << " " << evt << " " ;
+    myfile << endl;
     
     //Make sure to clean up before you finish
     proton_id_vector.clear();

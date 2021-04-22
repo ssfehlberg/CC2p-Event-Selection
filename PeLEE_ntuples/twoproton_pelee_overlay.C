@@ -129,8 +129,7 @@ void twoproton_pelee_overlay::Loop()
     std::vector<int> mc_protons_id;
     std::vector<double> mc_proton_mom;
     std::vector<std::pair<double,int>> zipped;
-    if(ccnc == 0 && abs(nu_pdg) == 14 && nproton == 2 && nmuon == 1 && npi0 == 0 && npion == 0){
-
+    if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_proton == 2 && mc_n_threshold_muon == 1 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0){
       for(int j=0; j < mc_pdg->size(); j++){
 	if (std::abs(mc_pdg->at(j)) == 2212){
 	  TVector3 backtracker_mom_vector(mc_px->at(j),mc_py->at(j),mc_pz->at(j));
@@ -169,6 +168,13 @@ void twoproton_pelee_overlay::Loop()
     threepfps++;
     Fill_Histograms_Mine(2, pot_wgt*mc_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv);
     Fill_Histograms_Raquel(2, pot_wgt*mc_wgt, cuts.fv);
+    for(int i = 0; i < n_pfps; i++){
+      int track_pdg = testVector.at(i);
+      bool contained_start = cuts.In_FV(10,10,10,10,10,10,trk_start_x_v->at(i),trk_start_y_v->at(i),trk_start_z_v->at(i));
+      bool contained_end = cuts.In_FV(10,10,10,10,10,10,trk_end_x_v->at(i),trk_end_y_v->at(i),trk_end_z_v->at(i));
+      Fill_Track_Plots(0,i,track_pdg,contained_start,contained_end,pot_wgt*mc_wgt);
+    }
+
 
     //Require that there are exactly 3 tracks whose vertex distance attachment is less than 4 cm
     /////////////////////////////////////////////////////////////////////////////////////////////
@@ -193,12 +199,17 @@ void twoproton_pelee_overlay::Loop()
 	protons++;                                             
       }                                                                                                       
     }                                                                                                     
-   
     //Three pfps with track score above 0.8
     if(y != 3) continue; 
     threetrkcntr++;
     Fill_Histograms_Mine(3, pot_wgt*mc_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv);
     Fill_Histograms_Raquel(3, pot_wgt*mc_wgt, cuts.fv);
+    for(int i = 0; i < n_pfps; i++){
+      int track_pdg = testVector.at(i);
+      bool contained_start = cuts.In_FV(10,10,10,10,10,10,trk_start_x_v->at(i),trk_start_y_v->at(i),trk_start_z_v->at(i));
+      bool contained_end = cuts.In_FV(10,10,10,10,10,10,trk_end_x_v->at(i),trk_end_y_v->at(i),trk_end_z_v->at(i));
+      Fill_Track_Plots(1,i,track_pdg,contained_start,contained_end,pot_wgt*mc_wgt);
+    }
 
     //Three Tracks connected to the vertex
     if(y1 != 3) continue;
@@ -209,7 +220,7 @@ void twoproton_pelee_overlay::Loop()
       int track_pdg = testVector.at(i);
       bool contained_start = cuts.In_FV(10,10,10,10,10,10,trk_start_x_v->at(i),trk_start_y_v->at(i),trk_start_z_v->at(i));
       bool contained_end = cuts.In_FV(10,10,10,10,10,10,trk_end_x_v->at(i),trk_end_y_v->at(i),trk_end_z_v->at(i));	
-      Fill_Track_Plots(i,track_pdg,contained_start,contained_end,pot_wgt*mc_wgt);
+      Fill_Track_Plots(2,i,track_pdg,contained_start,contained_end,pot_wgt*mc_wgt);
     }
     
     //5) PID: One track with PID > 0.6 and 2 tracks with PID < 0.6
@@ -270,15 +281,15 @@ void twoproton_pelee_overlay::Loop()
     }
     vMuon.SetTheta(trk_theta_v->at(muon_id));
     vMuon.SetPhi(trk_phi_v->at(muon_id));
-    TLorentzVector muon(vMuon[0],vMuon[1],vMuon[2],EMuon);    
-    
+    TLorentzVector muon(vMuon[0],vMuon[1],vMuon[2],EMuon);  
+
     //Leading Proton
     TVector3 vLead(1,1,1);
     float ELead = trk_energy_proton_v->at(leading_proton_id);
     vLead.SetMag(std::sqrt(std::pow(ELead + MASS_PROTON,2) - std::pow(MASS_PROTON,2)));
     vLead.SetTheta(trk_theta_v->at(leading_proton_id));
     vLead.SetPhi(trk_phi_v->at(leading_proton_id));
-    TLorentzVector lead(vLead[0],vLead[1],vLead[2],ELead);    
+    TLorentzVector lead(vLead[0],vLead[1],vLead[2],ELead); 
 
     //Recoil Proton
     TVector3 vRec(1,1,1);
@@ -286,29 +297,48 @@ void twoproton_pelee_overlay::Loop()
     vRec.SetMag(std::sqrt(std::pow(ERec + MASS_PROTON,2) - std::pow(MASS_PROTON,2)));
     vRec.SetTheta(trk_theta_v->at(recoil_proton_id));
     vRec.SetPhi(trk_phi_v->at(recoil_proton_id));
-    TLorentzVector rec(vRec[0],vRec[1],vRec[2],ERec);    
+    TLorentzVector rec(vRec[0],vRec[1],vRec[2],ERec); 
 
     Fill_Histograms_Particles(mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0, mc_n_threshold_pionpm, cuts.fv, vMuon, muon, vLead, lead, vRec, rec, mc_wgt*pot_wgt);
     Fill_Histograms_Particles_Raquel(vMuon, muon, vLead, lead, vRec, rec, mc_wgt*pot_wgt, cuts.fv);
+    //Fill_Histograms_Particles(mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0, mc_n_threshold_pionpm, cuts.fv, vMuon, vLead, vRec, mc_wgt*pot_wgt);
+    //Fill_Histograms_Particles_Raquel(vMuon, vLead, vRec, mc_wgt*pot_wgt, cuts.fv);
 
-    //Make sure to fill the efficiency stuff
-    if(ccnc == 0 && abs(nu_pdg) == 14 && nproton == 2 && nmuon == 1 && npi0 == 0 && npion == 0){
+    //Make sure to fill the efficiency stuff and the migration matrices
+    bool true_contained_start;
+    bool true_contained_end;
+    TVector3 vmuon;
+
+    if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_proton == 2 && mc_n_threshold_muon == 1 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0){
       for(int j=0; j < n_pfps; j++){
-	if (std::abs(backtracked_pdg->at(j)) == 2212){
+	if(std::abs(backtracked_pdg->at(j)) == 13){ //muon loop
+	  vmuon.SetXYZ(backtracked_px->at(j),backtracked_py->at(j),backtracked_pz->at(j));
+	  if(mc_pdg->size() == n_pfps){                                                                                                                                                                                                                          
+	    true_contained_start = cuts.In_FV(10,10,10,10,10,10,mc_vx->at(j),mc_vy->at(j),mc_vz->at(j)); //I don't have the right size mc_vx....sooo                                                                                                             
+	    true_contained_end = cuts.In_FV(0,0,0,0,0,0,mc_endx->at(j),mc_endy->at(j),mc_endz->at(j));//i don't have the right size mc_vx......                                                                                                                  
+	  }
+	}
+	if(std::abs(backtracked_pdg->at(j)) == 2212){ //proton loop
 	  TVector3 backtracker_mom_vector(backtracked_px->at(j),backtracked_py->at(j),backtracked_pz->at(j));
 	  mc_proton_mom.push_back(backtracker_mom_vector.Mag());
 	  mc_protons_id.push_back(j);
 	  zipped.push_back(std::make_pair(backtracker_mom_vector.Mag(),j));   
 	}
-      }
+      } //end of loop over npfps
       if(mc_proton_mom.size() == 2 && mc_protons_id.size() == 2) {
 	std::sort(zipped.begin(), zipped.end(), greater());
 	for(int j=0; j < mc_protons_id.size(); j++){
 	  mc_proton_mom[j] = zipped[j].first;
 	  mc_protons_id[j] = zipped[j].second;
 	}
+	
 	int leading_id = mc_protons_id[0];
 	int recoil_id = mc_protons_id[1];
+	TVector3 leading(backtracked_px->at(leading_id),backtracked_py->at(leading_id),backtracked_pz->at(leading_id));
+	TVector3 recoil(backtracked_px->at(recoil_id),backtracked_py->at(recoil_id),backtracked_pz->at(recoil_id));
+	if(leading_id == recoil_id) std::cout<<"OHHHHH SHIIIT NUGGETS!"<<std::endl;
+	Fill_Matrices(vMuon,vmuon,vLead,leading,vRec,recoil,muon_start_contained,true_contained_start,muon_end_contained,true_contained_end,mc_wgt*pot_wgt);
+
 	for(int j=0; j < n_pfps; j++){
 	  TVector3 backtracker_mom_vector(backtracked_px->at(j),backtracked_py->at(j),backtracked_pz->at(j));
 	  TVector3 leading(backtracked_px->at(leading_id),backtracked_py->at(leading_id),backtracked_pz->at(leading_id));
@@ -319,10 +349,12 @@ void twoproton_pelee_overlay::Loop()
 	} //end of for
       } //end of if
     }//end of if specific event
+
     mc_protons_id.clear();
     mc_proton_mom.clear();
     zipped.clear();
 
+    /*
     //Have to make sure we fill the migration matrices
     /////////////////////////////////////////////////
     bool true_contained_start;
@@ -332,6 +364,8 @@ void twoproton_pelee_overlay::Loop()
     int recoil_id;
 
     for(int i=0; i < n_pfps; i++){
+      TVector3 mom_test(backtracked_px->at(i),backtracked_py->at(i),backtracked_pz->at(i));
+
       if(std::abs(backtracked_pdg->at(i)) == 13){
 	vmuon.SetXYZ(backtracked_px->at(i),backtracked_py->at(i),backtracked_pz->at(i));
 	if(mc_pdg->size() == n_pfps){
@@ -346,6 +380,7 @@ void twoproton_pelee_overlay::Loop()
 	zipped.push_back(std::make_pair(backtracker_mom_vector.Mag(),i));
       }
     }
+
     std::sort(zipped.begin(), zipped.end(), greater());
     for(int j=0; j < mc_protons_id.size(); j++){
       mc_proton_mom[j] = zipped[j].first;
@@ -355,10 +390,16 @@ void twoproton_pelee_overlay::Loop()
       leading_id = mc_protons_id[0];
       recoil_id = mc_protons_id[1];
     }
+
     TVector3 leading(backtracked_px->at(leading_id),backtracked_py->at(leading_id),backtracked_pz->at(leading_id));
     TVector3 recoil(backtracked_px->at(recoil_id),backtracked_py->at(recoil_id),backtracked_pz->at(recoil_id));
-    Fill_Matrices(vMuon,vmuon,vLead,leading,vRec,recoil,muon_start_contained,true_contained_start,muon_end_contained,true_contained_end,mc_wgt*pot_wgt);
+    if(leading.Mag() > 2.0) continue;
+    leading_true_angle_bad++;
+    if(recoil.Mag() > 2.0) continue;
+    recoil_true_angle_bad++;
 
+    Fill_Matrices(vMuon,vmuon,vLead,leading,vRec,recoil,muon_start_contained,true_contained_start,muon_end_contained,true_contained_end,mc_wgt*pot_wgt);
+    */
     //Make sure to clean up before you finish
     proton_id_vector.clear();
     testVector.clear();
@@ -373,7 +414,7 @@ void twoproton_pelee_overlay::Loop()
   //Before we finish, we need to make the efficiency and purity plots:
   ///////////////////////////////////////////////////////////////////
   std::vector<int> cut_values = {static_cast<int>(nentries),fvcntr,threepfps,threetrkcntr, threetrk_connected, pid};
-  for(int i = 0; i < number; i++){
+  for(int i = 0; i < cut_values.size(); i++){
     double eff = double(cc2p0pi[i]) / double(cc2p0pi[0]);
     double purity = double(cc2p0pi[i]) / double(cut_values[i]);
     std::cout<<"Value of Efficinecy After Cut "<<i<<": "<<eff<<std::endl;
