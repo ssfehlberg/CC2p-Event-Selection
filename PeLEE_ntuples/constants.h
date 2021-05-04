@@ -8,6 +8,9 @@ namespace Constants{
   //Are we adding protons together in the STVs?
   bool add_protons = true;
 
+  //Are we using the xsecc binning
+  bool use_xsec_binning = true;
+
   //Cut Values
   double TRACK_SCORE_CUT = 0.8;
   double TRACK_DIST_CUT = 4;

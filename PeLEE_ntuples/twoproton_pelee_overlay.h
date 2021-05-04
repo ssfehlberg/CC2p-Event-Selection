@@ -1479,6 +1479,7 @@ public :
  private:
 
    //Stuff to determine which Run this is:
+   ////////////////////////////////////////
    char response;
    const char* directory;
    const char* file;
@@ -1488,19 +1489,20 @@ public :
    //Defining all the histograms becaues I wrote the classes stupidly
    //////////////////////////////////////////////////////////////////
  
-   //Total Histograms                                                                                              
+   //PFP Specific Histograms                                                                                              
    static const int num = 4;
    const char * total[num] = {"npfp","vtx_npfp","ntrack","nshower"};
    TH1D * h_pfp_overlay[num]; //overlay
    TH1D* h_pfp[num]; //bnb, ext, dirt
 
-  //Correlation Histograms                                                                                         
+  //Correlation Histograms for Vertex                                                                                       
   static const int num2d = 3;
   const char * total2d[num2d] = {"reco","truth","truth_sce"};
   const char * labelx[num2d] = {"reco x","true x","true x + sce"};
   const char * labely[num2d] = {"reco y","true y","true y + sce"};
   TH2D *h_correlation_overlay[num2d];
       
+  //Varaibles I wanted to check after each cut
   static const int  number = 6; //number cuts                                                                        
   static const int  number2 = 11; //categories I defined                                                            
   static const int  number3 = 10; //categories raquel defined
@@ -1545,7 +1547,19 @@ public :
   
   //Check of MEC weight
   TH1D* h_mec_wgt[number];
-  
+ 
+  //Track related variables after certain cuts
+  static const int num_track = 4;
+  const char* variable[num_track] = {"_track_score","_track_vertex_distance","_track_length","_track_pid"};
+  static const int track_cut = 3;
+  const char* which_track_cut[track_cut] = {"_after_3_pfps","_after_track_score","_after_distance_cut"};
+  static const int num_part = 10;
+  const char* particle[num_part] = {"_total","_proton_contained","_proton_uncontained","_muon","_pionpm","_pion0","_electron","_gamma","_kaon","_other"};
+  TH1D* h_track_overlay[num_track][track_cut][num_part]; //overlay
+  int num_bins_track[num_track] = {30,10,50,50};
+  double xlim_low_track[num_track] = {0.0,0.0,0.0,-1.0};
+  double xlim_high_track[num_track] = {1.0,10.0,50.0,1.0};
+ 
   //Efficinecy As Function of Cuts
   /////////////////////////////////////////////
   TGraph* eff_graph = new TGraph(number); //efficiency as function of cuts
@@ -1562,12 +1576,10 @@ public :
 
   //Effieincy Plots and Migration Matrices of XSec Variables
   ////////////////////////////////////////////////////////////
-
   TH2D* h_test_recoil;
   TH2D* h_test_leading;
   int recoil_theta = 0;
   int leading_theta = 0;
-
 
   //particles
   static const int num_particles_eff_plots = 3;
@@ -1584,19 +1596,6 @@ public :
   TH1D* h_other_eff_num[num_other_eff];
   TH1D* h_other_eff_denom[num_other_eff];
   TH2D* h_other_matrices[num_other_eff]; //migration matrix
-
-  //Track related variables
-  ////////////////////////////////////
-  static const int num_track = 4;
-  const char* variable[num_track] = {"_track_score","_track_vertex_distance","_track_length","_track_pid"};
-  static const int track_cut = 3;
-  const char* which_track_cut[track_cut] = {"_after_3_pfps","_after_track_score","_after_distance_cut"};
-  static const int num_part = 10;
-  const char* particle[num_part] = {"_total","_proton_contained","_proton_uncontained","_muon","_pionpm","_pion0","_electron","_gamma","_kaon","_other"};
-  TH1D* h_track_overlay[num_track][track_cut][num_part]; //overlay
-  int num_bins_track[num_track] = {30,10,50,50};
-  double xlim_low_track[num_track] = {0.0,0.0,0.0,-1.0};
-  double xlim_high_track[num_track] = {1.0,10.0,50.0,1.0};
 
   //All the single particle plots
   static const int num_var = 4;
@@ -1618,34 +1617,34 @@ public :
   ////////////////////////////
 
   //mine
-  TH1D* h_opening_angle_protons_overlay[number2];
+  TH1D* h_opening_angle_protons_lab_overlay[number2];
+  TH1D* h_opening_angle_protons_com_overlay[number2];
   TH1D* h_opening_angle_mu_leading_overlay[number2];
   TH1D* h_opening_angle_mu_both_overlay[number2];
   TH1D* h_delta_PT_overlay[number2];
   TH1D* h_delta_alphaT_overlay[number2];
   TH1D* h_delta_phiT_overlay[number2];
-  TH1D* h_cos_gamma_cm_overlay[number2];
+  TH1D* h_nu_E_overlay[number2];
   TH1D* h_mom_struck_nuc_overlay[number2];
   TH1D* h_tot_pz_overlay[number2];
   TH1D* h_tot_E_overlay[number2];
   TH1D* h_tot_E_minus_beam_overlay[number2];
-  TH1D* h_E_neutrino_overlay[number2];
   TH1D* h_E_resolution_overlay[number2];
   TH1D* h_PT_squared_overlay[number2];
 
   //raquel
-  TH1D* h_opening_angle_protons_raquel[number3];
+  TH1D* h_opening_angle_protons_lab_raquel[number3];
+  TH1D* h_opening_angle_protons_com_raquel[number3];
   TH1D* h_opening_angle_mu_leading_raquel[number3];
   TH1D* h_opening_angle_mu_both_raquel[number3];
   TH1D* h_delta_PT_raquel[number3];
   TH1D* h_delta_alphaT_raquel[number3];
   TH1D* h_delta_phiT_raquel[number3];
-  TH1D* h_cos_gamma_cm_raquel[number3];
+  TH1D* h_nu_E_raquel[number3];
   TH1D* h_mom_struck_nuc_raquel[number3];
   TH1D* h_tot_pz_raquel[number3];
   TH1D* h_tot_E_raquel[number3];
   TH1D* h_tot_E_minus_beam_raquel[number3];
-  TH1D* h_E_neutrino_raquel[number3];
   TH1D* h_E_resolution_raquel[number3];
   TH1D* h_PT_squared_raquel[number3];
 
@@ -1861,6 +1860,7 @@ void twoproton_pelee_overlay::Define_Histograms(){
       }
     }
 
+    //track variables
     for(int j=0; j < num_track; j++){
       for(int k=0; k < track_cut; k++){
 	for(int i=0; i < num_part; i++){
@@ -1943,8 +1943,8 @@ void twoproton_pelee_overlay::Define_Histograms(){
 	} else if(i == 4 && j == 0){//recoil proton mom
 	  ///const Int_t bins = 5;
 	  //Double_t edges[bins+1] = {0.25,0.35,0.45,0.55,0.65,0.8};
-	  const Int_t bins = 6;
-          Double_t edges[bins+1] = {0.25,0.35,0.45,0.55,0.65,0.85,1.2};
+	  const Int_t bins = 5;
+          Double_t edges[bins+1] = {0.25,0.35,0.45,0.55,0.65,1.2};
 	  h_particle_num[i][j] = new TH1D(Form("h_particle_num%s%s",particles_eff[i],particles_eff_variables[j]),Form("h_particle_num%s%s",particles_eff[i],particles_eff_variables[j]),bins,edges);
           h_particle_denom[i][j] = new TH1D(Form("h_particle_denom%s%s",particles_eff[i],particles_eff_variables[j]),Form("h_particle_denom%s%s",particles_eff[i],particles_eff_variables[j]),bins,edges);
           h_list.push_back(h_particle_num[i][j]);
@@ -1953,8 +1953,8 @@ void twoproton_pelee_overlay::Define_Histograms(){
           h_list_2D.push_back(h_particle_matrices[i][j]);
 
 	} else if(i == 4 && j == 1){//recoil proton theta
-	  const Int_t bins = 5;
-          Double_t edges[bins+1] = {-1.0, -0.6, -0.2, 0.2, 0.6, 1.0};
+	  const Int_t bins = 10;
+          Double_t edges[bins+1] = {-1.0,-0.8,-0.6,-0.4,-0.2,0.0,0.2,0.4,0.6,0.8,1.0};
           //const Int_t bins = 20;
           //Double_t edges[bins+1] = {-1.0,-0.9,-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0};
 	  h_particle_num[i][j] = new TH1D(Form("h_particle_num%s%s",particles_eff[i],particles_eff_variables[j]),Form("h_particle_num%s%s",particles_eff[i],particles_eff_variables[j]),bins,edges);
@@ -1972,8 +1972,8 @@ void twoproton_pelee_overlay::Define_Histograms(){
     for(int i = 0; i < num_other_eff; i++){
 
       if(i == 0){ //opening angle protons lab frame
-	const Int_t bins = 5;
-	Double_t edges[bins+1] = {-1.0, -0.6, -0.2, 0.2, 0.6, 1.0};
+	const Int_t bins = 10;
+	Double_t edges[bins+1] = {-1.0,-0.8,-0.6,-0.4,-0.2,0.0,0.2,0.4,0.6,0.8,1.0};
 	//const Int_t bins = 20;
 	//Double_t edges[bins+1] = {-1.0,-0.9,-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0};
 	h_other_eff_num[i] = new TH1D(Form("h_other_eff_num%s",other_eff[i]),Form("h_other_eff_num%s",other_eff[i]),bins,edges);
@@ -1984,8 +1984,8 @@ void twoproton_pelee_overlay::Define_Histograms(){
         h_list_2D.push_back(h_other_matrices[i]);
 
       } else if( i == 1){ //opening angle protons com frame
-	const Int_t bins = 5;
-	Double_t edges[bins+1] = {-1.0, -0.6, -0.2, 0.2, 0.6, 1.0};
+	const Int_t bins = 10;
+	Double_t edges[bins+1] = {-1.0,-0.8,-0.6,-0.4,-0.2,0.0,0.2,0.4,0.6,0.8,1.0};
 	//const Int_t bins = 20;
 	//Double_t edges[bins+1] = {-1.0,-0.9,-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0};
 	h_other_eff_num[i] = new TH1D(Form("h_other_eff_num%s",other_eff[i]),Form("h_other_eff_num%s",other_eff[i]),bins,edges);
@@ -2008,10 +2008,8 @@ void twoproton_pelee_overlay::Define_Histograms(){
         h_list_2D.push_back(h_other_matrices[i]);
 
       } else if (i == 3){ //opening angle mu both
-	//const Int_t bins = 8;
-	//Double_t edges[bins+1] = {-1.0, -0.75, -0.5, -0.25, 0.0, 0.25, 0.5, 0.75, 1.0};
-	const Int_t bins = 5;
-	Double_t edges[bins+1] = {-1.0, -0.6, -0.2, 0.2, 0.6, 1.0};
+	const Int_t bins = 10;
+	Double_t edges[bins+1] = {-1.0,-0.8,-0.6,-0.4,-0.2,0.0,0.2,0.4,0.6,0.8,1.0};
 	//const Int_t bins = 20;
 	//Double_t edges[bins+1] = {-1.0,-0.9,-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0};
 	h_other_eff_num[i] = new TH1D(Form("h_other_eff_num%s",other_eff[i]),Form("h_other_eff_num%s",other_eff[i]),bins,edges);
@@ -2022,8 +2020,8 @@ void twoproton_pelee_overlay::Define_Histograms(){
         h_list_2D.push_back(h_other_matrices[i]);
 
       } else if (i == 4){ //delta pt
-        const Int_t bins = 5;
-        Double_t edges[bins+1] = {0,0.2,0.4,0.6,0.8,1.0};
+	const Int_t bins = 4;
+        Double_t edges[bins+1] = {0,0.2,0.4,0.6,1.0};
 	//const Int_t bins = 10;
 	//Double_t edges[bins+1] = {0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0};
         h_other_eff_num[i] = new TH1D(Form("h_other_eff_num%s",other_eff[i]),Form("h_other_eff_num%s",other_eff[i]),bins,edges);
@@ -2058,8 +2056,8 @@ void twoproton_pelee_overlay::Define_Histograms(){
         h_list_2D.push_back(h_other_matrices[i]);
 
       } else if (i == 7){ //neutrino energy
-        const Int_t bins = 5;
-        Double_t edges[bins+1] = {0,0.4,0.8,1.5,1.9,2.5};
+        const Int_t bins = 6;
+        Double_t edges[bins+1] = {0,0.3,0.5,0.7,0.9,1.2,2.5};
 	//const Int_t bins = 25;
 	//Double_t edges[bins+1] = {0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5};
         h_other_eff_num[i] = new TH1D(Form("h_other_eff_num%s",other_eff[i]),Form("h_other_eff_num%s",other_eff[i]),bins,edges);
@@ -2073,7 +2071,6 @@ void twoproton_pelee_overlay::Define_Histograms(){
 
     h_test_recoil = new TH2D("h_test_recoil","h_test_recoil",50,-10.0,10.0,50,0.25,0.85);
     h_test_leading = new TH2D("h_test_leading","h_test_leading",50,-10.0,10.0,50,0.25,1.2);
-
     h_list_2D.push_back(h_test_recoil);
     h_list_2D.push_back(h_test_leading);
 
@@ -2081,89 +2078,211 @@ void twoproton_pelee_overlay::Define_Histograms(){
     /////////////////////////
     for(int j = 0; j < num_var; j++){
       for(int k = 0; k < number2; k++){
-	h_muon_overlay[j][k] = new TH1D(Form("h_muon%s%s",var[j],channel[k]),Form(" h_muon%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_muon[j]);
-	h_recoil_overlay[j][k] = new TH1D(Form("h_recoil%s%s",var[j],channel[k]),Form("h_recoil%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_recoil[j]);
-	h_leading_overlay[j][k] = new TH1D(Form("h_leading%s%s",var[j],channel[k]),Form("h_leading%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_leading[j]);
+	if(use_xsec_binning == true){
+	  if(j == 0){//momentum
+	    //muon
+	    const Int_t bins_muon = 6; 
+	    Double_t edges_muon[bins_muon+1] = {0.1,0.2,0.3,0.5,0.7,1.3,2.5};
+	    h_muon_overlay[j][k] = new TH1D(Form("h_muon%s%s",var[j],channel[k]),Form(" h_muon%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),bins_muon,edges_muon);
+	    //recoil
+	    const Int_t bins_recoil = 5;
+            Double_t edges_recoil[bins_recoil+1] = {0.25,0.35,0.45,0.55,0.65,1.2};
+	    h_recoil_overlay[j][k] = new TH1D(Form("h_recoil%s%s",var[j],channel[k]),Form("h_recoil%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),bins_recoil,edges_recoil);
+	    //leading
+	    const Int_t bins_leading = 6;
+            Double_t edges_leading[bins_leading+1] = {0.25,0.35,0.45,0.55,0.65,0.75,1.2};
+	    h_leading_overlay[j][k] = new TH1D(Form("h_leading%s%s",var[j],channel[k]),Form("h_leading%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),bins_leading,edges_leading);
+
+	  }else if (j == 2){//costheta
+	    const Int_t bins_theta = 10;
+	    Double_t edges_theta[bins_theta+1] = {-1.0,-0.8,-0.6,-0.4,-0.2,0.0,0.2,0.4,0.6,0.8,1.0};
+	    h_muon_overlay[j][k] = new TH1D(Form("h_muon%s%s",var[j],channel[k]),Form(" h_muon%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),bins_theta,edges_theta);
+	    h_recoil_overlay[j][k] = new TH1D(Form("h_recoil%s%s",var[j],channel[k]),Form("h_recoil%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),bins_theta,edges_theta);
+	    h_leading_overlay[j][k] = new TH1D(Form("h_leading%s%s",var[j],channel[k]),Form("h_leading%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),bins_theta,edges_theta);
+
+	  }else{//phi and energy
+	    h_muon_overlay[j][k] = new TH1D(Form("h_muon%s%s",var[j],channel[k]),Form(" h_muon%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_muon[j]);
+            h_recoil_overlay[j][k] = new TH1D(Form("h_recoil%s%s",var[j],channel[k]),Form("h_recoil%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_recoil[j]);
+            h_leading_overlay[j][k] = new TH1D(Form("h_leading%s%s",var[j],channel[k]),Form("h_leading%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_leading[j]);
+	  }
+	} else if (use_xsec_binning == false){
+	  h_muon_overlay[j][k] = new TH1D(Form("h_muon%s%s",var[j],channel[k]),Form(" h_muon%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_muon[j]);
+          h_recoil_overlay[j][k] = new TH1D(Form("h_recoil%s%s",var[j],channel[k]),Form("h_recoil%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_recoil[j]);
+          h_leading_overlay[j][k] = new TH1D(Form("h_leading%s%s",var[j],channel[k]),Form("h_leading%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_leading[j]);
+	} //end of false statement
+
 	h_list.push_back(h_muon_overlay[j][k]);
 	h_list.push_back(h_recoil_overlay[j][k]);
 	h_list.push_back(h_leading_overlay[j][k]);
-      }
-    }
+
+      } //end loop over channels
+    } //end loop over variables
 
     for(int j = 0; j < num_var; j++){
       for(int k = 0; k < number3; k++){
-	h_muon_raquel[j][k] = new TH1D(Form("h_muon_raquel%s%s",var[j],channel2[k]),Form(" h_muon_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_muon[j]);
-	h_recoil_raquel[j][k] = new TH1D(Form("h_recoil_raquel%s%s",var[j],channel2[k]),Form("h_recoil_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_recoil[j]);
-	h_leading_raquel[j][k] = new TH1D(Form("h_leading_raquel%s%s",var[j],channel2[k]),Form("h_leading_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_leading[j]);
+	if(use_xsec_binning == true){
+	  if(j == 0){ //momentum
+	    //muon
+	    const Int_t bins_muon = 6;
+            Double_t edges_muon[bins_muon+1] = {0.1,0.2,0.3,0.5,0.7,1.3,2.5};
+	    h_muon_raquel[j][k] = new TH1D(Form("h_muon_raquel%s%s",var[j],channel2[k]),Form(" h_muon_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),bins_muon,edges_muon);
+	    //recoil
+	    const Int_t bins_recoil = 5;
+            Double_t edges_recoil[bins_recoil+1] = {0.25,0.35,0.45,0.55,0.65,1.2};
+	    h_recoil_raquel[j][k] = new TH1D(Form("h_recoil_raquel%s%s",var[j],channel2[k]),Form("h_recoil_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),bins_recoil,edges_recoil);
+	    //leading
+	    const Int_t bins_leading = 6;
+            Double_t edges_leading[bins_leading+1] = {0.25,0.35,0.45,0.55,0.65,0.75,1.2};
+	    h_leading_raquel[j][k] = new TH1D(Form("h_leading_raquel%s%s",var[j],channel2[k]),Form("h_leading_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),bins_leading,edges_leading);
+
+	  } else if (j == 2){ //theta
+	    const Int_t bins_theta = 10;
+            Double_t edges_theta[bins_theta+1] = {-1.0,-0.8,-0.6,-0.4,-0.2,0.0,0.2,0.4,0.6,0.8,1.0};
+	    h_muon_raquel[j][k] = new TH1D(Form("h_muon_raquel%s%s",var[j],channel2[k]),Form(" h_muon_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),bins_theta,edges_theta);
+	    h_recoil_raquel[j][k] = new TH1D(Form("h_recoil_raquel%s%s",var[j],channel2[k]),Form("h_recoil_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),bins_theta,edges_theta);
+	    h_leading_raquel[j][k] = new TH1D(Form("h_leading_raquel%s%s",var[j],channel2[k]),Form("h_leading_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),bins_theta,edges_theta);
+
+	  } else{ //phi and energy
+	    h_muon_raquel[j][k] = new TH1D(Form("h_muon_raquel%s%s",var[j],channel2[k]),Form(" h_muon_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_muon[j]);
+	    h_recoil_raquel[j][k] = new TH1D(Form("h_recoil_raquel%s%s",var[j],channel2[k]),Form("h_recoil_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_recoil[j]);
+	    h_leading_raquel[j][k] = new TH1D(Form("h_leading_raquel%s%s",var[j],channel2[k]),Form("h_leading_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_leading[j]);
+	  }
+	}else if(use_xsec_binning == false){
+	  h_muon_raquel[j][k] = new TH1D(Form("h_muon_raquel%s%s",var[j],channel2[k]),Form(" h_muon_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_muon[j]);
+	  h_recoil_raquel[j][k] = new TH1D(Form("h_recoil_raquel%s%s",var[j],channel2[k]),Form("h_recoil_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_recoil[j]);
+	  h_leading_raquel[j][k] = new TH1D(Form("h_leading_raquel%s%s",var[j],channel2[k]),Form("h_leading_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_leading[j]);
+	} //end of false statement
+
 	h_list.push_back(h_muon_raquel[j][k]);
 	h_list.push_back(h_recoil_raquel[j][k]);
 	h_list.push_back(h_leading_raquel[j][k]);
-      }
-    }
+
+      } //end of loop over channels
+    } //end loop over variables
 
     //more particle specific plots
     for(int i = 0; i < number2; i++){
-      h_opening_angle_protons_overlay[i] = new TH1D(Form("h_opening_angle_protons%s",channel[i]),Form("h_opening_angle_protons%s; Opening Angle btwn Two Protons; Counts",channel[i]),30,-1.5,1.5); //50, 0, 1.5        
-      h_opening_angle_mu_leading_overlay[i] = new TH1D(Form("h_opening_angle_mu_leading%s",channel[i]),Form("h_opening_angle_mu_leading%s;Opening Angle btwn Muon and Leading Proton; Counts",channel[i]),30,-1.5,1.5);
-      
+      if(use_xsec_binning == true){
+	const Int_t bins = 10;
+	Double_t edges[bins+1] = {-1.0,-0.8,-0.6,-0.4,-0.2,0.0,0.2,0.4,0.6,0.8,1.0};
+	h_opening_angle_protons_lab_overlay[i] = new TH1D(Form("h_opening_angle_protons_lab%s",channel[i]),Form("h_opening_angle_protons_lab%s; Opening Angle btwn Two Protons; Counts",channel[i]),bins,edges); //50, 0, 1.5                           
+	h_opening_angle_protons_com_overlay[i] = new TH1D(Form("h_opening_angle_protons_com%s",channel[i]),Form("h_opening_angle_protons_com%s; cos(#gamma_{COM}); Counts",channel[i]),bins,edges);
+	h_opening_angle_mu_leading_overlay[i] = new TH1D(Form("h_opening_angle_mu_leading%s",channel[i]),Form("h_opening_angle_mu_leading%s;Opening Angle btwn Muon and Leading Proton; Counts",channel[i]),bins,edges);
+	h_opening_angle_mu_both_overlay[i] = new TH1D(Form("h_opening_angle_mu_both%s",channel[i]),Form("h_opening_angle_mu_both%s; Opening Angle btwn Muon and Total Proton Momentum; Counts",channel[i]),bins,edges);
 
-      h_delta_PT_overlay[i] = new TH1D(Form("h_delta_PT%s",channel[i]),Form("h_deltaPT%s;#delta P_{T} [GeV/c];Counts",channel[i]),15,0,1); //normally 10 bins
-      h_delta_alphaT_overlay[i] = new TH1D(Form("h_delta_alphaT%s",channel[i]),Form("h_delta_alphaT%s; #delta #alpha_{T} [Deg.];Counts",channel[i]),10,0,180); //0,180                 
-      h_delta_phiT_overlay[i] = new TH1D(Form("h_delta_phiT%s",channel[i]),Form("h_delta_phiT%s; #delta #phi_{T} [Deg.];Counts",channel[i]),10,0,180); //0,180                   
-      h_cos_gamma_cm_overlay[i] = new TH1D(Form("h_cos_gamma_cm%s",channel[i]),Form("h_cos_gamma_cm%s; cos(#gamma_{COM}); Counts",channel[i]),30,-1.5,1.5);
-      h_mom_struck_nuc_overlay[i] = new TH1D(Form("h_mom_struck_nuc%s",channel[i]),Form("h_mom_struck_nuc%s; P_{Init}; Counts", channel[i]),30, 0, 1);
-      h_tot_pz_overlay[i] = new TH1D(Form("h_tot_pz%s",channel[i]),Form("h_tot_pz%s; P_{Z}^{Total}; Counts",channel[i]), 20, 0, 2);
-      h_tot_E_overlay[i] = new TH1D(Form("h_tot_E%s",channel[i]),Form("h_tot_E%s; Total Energy; Counts;",channel[i]),50,0,2.5);
-      h_tot_E_minus_beam_overlay[i] = new TH1D(Form("h_tot_E_minus_beam%s",channel[i]),Form("h_tot_E_minus_beam%s; Total Energy Remaining (MeV/c); Counts;",channel[i]),100,-100,0);
-      h_E_neutrino_overlay[i] =  new TH1D(Form("h_E_neutrino%s",channel[i]),Form("h_E_neutrino%s; Total Energy; Counts;",channel[i]),50,0,2.5);
-      h_opening_angle_mu_both_overlay[i] = new TH1D(Form("h_opening_angle_mu_both%s",channel[i]),Form("h_opening_angle_mu_both%s; Opening Angle btwn Muon and Total Proton Momentum; Counts",channel[i]),30,-1.5,1.5);
-      h_E_resolution_overlay[i] = new TH1D(Form("h_E_resolution%s",channel[i]),Form("h_E_resolution%s; Energy Resolution (GeV/c); Counts",channel[i]),100,-1.0,1.0);
-      h_PT_squared_overlay[i] = new TH1D(Form("h_PT_squared%s",channel[i]),Form("h_PT_squared%s; P_{T}^{2}; Counts", channel[i]),50,0,5);
+	const Int_t bins_stv_mom = 4;
+        Double_t edges_stv_mom[bins_stv_mom+1] = {0,0.2,0.4,0.6,1.0};
+	h_delta_PT_overlay[i] = new TH1D(Form("h_delta_PT%s",channel[i]),Form("h_deltaPT%s;#delta P_{T} [GeV/c];Counts",channel[i]),bins_stv_mom,edges_stv_mom);  
+	
+	const Int_t bins_stv_angles = 6;
+        Double_t edges_stv_angles[bins_stv_angles+1] = {0,30,60,90,120,150,180};
+	h_delta_alphaT_overlay[i] = new TH1D(Form("h_delta_alphaT%s",channel[i]),Form("h_delta_alphaT%s; #delta #alpha_{T} [Deg.];Counts",channel[i]),bins_stv_angles,edges_stv_angles); //0,180                     
+	h_delta_phiT_overlay[i] = new TH1D(Form("h_delta_phiT%s",channel[i]),Form("h_delta_phiT%s; #delta #phi_{T} [Deg.];Counts",channel[i]),bins_stv_angles,edges_stv_angles);                                                               
 
+	const Int_t bins_nuE = 6;
+        Double_t edges_nuE[bins_nuE+1] = {0,0.3,0.5,0.7,0.9,1.2,2.5};
+	h_nu_E_overlay[i] =  new TH1D(Form("h_nu_E%s",channel[i]),Form("h_nu_E%s; Total Energy; Counts;",channel[i]),bins_nuE,edges_nuE);
+
+	//basic bitches
+	h_mom_struck_nuc_overlay[i] = new TH1D(Form("h_mom_struck_nuc%s",channel[i]),Form("h_mom_struck_nuc%s; P_{Init}; Counts", channel[i]),30, 0, 1);
+	h_tot_pz_overlay[i] = new TH1D(Form("h_tot_pz%s",channel[i]),Form("h_tot_pz%s; P_{Z}^{Total}; Counts",channel[i]), 20, 0, 2);
+	h_tot_E_overlay[i] = new TH1D(Form("h_tot_E%s",channel[i]),Form("h_tot_E%s; Total Energy; Counts;",channel[i]),50,0,2.5);
+	h_tot_E_minus_beam_overlay[i] = new TH1D(Form("h_tot_E_minus_beam%s",channel[i]),Form("h_tot_E_minus_beam%s; Total Energy Remaining (MeV/c); Counts;",channel[i]),100,-100,0);
+	h_E_resolution_overlay[i] = new TH1D(Form("h_E_resolution%s",channel[i]),Form("h_E_resolution%s; Energy Resolution (GeV/c); Counts",channel[i]),100,-1.0,1.0);
+	h_PT_squared_overlay[i] = new TH1D(Form("h_PT_squared%s",channel[i]),Form("h_PT_squared%s; P_{T}^{2}; Counts", channel[i]),50,0,5);
+
+      }else if( use_xsec_binning == false){
+	h_opening_angle_protons_lab_overlay[i] = new TH1D(Form("h_opening_angle_protons_lab%s",channel[i]),Form("h_opening_angle_protons_lab%s; Opening Angle btwn Two Protons; Counts",channel[i]),30,-1.5,1.5); //50, 0, 1.5        
+	h_opening_angle_protons_com_overlay[i] = new TH1D(Form("h_opening_angle_protons_com%s",channel[i]),Form("h_opening_angle_protons_com%s; cos(#gamma_{COM}); Counts",channel[i]),30,-1.5,1.5);
+	h_opening_angle_mu_leading_overlay[i] = new TH1D(Form("h_opening_angle_mu_leading%s",channel[i]),Form("h_opening_angle_mu_leading%s;Opening Angle btwn Muon and Leading Proton; Counts",channel[i]),30,-1.5,1.5);
+	h_opening_angle_mu_both_overlay[i] = new TH1D(Form("h_opening_angle_mu_both%s",channel[i]),Form("h_opening_angle_mu_both%s; Opening Angle btwn Muon and Total Proton Momentum; Counts",channel[i]),30,-1.5,1.5);
+	h_delta_PT_overlay[i] = new TH1D(Form("h_delta_PT%s",channel[i]),Form("h_deltaPT%s;#delta P_{T} [GeV/c];Counts",channel[i]),15,0,1); //normally 10 bins
+	h_delta_alphaT_overlay[i] = new TH1D(Form("h_delta_alphaT%s",channel[i]),Form("h_delta_alphaT%s; #delta #alpha_{T} [Deg.];Counts",channel[i]),10,0,180); //0,180                 
+	h_delta_phiT_overlay[i] = new TH1D(Form("h_delta_phiT%s",channel[i]),Form("h_delta_phiT%s; #delta #phi_{T} [Deg.];Counts",channel[i]),10,0,180); //0,180                   
+	h_nu_E_overlay[i] =  new TH1D(Form("h_nu_E%s",channel[i]),Form("h_nu_E%s; Total Energy; Counts;",channel[i]),50,0,2.5);
+	h_mom_struck_nuc_overlay[i] = new TH1D(Form("h_mom_struck_nuc%s",channel[i]),Form("h_mom_struck_nuc%s; P_{Init}; Counts", channel[i]),30, 0, 1);
+	h_tot_pz_overlay[i] = new TH1D(Form("h_tot_pz%s",channel[i]),Form("h_tot_pz%s; P_{Z}^{Total}; Counts",channel[i]), 20, 0, 2);
+	h_tot_E_overlay[i] = new TH1D(Form("h_tot_E%s",channel[i]),Form("h_tot_E%s; Total Energy; Counts;",channel[i]),50,0,2.5);
+	h_tot_E_minus_beam_overlay[i] = new TH1D(Form("h_tot_E_minus_beam%s",channel[i]),Form("h_tot_E_minus_beam%s; Total Energy Remaining (MeV/c); Counts;",channel[i]),100,-100,0);
+	h_E_resolution_overlay[i] = new TH1D(Form("h_E_resolution%s",channel[i]),Form("h_E_resolution%s; Energy Resolution (GeV/c); Counts",channel[i]),100,-1.0,1.0);
+	h_PT_squared_overlay[i] = new TH1D(Form("h_PT_squared%s",channel[i]),Form("h_PT_squared%s; P_{T}^{2}; Counts", channel[i]),50,0,5);
+      } //end of false statement
 
       h_list.push_back(h_PT_squared_overlay[i]);
       h_list.push_back(h_E_resolution_overlay[i]);
       h_list.push_back(h_opening_angle_mu_both_overlay[i]);
-      h_list.push_back(h_E_neutrino_overlay[i]);
+      h_list.push_back(h_nu_E_overlay[i]);
       h_list.push_back(h_tot_E_overlay[i]);
       h_list.push_back(h_tot_E_minus_beam_overlay[i]);
       h_list.push_back(h_mom_struck_nuc_overlay[i]);
       h_list.push_back(h_tot_pz_overlay[i]);
-      h_list.push_back(h_cos_gamma_cm_overlay[i]);
-      h_list.push_back(h_opening_angle_protons_overlay[i]);
+      h_list.push_back(h_opening_angle_protons_lab_overlay[i]);
+      h_list.push_back(h_opening_angle_protons_com_overlay[i]);
       h_list.push_back(h_opening_angle_mu_leading_overlay[i]);
       h_list.push_back(h_delta_PT_overlay[i]);
       h_list.push_back(h_delta_alphaT_overlay[i]);
       h_list.push_back(h_delta_phiT_overlay[i]);
+
     }
 
     for(int i = 0; i < number3; i++){
-      h_opening_angle_protons_raquel[i] = new TH1D(Form("h_opening_angle_protons_raquel%s",channel2[i]),Form("h_opening_angle_protons_raquel%s; Opening Angle btwn Two Protons; Counts",channel2[i]),30,-1.5,1.5); //50, 0, 1.5        
-      h_opening_angle_mu_leading_raquel[i] = new TH1D(Form("h_opening_angle_mu_leading_raquel%s",channel2[i]),Form("h_opening_angle_mu_leading_raquel%s;Opening Angle btwn Muon and Leading Proton; Counts",channel2[i]),30,-1.5,1.5);
-      h_delta_PT_raquel[i] = new TH1D(Form("h_delta_PT_raquel%s",channel2[i]),Form("h_deltaPT_raquel%s;#delta P_{T} [GeV/c];Counts",channel2[i]),15,0,1); //normally 10 bins
-      h_delta_alphaT_raquel[i] = new TH1D(Form("h_delta_alphaT_raquel%s",channel2[i]),Form("h_delta_alphaT_raquel%s; #delta #alpha_{T} [Deg.];Counts",channel2[i]),10,0,180); //0,180                 
-      h_delta_phiT_raquel[i] = new TH1D(Form("h_delta_phiT_raquel%s",channel2[i]),Form("h_delta_phiT_raquel%s; #delta #phi_{T} [Deg.];Counts",channel2[i]),10,0,180); //0,180                   
-      h_cos_gamma_cm_raquel[i] = new TH1D(Form("h_cos_gamma_cm_raquel%s",channel2[i]),Form("h_cos_gamma_cm_raquel%s; cos(#gamma_{COM}); Counts",channel2[i]),30,-1.5,1.5);
-      h_mom_struck_nuc_raquel[i] = new TH1D(Form("h_mom_struck_nuc_raquel%s",channel2[i]),Form("h_mom_struck_nuc_raquel%s; P_{Init}; Counts", channel2[i]),30, 0, 1);
-      h_tot_pz_raquel[i] = new TH1D(Form("h_tot_pz_raquel%s",channel2[i]),Form("h_tot_pz_raquel%s; P_{Z}^{Total}; Counts",channel2[i]), 20, 0, 2);
-      h_tot_E_raquel[i] = new TH1D(Form("h_tot_E_raquel%s",channel2[i]),Form("h_tot_E_raquel%s; Total Energy; Counts;",channel2[i]),50,0,2.5);
-      h_tot_E_minus_beam_raquel[i] = new TH1D(Form("h_tot_E_minus_beam_raquel%s",channel2[i]),Form("h_tot_E_minus_beam_raquel%s; Total Energy; Counts;",channel2[i]),100,-100,0);
-      h_E_neutrino_raquel[i] =  new TH1D(Form("h_E_neutrino_raquel%s",channel2[i]),Form("h_E_neutrino_raquel%s; Total Energy; Counts;",channel2[i]),50,0,2.5);
-      h_opening_angle_mu_both_raquel[i] = new TH1D(Form("h_opening_angle_mu_both_raquel%s",channel2[i]),Form("h_opening_angle_mu_both_raquel%s; Opening Angle btwn Muon and Total Proton Momentum; Counts",channel2[i]),30,-1.5,1.5);
-      h_E_resolution_raquel[i] = new TH1D(Form("h_E_resolution_raquel%s",channel2[i]),Form("h_E_resolution_raquel%s; Energy Resolution (GeV/c); Counts",channel2[i]),100,-1.0,1.0);
-      h_PT_squared_raquel[i] = new TH1D(Form("h_PT_squared_raquel%s",channel2[i]),Form("h_PT_squared_raquel%s; P_{T}^{2}; Counts", channel2[i]),50,0,5);
+      if(use_xsec_binning == true){
 
+	const Int_t bins = 10;
+        Double_t edges[bins+1] = {-1.0,-0.8,-0.6,-0.4,-0.2,0.0,0.2,0.4,0.6,0.8,1.0};
+	h_opening_angle_protons_lab_raquel[i] = new TH1D(Form("h_opening_angle_protons_lab_raquel%s",channel2[i]),Form("h_opening_angle_protons_lab_raquel%s; Opening Angle btwn Two Protons; Counts",channel2[i]),bins,edges); 
+	h_opening_angle_protons_com_raquel[i] = new TH1D(Form("h_opening_angle_protons_com_raquel%s",channel2[i]),Form("h_opening_angle_protons_com_raquel%s; cos(#gamma_{COM}); Counts",channel2[i]),bins,edges);
+        h_opening_angle_mu_leading_raquel[i] = new TH1D(Form("h_opening_angle_mu_leading_raquel%s",channel2[i]),Form("h_opening_angle_mu_leading_raquel%s;Opening Angle btwn Muon and Leading Proton; Counts",channel2[i]),bins,edges);
+        h_opening_angle_mu_both_raquel[i] = new TH1D(Form("h_opening_angle_mu_both_raquel%s",channel2[i]),Form("h_opening_angle_mu_both_raquel%s; Opening Angle btwn Muon and Total Proton Momentum; Counts",channel2[i]),bins,edges);
+        
+	const Int_t bins_stv_mom = 4;
+        Double_t edges_stv_mom[bins_stv_mom+1] = {0,0.2,0.4,0.6,1.0};
+	h_delta_PT_raquel[i] = new TH1D(Form("h_delta_PT_raquel%s",channel2[i]),Form("h_deltaPT_raquel%s;#delta P_{T} [GeV/c];Counts",channel2[i]),bins_stv_mom,edges_stv_mom);                
+ 
+	const Int_t bins_stv_angles = 6;
+        Double_t edges_stv_angles[bins_stv_angles+1] = {0,30,60,90,120,150,180};
+        h_delta_alphaT_raquel[i] = new TH1D(Form("h_delta_alphaT_raquel%s",channel2[i]),Form("h_delta_alphaT_raquel%s; #delta #alpha_{T} [Deg.];Counts",channel2[i]),bins_stv_angles,edges_stv_angles);
+	h_delta_phiT_raquel[i] = new TH1D(Form("h_delta_phiT_raquel%s",channel2[i]),Form("h_delta_phiT_raquel%s; #delta #phi_{T} [Deg.];Counts",channel2[i]),bins_stv_angles,edges_stv_angles);                                            
+
+	const Int_t bins_nuE = 6;
+        Double_t edges_nuE[bins_nuE+1] = {0,0.3,0.5,0.7,0.9,1.2,2.5};
+	h_nu_E_raquel[i] =  new TH1D(Form("h_nu_E_raquel%s",channel2[i]),Form("h_nu_E_raquel%s; Total Energy; Counts;",channel2[i]),bins_nuE,edges_nuE);
+
+	//basic bitches
+        h_mom_struck_nuc_raquel[i] = new TH1D(Form("h_mom_struck_nuc_raquel%s",channel2[i]),Form("h_mom_struck_nuc_raquel%s; P_{Init}; Counts", channel2[i]),30, 0, 1);
+        h_tot_pz_raquel[i] = new TH1D(Form("h_tot_pz_raquel%s",channel2[i]),Form("h_tot_pz_raquel%s; P_{Z}^{Total}; Counts",channel2[i]), 20, 0, 2);
+        h_tot_E_raquel[i] = new TH1D(Form("h_tot_E_raquel%s",channel2[i]),Form("h_tot_E_raquel%s; Total Energy; Counts;",channel2[i]),50,0,2.5);
+        h_tot_E_minus_beam_raquel[i] = new TH1D(Form("h_tot_E_minus_beam_raquel%s",channel2[i]),Form("h_tot_E_minus_beam_raquel%s; Total Energy; Counts;",channel2[i]),100,-100,0);
+        h_E_resolution_raquel[i] = new TH1D(Form("h_E_resolution_raquel%s",channel2[i]),Form("h_E_resolution_raquel%s; Energy Resolution (GeV/c); Counts",channel2[i]),100,-1.0,1.0);
+        h_PT_squared_raquel[i] = new TH1D(Form("h_PT_squared_raquel%s",channel2[i]),Form("h_PT_squared_raquel%s; P_{T}^{2}; Counts", channel2[i]),50,0,5);
+
+      }else if( use_xsec_binning == false){
+	h_opening_angle_protons_lab_raquel[i] = new TH1D(Form("h_opening_angle_protons_lab_raquel%s",channel2[i]),Form("h_opening_angle_protons_lab_raquel%s; Opening Angle btwn Two Protons; Counts",channel2[i]),30,-1.5,1.5); //50, 0, 1.5           
+	h_opening_angle_protons_com_raquel[i] = new TH1D(Form("h_opening_angle_protons_com_raquel%s",channel2[i]),Form("h_oopening_angle_protons_com__raquel%s; cos(#gamma_{COM}); Counts",channel2[i]),30,-1.5,1.5);
+	h_opening_angle_mu_leading_raquel[i] = new TH1D(Form("h_opening_angle_mu_leading_raquel%s",channel2[i]),Form("h_opening_angle_mu_leading_raquel%s;Opening Angle btwn Muon and Leading Proton; Counts",channel2[i]),30,-1.5,1.5);
+	h_opening_angle_mu_both_raquel[i] = new TH1D(Form("h_opening_angle_mu_both_raquel%s",channel2[i]),Form("h_opening_angle_mu_both_raquel%s; Opening Angle btwn Muon and Total Proton Momentum; Counts",channel2[i]),30,-1.5,1.5);
+	h_delta_PT_raquel[i] = new TH1D(Form("h_delta_PT_raquel%s",channel2[i]),Form("h_deltaPT_raquel%s;#delta P_{T} [GeV/c];Counts",channel2[i]),15,0,1); //normally 10 bins                                                                    
+	h_delta_alphaT_raquel[i] = new TH1D(Form("h_delta_alphaT_raquel%s",channel2[i]),Form("h_delta_alphaT_raquel%s; #delta #alpha_{T} [Deg.];Counts",channel2[i]),10,0,180); //0,180                                                           
+	h_delta_phiT_raquel[i] = new TH1D(Form("h_delta_phiT_raquel%s",channel2[i]),Form("h_delta_phiT_raquel%s; #delta #phi_{T} [Deg.];Counts",channel2[i]),10,0,180); //0,180                                                                   
+	h_nu_E_raquel[i] =  new TH1D(Form("h_nu_E_raquel%s",channel2[i]),Form("h_nu_E_raquel%s; Total Energy; Counts;",channel2[i]),50,0,2.5);
+	h_mom_struck_nuc_raquel[i] = new TH1D(Form("h_mom_struck_nuc_raquel%s",channel2[i]),Form("h_mom_struck_nuc_raquel%s; P_{Init}; Counts", channel2[i]),30, 0, 1);
+	h_tot_pz_raquel[i] = new TH1D(Form("h_tot_pz_raquel%s",channel2[i]),Form("h_tot_pz_raquel%s; P_{Z}^{Total}; Counts",channel2[i]), 20, 0, 2);
+	h_tot_E_raquel[i] = new TH1D(Form("h_tot_E_raquel%s",channel2[i]),Form("h_tot_E_raquel%s; Total Energy; Counts;",channel2[i]),50,0,2.5);
+	h_tot_E_minus_beam_raquel[i] = new TH1D(Form("h_tot_E_minus_beam_raquel%s",channel2[i]),Form("h_tot_E_minus_beam_raquel%s; Total Energy; Counts;",channel2[i]),100,-100,0);
+	h_E_resolution_raquel[i] = new TH1D(Form("h_E_resolution_raquel%s",channel2[i]),Form("h_E_resolution_raquel%s; Energy Resolution (GeV/c); Counts",channel2[i]),100,-1.0,1.0);
+	h_PT_squared_raquel[i] = new TH1D(Form("h_PT_squared_raquel%s",channel2[i]),Form("h_PT_squared_raquel%s; P_{T}^{2}; Counts", channel2[i]),50,0,5);
+    } //end of false statement           
 
       h_list.push_back(h_PT_squared_raquel[i]);
       h_list.push_back(h_E_resolution_raquel[i]);
       h_list.push_back(h_opening_angle_mu_both_raquel[i]);
-      h_list.push_back(h_E_neutrino_raquel[i]);
+      h_list.push_back(h_nu_E_raquel[i]);
       h_list.push_back(h_tot_E_raquel[i]);
       h_list.push_back(h_tot_E_minus_beam_raquel[i]);
       h_list.push_back(h_mom_struck_nuc_raquel[i]);
       h_list.push_back(h_tot_pz_raquel[i]);
-      h_list.push_back(h_cos_gamma_cm_raquel[i]);
-      h_list.push_back(h_opening_angle_protons_raquel[i]);
+      h_list.push_back(h_opening_angle_protons_lab_raquel[i]);
+      h_list.push_back(h_opening_angle_protons_com_raquel[i]);
       h_list.push_back(h_opening_angle_mu_leading_raquel[i]);
       h_list.push_back(h_delta_PT_raquel[i]);
       h_list.push_back(h_delta_alphaT_raquel[i]);
@@ -2716,7 +2835,7 @@ void twoproton_pelee_overlay::Fill_Histograms_Mine(int i, double wgt, int mc_n_t
     Fill_Mine(i,2,wgt);
     cc1p0pi[i]++;
     //cc2p0pi                                                                                                                                    
-  } else if (ccnc == 0 && nu_pdg == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton == 2 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
+  } else if (ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton == 2 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
     Fill_Mine(i,3,wgt);
     cc2p0pi[i]++;
     //ccNp0pi                                                                                                                                  
@@ -2879,18 +2998,18 @@ void twoproton_pelee_overlay::Fill_Particles(int j, TVector3 vMuon, TLorentzVect
   pz_tot = vLead[2]+vRec[2];
 
   //Some more specific plots
-  h_opening_angle_protons_overlay[j]->Fill(open_angle,wgt);
+  h_opening_angle_protons_lab_overlay[j]->Fill(open_angle,wgt);
+  h_opening_angle_protons_com_overlay[j]->Fill(cos_gamma_cm,wgt);
   h_opening_angle_mu_leading_overlay[j]->Fill(open_angle_mu,wgt);
   h_opening_angle_mu_both_overlay[j]->Fill(open_angle_mu_proton,wgt);
   h_delta_PT_overlay[j]->Fill(delta_pT,wgt);
   h_delta_alphaT_overlay[j]->Fill(delta_alphaT*180/3.14,wgt);
   h_delta_phiT_overlay[j]->Fill(delta_phiT*180./3.14,wgt);
-  h_cos_gamma_cm_overlay[j]->Fill(cos_gamma_cm,wgt);
+  h_nu_E_overlay[j]->Fill(Eneutrino,wgt);
   h_mom_struck_nuc_overlay[j]->Fill(p_struck_nuc,wgt);
   h_tot_pz_overlay[j]->Fill(pz_tot,wgt);
   h_tot_E_overlay[j]->Fill(E_tot,wgt);
   h_tot_E_minus_beam_overlay[j]->Fill(E_tot_minus_beam,wgt);
-  h_E_neutrino_overlay[j]->Fill(Eneutrino,wgt);
   h_E_resolution_overlay[j]->Fill(Eneutrino - double(nu_e) ,wgt);
   h_PT_squared_overlay[j]->Fill(PT_miss.Mag2(),wgt);
  
@@ -2961,18 +3080,18 @@ void twoproton_pelee_overlay::Fill_Particles_Raquel(int j, TVector3 vMuon, TLore
   pz_tot = vLead[2]+vRec[2];
 
   //Some more specific plots
-  h_opening_angle_protons_raquel[j]->Fill(open_angle,wgt);
+  h_opening_angle_protons_lab_raquel[j]->Fill(open_angle,wgt);
+  h_opening_angle_protons_com_raquel[j]->Fill(cos_gamma_cm,wgt);
   h_opening_angle_mu_leading_raquel[j]->Fill(open_angle_mu,wgt);
   h_opening_angle_mu_both_raquel[j]->Fill(open_angle_mu_proton,wgt);
   h_delta_PT_raquel[j]->Fill(delta_pT,wgt);
   h_delta_alphaT_raquel[j]->Fill(delta_alphaT*180/3.14,wgt);
   h_delta_phiT_raquel[j]->Fill(delta_phiT*180./3.14,wgt);
-  h_cos_gamma_cm_raquel[j]->Fill(cos_gamma_cm,wgt);
+  h_nu_E_raquel[j]->Fill(Eneutrino,wgt);
   h_mom_struck_nuc_raquel[j]->Fill(p_struck_nuc,wgt);
   h_tot_pz_raquel[j]->Fill(pz_tot,wgt);
   h_tot_E_raquel[j]->Fill(E_tot,wgt);
   h_tot_E_minus_beam_raquel[j]->Fill(E_tot_minus_beam,wgt);
-  h_E_neutrino_raquel[j]->Fill(Eneutrino,wgt);
   h_E_resolution_raquel[j]->Fill(Eneutrino - double(nu_e) ,wgt);
   h_PT_squared_raquel[j]->Fill(PT_miss.Mag2(),wgt);
 
@@ -2989,7 +3108,7 @@ void twoproton_pelee_overlay::Fill_Histograms_Particles(int mc_n_threshold_muon,
     Fill_Particles(2, vMuon,muon,vLead,lead,vRec,rec,wgt);
     cc1p0pi[number]++;
     //cc2p0pi                                                                                                                            
-  } else if (ccnc == 0 && nu_pdg == 14 && mc_n_threshold_proton == 2 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
+  } else if (ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_proton == 2 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
     Fill_Particles(3, vMuon,muon,vLead,lead,vRec,rec,wgt);
     cc2p0pi[number]++;
     //ccNp0pi                                                                                                                            

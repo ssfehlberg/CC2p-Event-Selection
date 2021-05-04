@@ -111,25 +111,11 @@ void twoproton_pelee_overlay::Loop()
     Fill_Histograms_Mine(0, pot_wgt*mc_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0 ,mc_n_threshold_pionpm,cuts.fv); 
     Fill_Histograms_Raquel(0, pot_wgt*mc_wgt,cuts.fv);
 
-    //Okay. This Selection requires the following things:
-    // 1) The reconstructed neutrino vertex is inside the FV 
-    // 2) There are exactly 3 PFP's in the event
-    // 3) The 3 PFP's are track like objects i.e they all have a track score > 0.8
-    // 4) The 3 PFP's are within 4 cm of the Vertex
-    // 5) PID
-
-    //1) Check that the event is in the FV
-    //////////////////////////////////////
-    if(cuts.In_FV(10,10,10,10,10,10,reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z) == false) continue; //10 cm border except from backend of detector
-    fvcntr++;
-    Fill_Histograms_Mine(1, pot_wgt*mc_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv); 
-    Fill_Histograms_Raquel(1, pot_wgt*mc_wgt,cuts.fv);
-
-    //Stuff for efficiency
+    //Also Filling the Denominator of the Efficiency
     std::vector<int> mc_protons_id;
     std::vector<double> mc_proton_mom;
     std::vector<std::pair<double,int>> zipped;
-    if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_proton == 2 && mc_n_threshold_muon == 1 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0){
+    if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_proton == 2 && mc_n_threshold_muon == 1 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && cuts.fv == true){
       for(int j=0; j < mc_pdg->size(); j++){
 	if (std::abs(mc_pdg->at(j)) == 2212){
 	  TVector3 backtracker_mom_vector(mc_px->at(j),mc_py->at(j),mc_pz->at(j));
@@ -154,13 +140,27 @@ void twoproton_pelee_overlay::Loop()
 	  TVector3 recoil(mc_px->at(recoil_id),mc_py->at(recoil_id),mc_pz->at(recoil_id));
 	  bool contained_start = cuts.In_FV(10,10,10,10,10,10,mc_vx->at(j),mc_vy->at(j),mc_vz->at(j));
 	  bool contained_end = cuts.In_FV(0,0,0,0,0,0,mc_endx->at(j),mc_endy->at(j),mc_endz->at(j));
-	  Fill_Efficiency(true, mc_pdg->at(j), contained_start, contained_end, leading, recoil, backtracker_mom_vector, mc_wgt);
+	  Fill_Efficiency(true, mc_pdg->at(j), contained_start, contained_end, leading, recoil, backtracker_mom_vector, 1.0);//testing the weight garbage mc_wgt);
 	} //end of for
       } //end of if same size
     } //end of if event
     mc_protons_id.clear();
     mc_proton_mom.clear();
     zipped.clear();
+
+    //Okay. This Selection requires the following things:
+    // 1) The reconstructed neutrino vertex is inside the FV 
+    // 2) There are exactly 3 PFP's in the event
+    // 3) The 3 PFP's are track like objects i.e they all have a track score > 0.8
+    // 4) The 3 PFP's are within 4 cm of the Vertex
+    // 5) PID
+
+    //1) Check that the event is in the FV
+    //////////////////////////////////////
+    if(cuts.In_FV(10,10,10,10,10,10,reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z) == false) continue; //10 cm border except from backend of detector
+    fvcntr++;
+    Fill_Histograms_Mine(1, pot_wgt*mc_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv); 
+    Fill_Histograms_Raquel(1, pot_wgt*mc_wgt,cuts.fv);
 
     //2) There are exactly 3 PFP's in the Event 
     ///////////////////////////////////////////////////////
@@ -299,7 +299,7 @@ void twoproton_pelee_overlay::Loop()
     vRec.SetPhi(trk_phi_v->at(recoil_proton_id));
     TLorentzVector rec(vRec[0],vRec[1],vRec[2],ERec); 
 
-    Fill_Histograms_Particles(mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0, mc_n_threshold_pionpm, cuts.fv, vMuon, muon, vLead, lead, vRec, rec, mc_wgt*pot_wgt);
+    Fill_Histograms_Particles(mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0, mc_n_threshold_pionpm, cuts.fv, vMuon, muon, vLead, lead, vRec, rec, 1);//testing the weight garbage mc_wgt*pot_wgt);
     Fill_Histograms_Particles_Raquel(vMuon, muon, vLead, lead, vRec, rec, mc_wgt*pot_wgt, cuts.fv);
     //Fill_Histograms_Particles(mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0, mc_n_threshold_pionpm, cuts.fv, vMuon, vLead, vRec, mc_wgt*pot_wgt);
     //Fill_Histograms_Particles_Raquel(vMuon, vLead, vRec, mc_wgt*pot_wgt, cuts.fv);
@@ -309,13 +309,12 @@ void twoproton_pelee_overlay::Loop()
     bool true_contained_end;
     TVector3 vmuon;
 
-    if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_proton == 2 && mc_n_threshold_muon == 1 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0){
+    if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_proton == 2 && mc_n_threshold_muon == 1 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && cuts.fv == true){
       for(int j=0; j < n_pfps; j++){
 	if(std::abs(backtracked_pdg->at(j)) == 13){ //muon loop
 	  vmuon.SetXYZ(backtracked_px->at(j),backtracked_py->at(j),backtracked_pz->at(j));
-	  if(mc_pdg->size() == n_pfps){                                                                                                                                                                                                                          
-	    true_contained_start = cuts.In_FV(10,10,10,10,10,10,mc_vx->at(j),mc_vy->at(j),mc_vz->at(j)); //I don't have the right size mc_vx....sooo                                                                                                             
-	    true_contained_end = cuts.In_FV(0,0,0,0,0,0,mc_endx->at(j),mc_endy->at(j),mc_endz->at(j));//i don't have the right size mc_vx......                                                                                                                  
+	  if(mc_pdg->size() == n_pfps){                                                                                                                                                                                                                   true_contained_start = cuts.In_FV(10,10,10,10,10,10,mc_vx->at(j),mc_vy->at(j),mc_vz->at(j)); //I don't have the right size mc_vx....sooo                                                                                         
+	    true_contained_end = cuts.In_FV(0,0,0,0,0,0,mc_endx->at(j),mc_endy->at(j),mc_endz->at(j));//i don't have the right size mc_vx......                                                                                              
 	  }
 	}
 	if(std::abs(backtracked_pdg->at(j)) == 2212){ //proton loop
@@ -337,7 +336,7 @@ void twoproton_pelee_overlay::Loop()
 	TVector3 leading(backtracked_px->at(leading_id),backtracked_py->at(leading_id),backtracked_pz->at(leading_id));
 	TVector3 recoil(backtracked_px->at(recoil_id),backtracked_py->at(recoil_id),backtracked_pz->at(recoil_id));
 	if(leading_id == recoil_id) std::cout<<"OHHHHH SHIIIT NUGGETS!"<<std::endl;
-	Fill_Matrices(vMuon,vmuon,vLead,leading,vRec,recoil,muon_start_contained,true_contained_start,muon_end_contained,true_contained_end,mc_wgt*pot_wgt);
+	Fill_Matrices(vMuon,vmuon,vLead,leading,vRec,recoil,muon_start_contained,true_contained_start,muon_end_contained,true_contained_end,1.0);//testing the weight garbage mc_wgt*pot_wgt);
 
 	for(int j=0; j < n_pfps; j++){
 	  TVector3 backtracker_mom_vector(backtracked_px->at(j),backtracked_py->at(j),backtracked_pz->at(j));
@@ -345,7 +344,7 @@ void twoproton_pelee_overlay::Loop()
 	  TVector3 recoil(backtracked_px->at(recoil_id),backtracked_py->at(recoil_id),backtracked_pz->at(recoil_id));
 	  bool contained_start = cuts.In_FV(10,10,10,10,10,10,mc_vx->at(j),mc_vy->at(j),mc_vz->at(j));
           bool contained_end = cuts.In_FV(0,0,0,0,0,0,mc_endx->at(j),mc_endy->at(j),mc_endz->at(j));
-	  Fill_Efficiency(false, backtracked_pdg->at(j), contained_start, contained_end, leading, recoil, backtracker_mom_vector, mc_wgt);
+	  Fill_Efficiency(false, backtracked_pdg->at(j), contained_start, contained_end, leading, recoil, backtracker_mom_vector, 1.0);//testing the weight garbage mc_wgt);
 	} //end of for
       } //end of if
     }//end of if specific event
