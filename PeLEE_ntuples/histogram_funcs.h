@@ -240,6 +240,115 @@ void histogram_funcs::Fill_Histograms(int i, TVector3 reco_nu_vertex,double Cosm
 
 void histogram_funcs::Fill_Particles(TVector3 vMuon, TLorentzVector muon, TVector3 vLead, TLorentzVector lead, TVector3 vRec, TLorentzVector rec, double wgt){
 
+  // Run the Calculate Variables function inside of variables.h. Returns following:
+  // 1) vector: momenta(muon_mom,lead_mom,rec_mom);
+  // 2) vector: Energies(KE_muon, TotE_muon, KE_Lead, TotE_Lead, KE_Rec, TotE_Rec);    
+  // 3) vector: detector_angles(muon_theta,muon_phi,lead_theta,lead_phi,recoil_theta,recoil_phi);
+  // 4) vector: opening_angles(opening_angle_protons_lab,opening_angle_protons_mu_leading,opening_angle_protons_mu_both);  // 5) double: opening_angle_protons_COM 
+  // 6) vector: STVS(delta_pT,delta_alphaT,delta_phiT); 
+  // 7) double: calculated_nu_E
+
+  variables.Calculate_Variables(vMuon,vLead,vRec,add_protons);
+
+  //muon
+  double muon_mom = variables.momenta[0];
+  double muon_theta = variables.detector_angles[0]; //cosine applied
+  double muon_phi = variables.detector_angles[1];
+  double EMuon = variables.Energies[0]; //KE
+  
+  //lead proton
+  double lead_mom = variables.momenta[1];
+  double lead_theta = variables.detector_angles[2]; //cosine applied
+  double lead_phi = variables.detector_angles[3];
+  double ELead = variables.Energies[2]; //KE
+
+  //recoil proton
+  double recoil_mom = variables.momenta[2];
+  double recoil_theta = variables.detector_angles[4]; //cosine applied
+  double recoil_phi =  variables.detector_angles[5];
+  double ERec = variables.Energies[4]; //KE
+
+  //opening angles
+  double opening_angle_protons_lab = variables.opening_angles[0]; //cosine applied
+  double opening_angle_protons_COM = variables.opening_angle_protons_COM; //cosine applied
+  double opening_angle_protons_mu_leading = variables.opening_angles[1]; //cosine applied
+  double opening_angle_protons_mu_both = variables.opening_angles[2]; //cosine applied
+
+  //stvs
+  double delta_PT = variables.stvs[0];
+  double delta_alphaT = variables.stvs[1]; //degrees
+  double delta_phiT = variables.stvs[2]; //degrees
+
+  //neutrino energy & PT Miss
+  TVector3 PT_miss(vMuon[0]+vLead[0]+vRec[0],vMuon[1]+vRec[1]+vLead[1],0);
+  double Eneutrino = variables.calculated_nu_E;
+
+  //Beam Stuff
+  double E_tot = (EMuon + MASS_MUON) + ELead + ERec;
+  TVector3 vBeam(0.,0.,Eneutrino); // z-direction is defined along the neutrino direction                            
+  TVector3 vq = vBeam - vMuon; // Momentum transfer                                                                  
+  TVector3 vmiss = vLead - vq; // Missing momentum        
+  double E_tot_minus_beam = (E_tot - Eneutrino) * 1000;
+  
+  if(_debug) std::cout<<"[HISTOGRAM_FUNCS] Value of PT_miss magnitude: "<<PT_miss.Mag()<<std::endl;
+  if(_debug) std::cout<<"[HISTOGRAM_FUNCS] Value of PT_miss magnitude2: "<<PT_miss.Mag2()<<std::endl;
+  if(_debug) std::cout<<"[HISTOGRAM_FUNCS] Value of PT_miss magnitude2 divided by 2*35.37: "<<(PT_miss.Mag2())/(2.0*35.37)<<std::endl;
+  if(_debug) std::cout<<"[HISTOGRAM_FUNCS] Value of Eneutrino: "<<Eneutrino<<std::endl;
+  if(_debug) std::cout<<"[HISTOGRAM_FUNCS] Value of E_tot_minus_beam: "<<E_tot_minus_beam<<std::endl;
+
+  //Struck nucleon Momentum:                                                                                            
+  TVector3 vector_sum(vMuon[0] + vLead[0] + vRec[0], vMuon[1] + vLead[1] + vRec[1], vMuon[2] + vLead[2] + vRec[2]);
+  TVector3 p_struck_nuc_vector(vector_sum[0], vector_sum[1], 0);
+  double p_struck_nuc = p_struck_nuc_vector.Mag();
+  double pz_tot = vLead[2] + vRec[2];
+
+  //Energy of Struck Nucleon:
+  double En = std::sqrt(std::pow(MASS_NEUTRON,2) + vmiss.Mag2()); //energy of struck nucleon 
+
+  //Now to fill all the variables
+  /////////////////////////////////
+
+  //first index indicates which variable is being filled: mom, KE energy, theta, phi                                  
+  h_muon[0]->Fill(muon_mom,wgt);
+  h_leading[0]->Fill(lead_mom,wgt);
+  h_recoil[0]->Fill(recoil_mom,wgt);
+
+  h_muon[1]->Fill(EMuon,wgt);
+  h_leading[1]->Fill(ELead,wgt);
+  h_recoil[1]->Fill(ERec,wgt);
+
+  h_muon[2]->Fill(muon_theta,wgt);
+  h_leading[2]->Fill(lead_theta,wgt);
+  h_recoil[2]->Fill(recoil_theta,wgt);
+
+  h_muon[3]->Fill(muon_phi,wgt);
+  h_leading[3]->Fill(lead_phi,wgt);
+  h_recoil[3]->Fill(recoil_phi,wgt);
+
+  //All the physics variables
+  h_opening_angle_protons_lab->Fill(opening_angle_protons_lab,wgt);
+  h_opening_angle_protons_com->Fill(opening_angle_protons_COM,wgt);
+  h_opening_angle_mu_leading->Fill(opening_angle_protons_mu_leading,wgt);
+  h_opening_angle_mu_both->Fill(opening_angle_protons_mu_both,wgt);
+  h_delta_PT->Fill(delta_PT,wgt);
+  h_delta_alphaT->Fill(delta_alphaT,wgt);
+  h_delta_phiT->Fill(delta_phiT,wgt);
+  h_nu_E->Fill(Eneutrino,wgt);
+  h_mom_struck_nuc->Fill(p_struck_nuc,wgt);
+  h_tot_pz->Fill(pz_tot,wgt);
+  h_tot_E->Fill(E_tot,wgt);
+  h_tot_E_minus_beam->Fill(E_tot_minus_beam,wgt);
+  h_PT_squared->Fill(PT_miss.Mag2(),wgt);
+
+  //have to make sure to clear the variables before you leave
+  //////////////////////////////////////////////////////////
+  variables.momenta.clear();
+  variables.detector_angles.clear();
+  variables.opening_angles.clear();
+  variables.stvs.clear();
+  variables.Energies.clear();
+
+  /*
   //first index indicates which variable is being filled: mom, energy, theta, phi                                  
   h_muon[0]->Fill(vMuon.Mag(),wgt);
   h_leading[0]->Fill(vLead.Mag(),wgt);
@@ -303,8 +412,9 @@ void histogram_funcs::Fill_Particles(TVector3 vMuon, TLorentzVector muon, TVecto
 
   //Sanity Check
   //TLorentzVector betacm(vRec[0]+vLead[0],vRec[1]+vLead[1],vRec[2]+vLead[2],ERec+ELead);
-  //TVector3 boost = betacm.BoostVector(); //the boost vector                                                                                                                                                                                                          
-  //lead.Boost(-boost); //boost leading proton                                                                                                                               rec.Boost(-boost); //boost recoil proton                                                                                                                                                                                                                          
+  //TVector3 boost = betacm.BoostVector(); //the boost vector                                                                                                                                                                                           //lead.Boost(-boost); //boost leading proton                                                                                                                               
+  //rec.Boost(-boost); //boost recoil proton                                   
+  
   //std::cout<<"Value of the added vectors x : "<<lead[0]+rec[0]<<std::endl;
   //std::cout<<"Value of the added vectors y : "<<lead[1]+rec[1]<<std::endl;
   //std::cout<<"Value of the added vectors z : "<<lead[2]+rec[2]<<std::endl;
@@ -331,84 +441,10 @@ void histogram_funcs::Fill_Particles(TVector3 vMuon, TLorentzVector muon, TVecto
   h_tot_E->Fill(E_tot,wgt);
   h_tot_E_minus_beam->Fill(E_tot_minus_beam,wgt);
   h_PT_squared->Fill(PT_miss.Mag2(),wgt);
+  */
 
 }
 
-
-/*
-//Fills more specific plots
-void histogram_funcs::Fill_Particles(TVector3 vMuon, TVector3 vLead, TVector3 vRec, double wgt){
-  
-  // Run the Calculate Variables function inside of variables.h. Returns following:
-  // 1) vector: momenta(muon_mom,lead_mom,rec_mom);
-  // 2) vector: Energies(KE_muon, TotE_muon, KE_Lead, TotE_Lead, KE_Rec, TotE_Rec);    
-  // 3) vector: detector_angles(muon_theta,muon_phi,lead_theta,lead_phi,recoil_theta,recoil_phi);
-  // 4) vector: opening_angles(opening_angle_protons_lab,opening_angle_protons_mu_leading,opening_angle_protons_mu_both);  // 5) double: opening_angle_protons_COM 
-  // 6) vector: STVS(delta_pT,delta_alphaT,delta_phiT); 
-  // 7) double: calculated_nu_E
-
-  variables.Calculate_Variables(vMuon,vLead,vRec,add_protons);
-
-  //first index indicates which variable is being filled: mom, KE energy, theta, phi                                  
-  h_muon[0]->Fill(variables.momenta[0],wgt);
-  h_leading[0]->Fill(variables.momenta[1],wgt);
-  h_recoil[0]->Fill(variables.momenta[2],wgt);
-
-  h_muon[1]->Fill(variables.Energies[0],wgt);
-  h_leading[1]->Fill(variables.Energies[2],wgt);
-  h_recoil[1]->Fill(variables.Energies[4],wgt);
-
-  h_muon[2]->Fill(variables.detector_angles[0],wgt);
-  h_leading[2]->Fill(variables.detector_angles[2],wgt);
-  h_recoil[2]->Fill(variables.detector_angles[4],wgt);
-
-  h_muon[3]->Fill(variables.detector_angles[1],wgt);
-  h_leading[3]->Fill(variables.detector_angles[3],wgt);
-  h_recoil[3]->Fill(variables.detector_angles[5],wgt);
-  	
-  //Beam Stuff
-  double EMuon =variables.Energies[0];
-  double ELead = variables.Energies[2];
-  double ERec = variables.Energies[4];
-  double E_tot = (EMuon + MASS_MUON) + ELead + ERec;
-  TVector3 PT_miss(vMuon[0]+vLead[0]+vRec[0],vMuon[1]+vRec[1]+vLead[1],0);
-  double Eneutrino = variables.calculated_nu_E;//(EMuon+MASS_MUON) + ELead + ERec +((PT_miss.Mag2())/(2.0*35.37)) + 0.0304;
-  TVector3 vBeam(0.,0.,Eneutrino); // z-direction is defined along the neutrino direction                            
-  TVector3 vq = vBeam - vMuon; // Momentum transfer                                                                  
-  TVector3 vmiss = vLead - vq; // Missing momentum        
-  double E_tot_minus_beam = (E_tot - Eneutrino) * 1000;
-  
-  if(_debug) std::cout<<"[HISTOGRAM_FUNCS] Value of PT_miss magnitude: "<<PT_miss.Mag()<<std::endl;
-  if(_debug) std::cout<<"[HISTOGRAM_FUNCS] Value of PT_miss magnitude2: "<<PT_miss.Mag2()<<std::endl;
-  if(_debug) std::cout<<"[HISTOGRAM_FUNCS] Value of PT_miss magnitude2 divided by 2*35.37: "<<(PT_miss.Mag2())/(2.0*35.37)<<std::endl;
-  if(_debug) std::cout<<"[HISTOGRAM_FUNCS] Value of Eneutrino: "<<Eneutrino<<std::endl;
-  if(_debug) std::cout<<"[HISTOGRAM_FUNCS] Value of E_tot_minus_beam: "<<E_tot_minus_beam<<std::endl;
-
-  //Struck nucleon Momentum:                                                                                            
-  TVector3 vector_sum(vMuon[0] + vLead[0] + vRec[0], vMuon[1] + vLead[1] + vRec[1], vMuon[2] + vLead[2] + vRec[2]);
-  TVector3 p_struck_nuc_vector(vector_sum[0], vector_sum[1], 0);
-  double p_struck_nuc = p_struck_nuc_vector.Mag();
-  double pz_tot = vLead[2] + vRec[2];
-
-  //Energy of Struck Nucleon:
-  double En = std::sqrt(std::pow(MASS_NEUTRON,2) + vmiss.Mag2()); //energy of struck nucleon 
-
-  h_opening_angle_protons->Fill(variables.opening_angles[0],wgt);
-  h_cos_gamma_cm->Fill(variables.opening_angle_protons_COM,wgt);
-  h_opening_angle_mu_leading->Fill(variables.opening_angles[1],wgt);
-  h_opening_angle_mu_both->Fill(variables.opening_angles[2],wgt);
-  h_delta_PT->Fill(variables.stvs[0],wgt);
-  h_delta_alphaT->Fill(variables.stvs[1],wgt);
-  h_delta_phiT->Fill(variables.stvs[2],wgt);
-  h_tot_E->Fill(E_tot,wgt);
-  h_tot_E_minus_beam->Fill(E_tot_minus_beam,wgt);
-  h_E_neutrino->Fill(Eneutrino,wgt);
-  h_PT_squared->Fill(PT_miss.Mag2(),wgt);
-  h_mom_struck_nuc->Fill(p_struck_nuc,wgt);
-  h_tot_pz->Fill(pz_tot,wgt);
-
-}
-*/
 //Function to write Histograms.
 /////////////////////////////////
 void histogram_funcs::Write_Histograms(){ 

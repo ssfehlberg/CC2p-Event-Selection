@@ -15,7 +15,8 @@ void twoproton_pelee_bnb::Loop()
   histogram_funcs hist; //histogram_funcs.h
   helper_funcs cuts; //helper_funcs.h
   
-  //Making a new Root File that will contain all the histograms that we will want to plot and file with good RSEs:                       ///////////////////////////////////////////////////////////////////////////////////////                        
+  //Making a new Root File that will contain all the histograms that we will want to plot and file with good RSEs:
+  ///////////////////////////////////////////////////////////////////////////////////////                        
   Which_Run();
   TFile *tfile = new TFile(Form("root_files/%s/histograms_pelee_bnb.root",directory),"RECREATE"); //root file
   ofstream myfile;//File that will contain RSE of good events                                                                 
@@ -193,7 +194,6 @@ void twoproton_pelee_bnb::Loop()
     vRec.SetPhi(trk_phi_v->at(recoil_proton_id));
     TLorentzVector rec(vRec[0],vRec[1],vRec[2],ERec);
 
-    
     hist.Fill_Particles(vMuon,muon,vLead,lead,vRec,rec,pot_wgt);
 
     //One last thing: Make sure to ssave the RSE for the good events before you end your loop                                                                                                                                                                    

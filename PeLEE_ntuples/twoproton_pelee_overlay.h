@@ -2368,10 +2368,10 @@ void twoproton_pelee_overlay::Fill_Efficiency(bool denom, int backtracked_pdg, b
 
   if(denom == true){
   
-    h_other_eff_denom[0]->Fill(cos(open_angle_protons_lab),mc_wgt); //opening angle protons lab
-    h_other_eff_denom[1]->Fill(cos(open_angle_protons_com),mc_wgt); //opening angle protons com 
-    h_other_eff_denom[2]->Fill(cos(open_angle_mu_leading),mc_wgt); //opening angle mu leading 
-    h_other_eff_denom[3]->Fill(cos(open_angle_mu_both),mc_wgt); //opening angle mu both 
+    h_other_eff_denom[0]->Fill(std::cos(open_angle_protons_lab),mc_wgt); //opening angle protons lab
+    h_other_eff_denom[1]->Fill(std::cos(open_angle_protons_com),mc_wgt); //opening angle protons com 
+    h_other_eff_denom[2]->Fill(std::cos(open_angle_mu_leading),mc_wgt); //opening angle mu leading 
+    h_other_eff_denom[3]->Fill(std::cos(open_angle_mu_both),mc_wgt); //opening angle mu both 
     h_other_eff_denom[4]->Fill(delta_PT,mc_wgt); //delta pt 
     h_other_eff_denom[5]->Fill(delta_alphaT*180/3.14,mc_wgt); //delta alphat 
     h_other_eff_denom[6]->Fill(delta_phiT*180/3.14,mc_wgt); //delta phit 
@@ -2380,20 +2380,20 @@ void twoproton_pelee_overlay::Fill_Efficiency(bool denom, int backtracked_pdg, b
     if(std::abs(backtracked_pdg) == 13){
       h_mom_threshold_denom[0]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //muon all  
       h_particle_denom[0][0]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //momentum       
-      h_particle_denom[0][1]->Fill(cos(backtracker_mom_vector.Theta()),mc_wgt); //muon costheta
+      h_particle_denom[0][1]->Fill(std::cos(backtracker_mom_vector.Theta()),mc_wgt); //muon costheta
       h_particle_denom[0][2]->Fill(backtracker_mom_vector.Phi(),mc_wgt); //muon phi
 
       if(contained_start == true && contained_end == true){
 	h_mom_threshold_denom[1]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //muon contained
 	h_particle_denom[1][0]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //momentum 
-	h_particle_denom[1][1]->Fill(cos(backtracker_mom_vector.Theta()),mc_wgt); //muon costheta                 
+	h_particle_denom[1][1]->Fill(std::cos(backtracker_mom_vector.Theta()),mc_wgt); //muon costheta                 
 	h_particle_denom[1][2]->Fill(backtracker_mom_vector.Phi(),mc_wgt); //muon phi  
 	denom_contained++;
 
       } else if(contained_start == true && contained_end == false){
 	h_mom_threshold_denom[2]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //muon uncontained 
 	h_particle_denom[2][0]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //momentum 
-	h_particle_denom[2][1]->Fill(cos(backtracker_mom_vector.Theta()),mc_wgt); //muon costheta                 
+	h_particle_denom[2][1]->Fill(std::cos(backtracker_mom_vector.Theta()),mc_wgt); //muon costheta                 
 	h_particle_denom[2][2]->Fill(backtracker_mom_vector.Phi(),mc_wgt); //muon phi
 	denom_uncontained++;
       } 
@@ -2404,13 +2404,13 @@ void twoproton_pelee_overlay::Fill_Efficiency(bool denom, int backtracked_pdg, b
       if(backtracker_mom_vector.Mag() == leading.Mag()){
 	h_mom_threshold_denom[4]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //proton leading
 	h_particle_denom[3][0]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //momentum 
-	h_particle_denom[3][1]->Fill(cos(backtracker_mom_vector.Theta()),mc_wgt); //proton costheta                                      
+	h_particle_denom[3][1]->Fill(std::cos(backtracker_mom_vector.Theta()),mc_wgt); //proton costheta                                      
 	h_particle_denom[3][2]->Fill(backtracker_mom_vector.Phi(),mc_wgt); //proton phi 
 
       } else if (backtracker_mom_vector.Mag() == recoil.Mag()){
 	h_mom_threshold_denom[5]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //proton recoil 
 	h_particle_denom[4][0]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //momentum 
-	h_particle_denom[4][1]->Fill(cos(backtracker_mom_vector.Theta()),mc_wgt); //proton costheta                                     
+	h_particle_denom[4][1]->Fill(std::cos(backtracker_mom_vector.Theta()),mc_wgt); //proton costheta                                     
 	h_particle_denom[4][2]->Fill(backtracker_mom_vector.Phi(),mc_wgt); //proton phi 
       }
     }else if (backtracked_pdg == 211){
@@ -2424,10 +2424,10 @@ void twoproton_pelee_overlay::Fill_Efficiency(bool denom, int backtracked_pdg, b
     
   } else if (denom == false){
 
-    h_other_eff_num[0]->Fill(cos(open_angle_protons_lab),mc_wgt); //opening angle protons lab
-    h_other_eff_num[1]->Fill(cos(open_angle_protons_com),mc_wgt); //opening angle protons com 
-    h_other_eff_num[2]->Fill(cos(open_angle_mu_leading),mc_wgt); //opening angle mu leading 
-    h_other_eff_num[3]->Fill(cos(open_angle_mu_both),mc_wgt); //opening angle mu both 
+    h_other_eff_num[0]->Fill(std::cos(open_angle_protons_lab),mc_wgt); //opening angle protons lab
+    h_other_eff_num[1]->Fill(std::cos(open_angle_protons_com),mc_wgt); //opening angle protons com 
+    h_other_eff_num[2]->Fill(std::cos(open_angle_mu_leading),mc_wgt); //opening angle mu leading 
+    h_other_eff_num[3]->Fill(std::cos(open_angle_mu_both),mc_wgt); //opening angle mu both 
     h_other_eff_num[4]->Fill(delta_PT,mc_wgt); //delta pt 
     h_other_eff_num[5]->Fill(delta_alphaT*180/3.14,mc_wgt); //delta alphat 
     h_other_eff_num[6]->Fill(delta_phiT*180/3.14,mc_wgt); //delta phit 
@@ -2436,20 +2436,20 @@ void twoproton_pelee_overlay::Fill_Efficiency(bool denom, int backtracked_pdg, b
     if(std::abs(backtracked_pdg) == 13){
       h_mom_threshold_num[0]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //muon all  
       h_particle_num[0][0]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //momentum
-      h_particle_num[0][1]->Fill(cos(backtracker_mom_vector.Theta()),mc_wgt); //muon costheta
+      h_particle_num[0][1]->Fill(std::cos(backtracker_mom_vector.Theta()),mc_wgt); //muon costheta
       h_particle_num[0][2]->Fill(backtracker_mom_vector.Phi(),mc_wgt); //muon phi
 
       if(contained_start == true && contained_end == true){
 	h_mom_threshold_num[1]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //muon contained
 	h_particle_num[1][0]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //momentum       
-	h_particle_num[1][1]->Fill(cos(backtracker_mom_vector.Theta()),mc_wgt); //muon costheta                   
+	h_particle_num[1][1]->Fill(std::cos(backtracker_mom_vector.Theta()),mc_wgt); //muon costheta                   
 	h_particle_num[1][2]->Fill(backtracker_mom_vector.Phi(),mc_wgt); //muon phi  
 	num_contained++;
 
       } else if(contained_start == true && contained_end == false){
 	h_mom_threshold_num[2]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //muon uncontained 
 	h_particle_num[2][0]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //momentum       
-	h_particle_num[2][1]->Fill(cos(backtracker_mom_vector.Theta()),mc_wgt); //muon costheta                   
+	h_particle_num[2][1]->Fill(std::cos(backtracker_mom_vector.Theta()),mc_wgt); //muon costheta                   
 	h_particle_num[2][2]->Fill(backtracker_mom_vector.Phi(),mc_wgt); //muon phi
 	num_uncontained++;
       } 
@@ -2460,13 +2460,13 @@ void twoproton_pelee_overlay::Fill_Efficiency(bool denom, int backtracked_pdg, b
       if(backtracker_mom_vector.Mag() == leading.Mag()){
 	h_mom_threshold_num[4]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //proton leading
 	h_particle_num[3][0]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //momentum       
-	h_particle_num[3][1]->Fill(cos(backtracker_mom_vector.Theta()),mc_wgt); //proton costheta                                      
+	h_particle_num[3][1]->Fill(std::cos(backtracker_mom_vector.Theta()),mc_wgt); //proton costheta                                      
 	h_particle_num[3][2]->Fill(backtracker_mom_vector.Phi(),mc_wgt); //proton phi 
 
       } else if (backtracker_mom_vector.Mag() == recoil.Mag()){
 	h_mom_threshold_num[5]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //proton recoil 
 	h_particle_num[4][0]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //momentum       
-	h_particle_num[4][1]->Fill(cos(backtracker_mom_vector.Theta()),mc_wgt); //proton costheta                                     
+	h_particle_num[4][1]->Fill(std::cos(backtracker_mom_vector.Theta()),mc_wgt); //proton costheta                                     
 	h_particle_num[4][2]->Fill(backtracker_mom_vector.Phi(),mc_wgt); //proton phi 
       }
     }else if (backtracked_pdg == 211){
@@ -2492,7 +2492,7 @@ void twoproton_pelee_overlay::Fill_Matrices(TVector3 vMuon, TVector3 muon,TVecto
 
   //Define all the reconstructed quantities
   ////////////////////////////////////////
-  /*variables.Calculate_Variables(vMuon,vLead,vRec,add_protons);
+  variables.Calculate_Variables(vMuon,vLead,vRec,add_protons);
   double reco_muon_mom = variables.momenta[0];
   double reco_muon_theta = variables.detector_angles[0];
   double reco_muon_phi = variables.detector_angles[1];
@@ -2514,8 +2514,13 @@ void twoproton_pelee_overlay::Fill_Matrices(TVector3 vMuon, TVector3 muon,TVecto
   double reco_ERec = variables.Energies[4];
   TVector3 reco_PT_miss(vMuon[0]+vLead[0]+vRec[0],vMuon[1]+vRec[1]+vLead[1],0);
   double reco_nu_E = variables.calculated_nu_E;
-  std::cout<<"[FILL MATRICES] Value of reco_nu_E: "<<reco_nu_E<<std::endl;
  
+  variables.momenta.clear();
+  variables.detector_angles.clear();
+  variables.opening_angles.clear();
+  variables.stvs.clear();
+  variables.Energies.clear();
+
   //Define all the true quantities
   //////////////////////////////////
   variables.Calculate_Variables(muon,lead,rec,add_protons);
@@ -2540,19 +2545,24 @@ void twoproton_pelee_overlay::Fill_Matrices(TVector3 vMuon, TVector3 muon,TVecto
   double true_ERec = variables.Energies[4];
   TVector3 true_PT_miss(vMuon[0]+vLead[0]+vRec[0],vMuon[1]+vRec[1]+vLead[1],0);
   double true_nu_E = nu_e;
-  std::cout<<"[FILL MATRICES] Value of true nu E: "<<true_nu_E<<std::endl;
-  */
   
+  variables.momenta.clear();
+  variables.detector_angles.clear();
+  variables.opening_angles.clear();
+  variables.stvs.clear();
+  variables.Energies.clear();
+
+  /*
   //Define Reco Quantities
   /////////////////////////
   double reco_muon_mom = vMuon.Mag();
-  double reco_muon_theta = cos(vMuon.Theta());
+  double reco_muon_theta = std::cos(vMuon.Theta());
   double reco_muon_phi = vMuon.Phi();
   double reco_lead_mom = vLead.Mag();
-  double reco_lead_theta = cos(vLead.Theta());
+  double reco_lead_theta = std::cos(vLead.Theta());
   double reco_lead_phi = vLead.Phi();
   double reco_recoil_mom = vRec.Mag();
-  double reco_recoil_theta = cos(vRec.Theta());
+  double reco_recoil_theta = std::cos(vRec.Theta());
   double reco_recoil_phi =  vRec.Phi();
   double reco_opening_angle_protons_lab = std::cos(vLead.Angle(vRec));
   double reco_opening_angle_protons_mu_leading = std::cos(vMuon.Angle(vLead));
@@ -2579,18 +2589,18 @@ void twoproton_pelee_overlay::Fill_Matrices(TVector3 vMuon, TVector3 muon,TVecto
   TVector3 reco_boost = reco_betacm.BoostVector(); //the boost vector                                                          
   reco_LEAD.Boost(-reco_boost); //boost leading proton                                                                         
   reco_REC.Boost(-reco_boost); //boost recoil proton    
-  double reco_opening_angle_protons_COM = cos(reco_LEAD.Angle(reco_REC.Vect()));  
+  double reco_opening_angle_protons_COM = std::cos(reco_LEAD.Angle(reco_REC.Vect()));  
 
   //Define the True Quantities
   ////////////////////////////////
   double true_muon_mom = muon.Mag();
-  double true_muon_theta = cos(muon.Theta());
+  double true_muon_theta = std::cos(muon.Theta());
   double true_muon_phi = muon.Phi();
   double true_lead_mom = lead.Mag();
-  double true_lead_theta = cos(lead.Theta());
+  double true_lead_theta = std::cos(lead.Theta());
   double true_lead_phi = lead.Phi();
   double true_recoil_mom = rec.Mag();
-  double true_recoil_theta = cos(rec.Theta());
+  double true_recoil_theta = std::cos(rec.Theta());
   double true_recoil_phi = rec.Phi();
   double true_opening_angle_protons_lab = std::cos(lead.Angle(rec));
   double true_opening_angle_protons_mu_leading = std::cos(muon.Angle(lead));
@@ -2618,7 +2628,7 @@ void twoproton_pelee_overlay::Fill_Matrices(TVector3 vMuon, TVector3 muon,TVecto
   true_LEAD.Boost(-true_boost); //boost leading proton                                                                                                                                                                
   true_REC.Boost(-true_boost); //boost recoil proton                      
   double true_opening_angle_protons_COM = std::cos(true_LEAD.Angle(true_REC.Vect()));
-
+  */
   if(true_lead_theta >= -0.6 && true_lead_theta <= -0.4 && reco_lead_theta >= 0.8) {
     std::cout<<"Value of reco lead theta: "<<reco_lead_theta<<std::endl;
     std::cout<<"Value of true lead theta: "<<true_lead_theta<<std::endl;
@@ -2637,68 +2647,42 @@ void twoproton_pelee_overlay::Fill_Matrices(TVector3 vMuon, TVector3 muon,TVecto
   h_test_leading->Fill((true_lead_theta-reco_lead_theta),true_lead_mom);
   h_test_recoil->Fill((true_recoil_theta-reco_recoil_theta),true_recoil_mom);
 
-  //Now to do all the fancy filling stuff
-  //////////////////////////////////////////
-  h_particle_matrices[0][0]->Fill(true_muon_mom,reco_muon_mom,mc_wgt); //muon mom
-  h_particle_matrices[0][1]->Fill(true_muon_theta,reco_muon_theta,mc_wgt); //muon theta
-  h_particle_matrices[0][2]->Fill(true_muon_phi,reco_muon_phi,mc_wgt); //muon phi
-  //Find_Bin_Sizes(h_particle_matrices[0][0],24.0, true_muon_mom, reco_muon_mom,mc_wgt);
-  //Find_Bin_Sizes(h_particle_matrices[0][1],21.0, true_muon_theta, reco_muon_theta,mc_wgt);
-  ////Find_Bin_Sizes(h_particle_matrices[0][2],24.0, true_muon_phi, reco_muon_phi,mc_wgt);
+  //Now to do all the fancy filling stuff: this uses y,x,wgt form
+  ///////////////////////////////////////////////////////////////
+  h_particle_matrices[0][0]->Fill(reco_muon_mom, true_muon_mom, mc_wgt); //muon mom
+  h_particle_matrices[0][1]->Fill(reco_muon_theta, true_muon_theta, mc_wgt); //muon theta
+  h_particle_matrices[0][2]->Fill(reco_muon_phi, true_muon_phi, mc_wgt); //muon phi
 
   if(contained_start == true && contained_end == true && true_contained_start == true && true_contained_end == true){
-    h_particle_matrices[1][0]->Fill(true_muon_mom,reco_muon_mom,mc_wgt); //muon contained mom  
-    h_particle_matrices[1][1]->Fill(true_muon_theta,reco_muon_theta,mc_wgt); //muon contained theta  
-    h_particle_matrices[1][2]->Fill(true_muon_phi,reco_muon_phi,mc_wgt); //muon contained phi  
+    h_particle_matrices[1][0]->Fill(reco_muon_mom, true_muon_mom, mc_wgt); //muon contained mom  
+    h_particle_matrices[1][1]->Fill(reco_muon_theta, true_muon_theta, mc_wgt); //muon contained theta  
+    h_particle_matrices[1][2]->Fill(reco_muon_phi, true_muon_phi, mc_wgt); //muon contained phi  
   } else if(contained_start == true && contained_end == false && true_contained_start == true && true_contained_end == false){
-    h_particle_matrices[2][0]->Fill(true_muon_mom,reco_muon_mom,mc_wgt); //muon uncontained mom  
-    h_particle_matrices[2][1]->Fill(true_muon_theta,reco_muon_theta,mc_wgt); //muon uncontained theta  
-    h_particle_matrices[2][2]->Fill(true_muon_phi,reco_muon_phi,mc_wgt); //muon uncontained phi  
+    h_particle_matrices[2][0]->Fill(reco_muon_mom, true_muon_mom, mc_wgt); //muon uncontained mom  
+    h_particle_matrices[2][1]->Fill(reco_muon_theta, true_muon_theta, mc_wgt); //muon uncontained theta  
+    h_particle_matrices[2][2]->Fill(reco_muon_phi, true_muon_phi, mc_wgt); //muon uncontained phi  
   }
 
-  h_particle_matrices[3][0]->Fill(true_lead_mom,reco_lead_mom,mc_wgt); //lead proton mom  
-  h_particle_matrices[3][1]->Fill(true_lead_theta,reco_lead_theta,mc_wgt); //lead proton theta  
-  h_particle_matrices[3][2]->Fill(true_lead_phi,reco_lead_phi,mc_wgt); //lead proton phi  
-  //Find_Bin_Sizes(h_particle_matrices[3][0],13.0, true_lead_mom, reco_lead_mom,mc_wgt);
-  //Find_Bin_Sizes(h_particle_matrices[3][1],21.0, true_lead_theta, reco_lead_theta,mc_wgt);
-  ////Find_Bin_Sizes(h_particle_matrices[3][2],24.0, true_lead_phi, reco_lead_phi,mc_wgt);
+  h_particle_matrices[3][0]->Fill(reco_lead_mom, true_lead_mom, mc_wgt); //lead proton mom  
+  h_particle_matrices[3][1]->Fill(reco_lead_theta, true_lead_theta, mc_wgt); //lead proton theta  
+  h_particle_matrices[3][2]->Fill(reco_lead_phi, true_lead_phi, mc_wgt); //lead proton phi  
 
-  h_particle_matrices[4][0]->Fill(true_recoil_mom,reco_recoil_mom,mc_wgt); //recoil proton mom  
-  h_particle_matrices[4][1]->Fill(true_recoil_theta,reco_recoil_theta,mc_wgt); //recoil proton theta  
-  h_particle_matrices[4][2]->Fill(true_recoil_phi,reco_recoil_phi,mc_wgt); //recoil proton phi  
-  //Find_Bin_Sizes(h_particle_matrices[4][0],9.0, true_recoil_mom, reco_recoil_mom,mc_wgt);
-  //Find_Bin_Sizes(h_particle_matrices[4][1],21.0, true_recoil_theta, reco_recoil_theta,mc_wgt);
-  ////Find_Bin_Sizes(h_particle_matrices[4][2],24.0, true_recoil_phi, reco_recoil_phi,mc_wgt);
+  h_particle_matrices[4][0]->Fill(reco_recoil_mom, true_recoil_mom, mc_wgt); //recoil proton mom  
+  h_particle_matrices[4][1]->Fill(reco_recoil_theta, true_recoil_theta, mc_wgt); //recoil proton theta  
+  h_particle_matrices[4][2]->Fill(reco_recoil_phi, true_recoil_phi, mc_wgt); //recoil proton phi  
 
-
-  h_other_matrices[0]->Fill(true_opening_angle_protons_lab,reco_opening_angle_protons_lab,mc_wgt); //opening_angle_protons_lab
-  //Find_Bin_Sizes(h_other_matrices[0],21.0, true_opening_angle_protons_lab, reco_opening_angle_protons_lab,mc_wgt);
-
-  h_other_matrices[1]->Fill(true_opening_angle_protons_COM,reco_opening_angle_protons_COM,mc_wgt); //opening_angle_protons_COM
-  //Find_Bin_Sizes(h_other_matrices[1],21.0, true_opening_angle_protons_COM, reco_opening_angle_protons_COM,mc_wgt);
-
-  h_other_matrices[2]->Fill(true_opening_angle_protons_mu_leading,reco_opening_angle_protons_mu_leading,mc_wgt); //opening_angle_protons_mu_leading
-  //Find_Bin_Sizes(h_other_matrices[2],21.0, true_opening_angle_protons_mu_leading, reco_opening_angle_protons_mu_leading,mc_wgt);
-
-  h_other_matrices[3]->Fill(true_opening_angle_protons_mu_both,reco_opening_angle_protons_mu_both,mc_wgt); //opening_angle_protons_mu_both
-  //Find_Bin_Sizes(h_other_matrices[3],21.0, true_opening_angle_protons_mu_both, reco_opening_angle_protons_mu_both,mc_wgt);
-  
-  h_other_matrices[4]->Fill(true_delta_PT,reco_delta_PT, mc_wgt); //Delta_PT
-  //Find_Bin_Sizes(h_other_matrices[4],11.0, true_delta_PT, reco_delta_PT,mc_wgt);
-
-  h_other_matrices[5]->Fill(true_delta_alphaT, reco_delta_alphaT, mc_wgt);//Delta_alphaT
-  //Find_Bin_Sizes(h_other_matrices[5],19.0, true_delta_alphaT, reco_delta_alphaT,mc_wgt);
-
-  h_other_matrices[6]->Fill(true_delta_phiT, reco_delta_phiT, mc_wgt); //Delta_phiT
-  //Find_Bin_Sizes(h_other_matrices[6],19.0, true_delta_phiT, reco_delta_phiT,mc_wgt);
-
-  h_other_matrices[7]->Fill(true_nu_E, reco_nu_E, mc_wgt); //neutrino energy
-  //Find_Bin_Sizes(h_other_matrices[7],26.0, true_nu_E, reco_nu_E,mc_wgt);
+  h_other_matrices[0]->Fill(reco_opening_angle_protons_lab, true_opening_angle_protons_lab, mc_wgt); //opening_angle_protons_lab
+  h_other_matrices[1]->Fill(reco_opening_angle_protons_COM, true_opening_angle_protons_COM, mc_wgt); //opening_angle_protons_COM
+  h_other_matrices[2]->Fill(reco_opening_angle_protons_mu_leading, true_opening_angle_protons_mu_leading, mc_wgt); //opening_angle_protons_mu_leading
+  h_other_matrices[3]->Fill(reco_opening_angle_protons_mu_both, true_opening_angle_protons_mu_both, mc_wgt); //opening_angle_protons_mu_both
+  h_other_matrices[4]->Fill(reco_delta_PT, true_delta_PT, mc_wgt); //Delta_PT
+  h_other_matrices[5]->Fill(reco_delta_alphaT, true_delta_alphaT, mc_wgt);//Delta_alphaT
+  h_other_matrices[6]->Fill(reco_delta_phiT, true_delta_phiT, mc_wgt); //Delta_phiT
+  h_other_matrices[7]->Fill(reco_nu_E, true_nu_E, mc_wgt); //neutrino energy
 
 } //end of fill matrices
 
 void twoproton_pelee_overlay::Fill_Track_Plots(int which_cut, float value, int pdg, bool contained_start, bool contained_end,double wgt){
-
 
   //which cut identifies which cut we are looking at. 0 = after 3 pfps, 1 = after track score, 2 = after vertex distance
   h_track_overlay[0][which_cut][0]->Fill(trk_score_v->at(value),wgt); //fills the total

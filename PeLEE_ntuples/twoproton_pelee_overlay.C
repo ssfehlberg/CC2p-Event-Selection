@@ -140,7 +140,7 @@ void twoproton_pelee_overlay::Loop()
 	  TVector3 recoil(mc_px->at(recoil_id),mc_py->at(recoil_id),mc_pz->at(recoil_id));
 	  bool contained_start = cuts.In_FV(10,10,10,10,10,10,mc_vx->at(j),mc_vy->at(j),mc_vz->at(j));
 	  bool contained_end = cuts.In_FV(0,0,0,0,0,0,mc_endx->at(j),mc_endy->at(j),mc_endz->at(j));
-	  Fill_Efficiency(true, mc_pdg->at(j), contained_start, contained_end, leading, recoil, backtracker_mom_vector, 1.0);//testing the weight garbage mc_wgt);
+	  Fill_Efficiency(true, mc_pdg->at(j), contained_start, contained_end, leading, recoil, backtracker_mom_vector,mc_wgt);//testing the weight garbage mc_wgt);
 	} //end of for
       } //end of if same size
     } //end of if event
@@ -299,7 +299,7 @@ void twoproton_pelee_overlay::Loop()
     vRec.SetPhi(trk_phi_v->at(recoil_proton_id));
     TLorentzVector rec(vRec[0],vRec[1],vRec[2],ERec); 
 
-    Fill_Histograms_Particles(mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0, mc_n_threshold_pionpm, cuts.fv, vMuon, muon, vLead, lead, vRec, rec, 1);//testing the weight garbage mc_wgt*pot_wgt);
+    Fill_Histograms_Particles(mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0, mc_n_threshold_pionpm, cuts.fv, vMuon, muon, vLead, lead, vRec, rec, mc_wgt*pot_wgt);//testing the weight garbage mc_wgt*pot_wgt);
     Fill_Histograms_Particles_Raquel(vMuon, muon, vLead, lead, vRec, rec, mc_wgt*pot_wgt, cuts.fv);
     //Fill_Histograms_Particles(mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0, mc_n_threshold_pionpm, cuts.fv, vMuon, vLead, vRec, mc_wgt*pot_wgt);
     //Fill_Histograms_Particles_Raquel(vMuon, vLead, vRec, mc_wgt*pot_wgt, cuts.fv);
@@ -336,7 +336,7 @@ void twoproton_pelee_overlay::Loop()
 	TVector3 leading(backtracked_px->at(leading_id),backtracked_py->at(leading_id),backtracked_pz->at(leading_id));
 	TVector3 recoil(backtracked_px->at(recoil_id),backtracked_py->at(recoil_id),backtracked_pz->at(recoil_id));
 	if(leading_id == recoil_id) std::cout<<"OHHHHH SHIIIT NUGGETS!"<<std::endl;
-	Fill_Matrices(vMuon,vmuon,vLead,leading,vRec,recoil,muon_start_contained,true_contained_start,muon_end_contained,true_contained_end,1.0);//testing the weight garbage mc_wgt*pot_wgt);
+	Fill_Matrices(vMuon,vmuon,vLead,leading,vRec,recoil,muon_start_contained,true_contained_start,muon_end_contained,true_contained_end, mc_wgt*pot_wgt);//testing the weight garbage mc_wgt*pot_wgt);
 
 	for(int j=0; j < n_pfps; j++){
 	  TVector3 backtracker_mom_vector(backtracked_px->at(j),backtracked_py->at(j),backtracked_pz->at(j));
@@ -344,7 +344,7 @@ void twoproton_pelee_overlay::Loop()
 	  TVector3 recoil(backtracked_px->at(recoil_id),backtracked_py->at(recoil_id),backtracked_pz->at(recoil_id));
 	  bool contained_start = cuts.In_FV(10,10,10,10,10,10,mc_vx->at(j),mc_vy->at(j),mc_vz->at(j));
           bool contained_end = cuts.In_FV(0,0,0,0,0,0,mc_endx->at(j),mc_endy->at(j),mc_endz->at(j));
-	  Fill_Efficiency(false, backtracked_pdg->at(j), contained_start, contained_end, leading, recoil, backtracker_mom_vector, 1.0);//testing the weight garbage mc_wgt);
+	  Fill_Efficiency(false, backtracked_pdg->at(j), contained_start, contained_end, leading, recoil, backtracker_mom_vector, mc_wgt);//testing the weight garbage mc_wgt);
 	} //end of for
       } //end of if
     }//end of if specific event
