@@ -8,7 +8,7 @@ class variables{
   virtual vector<double> Calculate_Detector_Angles(TVector3 vmuon, TVector3 vlead, TVector3 vrec);
   virtual vector<double> Calculate_Opening_Angles(TVector3 vmuon, TVector3 vlead, TVector3 vrec);
   virtual double Boost(TVector3 vLead, double ELead, TVector3 vRec, double ERec, TVector3 vMuon,double EMuon); //energies are total
-  virtual vector<double> Calculate_STVS(bool add_protons, TVector3 vMuon, TVector3 vLead, TVector3 vRec,TVector2 delta_pT_vec);
+  virtual vector<double> Calculate_STVS(bool add_protons, TVector3 vMuon, TVector3 vLead, TVector3 vRec);
   virtual double Calculate_Beam(TVector3 vMuon, TVector3 vLead, TVector3 vRec,double EMuon, double ELead, double ERec); //energies are kinetic 
   virtual void Calculate_Variables(TVector3 vmuon, TVector3 vlead, TVector3 vrec, bool add_protons);
 
@@ -136,7 +136,7 @@ double variables::Boost(TVector3 vLead, double ELead, TVector3 vRec, double ERec
 
 //Calculates the STVs with given TVector3. add_protons indicates if we are adding the lead and rec proton momenta together.  
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
-vector<double> variables::Calculate_STVS(bool add_protons, TVector3 vMuon, TVector3 vLead, TVector3 vRec, TVector2 delta_pT_vec){
+vector<double> variables::Calculate_STVS(bool add_protons, TVector3 vMuon, TVector3 vLead, TVector3 vRec){
 
  TVector3 vProton;
   if(add_protons){
@@ -144,10 +144,13 @@ vector<double> variables::Calculate_STVS(bool add_protons, TVector3 vMuon, TVect
   }else{
     vProton.SetXYZ(vLead[0],vLead[1],vLead[2]);
   }
+
   double delta_pT = double((vMuon + vProton).Perp()); //perp takes the magnitude as well. stv delta pt                                                                                     
   double delta_phiT = double(180.0/3.14)*double(std::acos( (-vMuon.X()*vProton.X() - vMuon.Y()*vProton.Y()) / (vMuon.XYvector().Mod() * vProton.XYvector().Mod()))); //stv delta phi t \
-  delta_pT_vec = (vMuon + vProton).XYvector(); //need this to calculate stuff
-  double delta_alphaT = double(180.0/3.14)*double(std::acos( (-vMuon.X()*delta_pT_vec.X()- vMuon.Y()*delta_pT_vec.Y()) / (vMuon.XYvector().Mod() * delta_pT_vec.Mod()) )); //stv delta alpha T    
+
+  TVector3 delta_pT_vec;// = (vMuon + vProton).XYvector(); //need this to calculate stuff
+  delta_pT_vec.SetXYZ((vMuon[0]+vProton[0]),(vMuon[1]+vProton[1]),0.0);
+  double delta_alphaT = double(180.0/3.14)*double(std::acos( (-vMuon.X()*delta_pT_vec.X()- vMuon.Y()*delta_pT_vec.Y()) / (vMuon.XYvector().Mod() * delta_pT_vec.XYvector().Mod()) )); //stv delta alpha T    
   //vector<double> stvs{delta_pT,delta_alphaT,delta_phiT};
   stvs.push_back(delta_pT);
   stvs.push_back(delta_alphaT);
@@ -175,18 +178,7 @@ void variables::Calculate_Variables(TVector3 vmuon, TVector3 vlead, TVector3 vre
   Calculate_Detector_Angles(vmuon,vlead,vrec); //returns detector_angles(muon_theta,muon_phi,lead_theta,lead_phi,recoil_theta,recoil_phi);
   Calculate_Opening_Angles(vmuon,vlead,vrec); //returns opening_angles(opening_angle_protons_lab,opening_angle_protons_mu_leading,opening_angle_protons_mu_both);
   Boost(vlead,Energies[3],vrec,Energies[5],vmuon,Energies[1]); // returns opening_angle_protons_COM. input energies are total;
-  TVector2 delta_pT_vec;
-  Calculate_STVS(add_protons, vmuon, vlead, vrec, delta_pT_vec); //returns STVS(delta_pT,delta_alphaT,delta_phiT);
+  Calculate_STVS(add_protons, vmuon, vlead, vrec); //returns STVS(delta_pT,delta_alphaT,delta_phiT);
   Calculate_Beam(vmuon,vlead,vrec,Energies[0],Energies[2],Energies[4]);//returns calculated_nu_E. input energies are KE;
 
-  /*
-  (if _debug) std::cout<<"[CALCULATE_VARIABLES] Value of PT_miss magnitude: "<<PT_miss.Mag()<<std::endl;
-  (if _debug) std::cout<<"[CALCULATE_VARIABLES] Value of PT_miss magnitude2: "<<PT_miss.Mag2()<<std::endl;
-  (if _debug) std::cout<<"[CALCULATE_VARIABLES] Value of PT_miss magnitude2 divided by 2*35.37: "<<(PT_miss.Mag2())/(2.0*35.37)<<std::endl;
-  (if _debug) std::cout<<"[CALCULATE_VARIABLES] Value of Eneutrino: "<<Eneutrino<<std::endl;
-  (if _debug) std::cout<<"[CALCULATE_VARIABLES] Value of E_tot_minus_beam: "<<E_tot_minus_beam<<std::endl;
-  (if _debug) std::cout<<"[CALCULATE_VARIABLES] Value of the added vectors x : "<<lead[0]+rec[0]+muon[0]<<std::endl;
-  (if _debug) std::cout<<"[CALCULATE_VARIABLES] Value of the added vectors y : "<<lead[1]+rec[1]+muon[1]<<std::endl;
-  (if _debug) std::cout<<"[CALCULATE_VARIABLES] Value of the added vectors z : "<<lead[2]+rec[2]+muon[2]<<std::endl;
-  */
 } 

@@ -140,7 +140,10 @@ void twoproton_pelee_overlay::Loop()
 	  TVector3 recoil(mc_px->at(recoil_id),mc_py->at(recoil_id),mc_pz->at(recoil_id));
 	  bool contained_start = cuts.In_FV(10,10,10,10,10,10,mc_vx->at(j),mc_vy->at(j),mc_vz->at(j));
 	  bool contained_end = cuts.In_FV(0,0,0,0,0,0,mc_endx->at(j),mc_endy->at(j),mc_endz->at(j));
-	  Fill_Efficiency(true, mc_pdg->at(j), contained_start, contained_end, leading, recoil, backtracker_mom_vector,mc_wgt);//testing the weight garbage mc_wgt);
+	  Fill_Efficiency_Thresholds(true, mc_pdg->at(j), contained_start, contained_end, leading, recoil, backtracker_mom_vector,mc_wgt);//testing the weight garbage mc_wgt);
+	  if(std::abs(mc_pdg->at(j)) == 13){
+	    Fill_Efficiency_XSec(true,contained_start,contained_end,backtracker_mom_vector,leading,recoil,mc_wgt);
+	  } //end of ==13
 	} //end of for
       } //end of if same size
     } //end of if event
@@ -299,7 +302,7 @@ void twoproton_pelee_overlay::Loop()
     vRec.SetPhi(trk_phi_v->at(recoil_proton_id));
     TLorentzVector rec(vRec[0],vRec[1],vRec[2],ERec); 
 
-    Fill_Histograms_Particles(mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0, mc_n_threshold_pionpm, cuts.fv, vMuon, muon, vLead, lead, vRec, rec, mc_wgt*pot_wgt);//testing the weight garbage mc_wgt*pot_wgt);
+    Fill_Histograms_Particles(mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0, mc_n_threshold_pionpm, cuts.fv, vMuon, muon, vLead, lead, vRec, rec, mc_wgt*pot_wgt);
     Fill_Histograms_Particles_Raquel(vMuon, muon, vLead, lead, vRec, rec, mc_wgt*pot_wgt, cuts.fv);
     //Fill_Histograms_Particles(mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0, mc_n_threshold_pionpm, cuts.fv, vMuon, vLead, vRec, mc_wgt*pot_wgt);
     //Fill_Histograms_Particles_Raquel(vMuon, vLead, vRec, mc_wgt*pot_wgt, cuts.fv);
@@ -313,7 +316,8 @@ void twoproton_pelee_overlay::Loop()
       for(int j=0; j < n_pfps; j++){
 	if(std::abs(backtracked_pdg->at(j)) == 13){ //muon loop
 	  vmuon.SetXYZ(backtracked_px->at(j),backtracked_py->at(j),backtracked_pz->at(j));
-	  if(mc_pdg->size() == n_pfps){                                                                                                                                                                                                                   true_contained_start = cuts.In_FV(10,10,10,10,10,10,mc_vx->at(j),mc_vy->at(j),mc_vz->at(j)); //I don't have the right size mc_vx....sooo                                                                                         
+	  if(mc_pdg->size() == n_pfps){                                                                                                                                                                                                                   
+	    true_contained_start = cuts.In_FV(10,10,10,10,10,10,mc_vx->at(j),mc_vy->at(j),mc_vz->at(j)); //I don't have the right size mc_vx....sooo                                                                                         
 	    true_contained_end = cuts.In_FV(0,0,0,0,0,0,mc_endx->at(j),mc_endy->at(j),mc_endz->at(j));//i don't have the right size mc_vx......                                                                                              
 	  }
 	}
@@ -344,7 +348,10 @@ void twoproton_pelee_overlay::Loop()
 	  TVector3 recoil(backtracked_px->at(recoil_id),backtracked_py->at(recoil_id),backtracked_pz->at(recoil_id));
 	  bool contained_start = cuts.In_FV(10,10,10,10,10,10,mc_vx->at(j),mc_vy->at(j),mc_vz->at(j));
           bool contained_end = cuts.In_FV(0,0,0,0,0,0,mc_endx->at(j),mc_endy->at(j),mc_endz->at(j));
-	  Fill_Efficiency(false, backtracked_pdg->at(j), contained_start, contained_end, leading, recoil, backtracker_mom_vector, mc_wgt);//testing the weight garbage mc_wgt);
+	  Fill_Efficiency_Thresholds(false, backtracked_pdg->at(j), contained_start, contained_end, leading, recoil, backtracker_mom_vector, mc_wgt);//testing the weight garbage mc_wgt);
+          if(std::abs(mc_pdg->at(j)) == 13){
+            Fill_Efficiency_XSec(false,contained_start,contained_end,backtracker_mom_vector,leading,recoil,mc_wgt);
+	  } //end of ==13
 	} //end of for
       } //end of if
     }//end of if specific event
@@ -353,52 +360,6 @@ void twoproton_pelee_overlay::Loop()
     mc_proton_mom.clear();
     zipped.clear();
 
-    /*
-    //Have to make sure we fill the migration matrices
-    /////////////////////////////////////////////////
-    bool true_contained_start;
-    bool true_contained_end;
-    TVector3 vmuon;
-    int leading_id;
-    int recoil_id;
-
-    for(int i=0; i < n_pfps; i++){
-      TVector3 mom_test(backtracked_px->at(i),backtracked_py->at(i),backtracked_pz->at(i));
-
-      if(std::abs(backtracked_pdg->at(i)) == 13){
-	vmuon.SetXYZ(backtracked_px->at(i),backtracked_py->at(i),backtracked_pz->at(i));
-	if(mc_pdg->size() == n_pfps){
-	  true_contained_start = cuts.In_FV(10,10,10,10,10,10,mc_vx->at(i),mc_vy->at(i),mc_vz->at(i)); //I don't have the right size mc_vx....sooo  
-	  true_contained_end = cuts.In_FV(0,0,0,0,0,0,mc_endx->at(i),mc_endy->at(i),mc_endz->at(i));//i don't have the right size mc_vx......    
-	}
-      }
-      if (std::abs(backtracked_pdg->at(i)) == 2212){
-	TVector3 backtracker_mom_vector(backtracked_px->at(i),backtracked_py->at(i),backtracked_pz->at(i));
-	mc_proton_mom.push_back(backtracker_mom_vector.Mag());
-	mc_protons_id.push_back(i);
-	zipped.push_back(std::make_pair(backtracker_mom_vector.Mag(),i));
-      }
-    }
-
-    std::sort(zipped.begin(), zipped.end(), greater());
-    for(int j=0; j < mc_protons_id.size(); j++){
-      mc_proton_mom[j] = zipped[j].first;
-      mc_protons_id[j] = zipped[j].second;
-    }
-    if(mc_protons_id.size() >= 2 && mc_proton_mom.size() >= 2){
-      leading_id = mc_protons_id[0];
-      recoil_id = mc_protons_id[1];
-    }
-
-    TVector3 leading(backtracked_px->at(leading_id),backtracked_py->at(leading_id),backtracked_pz->at(leading_id));
-    TVector3 recoil(backtracked_px->at(recoil_id),backtracked_py->at(recoil_id),backtracked_pz->at(recoil_id));
-    if(leading.Mag() > 2.0) continue;
-    leading_true_angle_bad++;
-    if(recoil.Mag() > 2.0) continue;
-    recoil_true_angle_bad++;
-
-    Fill_Matrices(vMuon,vmuon,vLead,leading,vRec,recoil,muon_start_contained,true_contained_start,muon_end_contained,true_contained_end,mc_wgt*pot_wgt);
-    */
     //Make sure to clean up before you finish
     proton_id_vector.clear();
     testVector.clear();

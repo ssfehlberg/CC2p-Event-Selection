@@ -1458,7 +1458,8 @@ public :
    virtual void     Which_Run();
    virtual void     Define_Histograms(); //defines histograms. works for all samples
    //virtual void     MC_Definitions();
-   virtual void     Fill_Efficiency(bool denom, int backtracked_pdg, bool contained_start, bool contained_end, TVector3 leading, TVector3 recoil,TVector3 backtracker_mom_vector,double mc_wgt = 1.0);
+   virtual void     Fill_Efficiency_Thresholds(bool denom, int backtracked_pdg, bool contained_start, bool contained_end, TVector3 leading, TVector3 recoil,TVector3 backtracker_mom_vector,double mc_wgt = 1.0);
+   virtual void     Fill_Efficiency_XSec(bool denom, bool contained_start, bool contained_end, TVector3 vMuon,TVector3 vLead, TVector3 vRec,double mc_wgt = 1.0);
    virtual void     Fill_Matrices(TVector3 vMuon, TVector3 muon,TVector3 vLead, TVector3 lead,TVector3 vRec, TVector3 rec, bool contained_start, bool true_contained_start,bool contained_end, bool true_contained_end,double mc_wgt);
    virtual void     Fill_Histograms_Mine(int i, double wgt, int mc_n_threshold_muon, int mc_n_threshold_proton, int mc_n_threshold_pion0, double mc_n_threshold_pionpm, bool fv);
    virtual void     Fill_Histograms_Raquel(int i, double wgt, bool fv);
@@ -2333,152 +2334,201 @@ void twoproton_pelee_overlay::MC_Definitions(){
 }//MC_definitions
 */
 
-void twoproton_pelee_overlay::Fill_Efficiency(bool denom, int backtracked_pdg, bool contained_start, bool contained_end, TVector3 leading, TVector3 recoil,TVector3 backtracker_mom_vector,double mc_wgt = 1.0){
-  
-  Double_t open_angle_protons_lab = leading.Angle(recoil);
-  double open_angle_protons_com;
-  double open_angle_mu_leading;
-  double open_angle_mu_both;
-  double delta_PT;
-  double delta_phiT;
-  double delta_alphaT;
-  TVector3 Protons = leading + recoil;
-
-  if(std::abs(backtracked_pdg) == 13){
-    double EMuon = std::sqrt(backtracker_mom_vector.Mag2()+std::pow(MASS_MUON,2)) - MASS_MUON;
-    double ERec = std::sqrt(recoil.Mag2()+std::pow(MASS_PROTON,2)) - MASS_PROTON;
-    double ELead = std::sqrt(leading.Mag2()+std::pow(MASS_PROTON,2)) - MASS_PROTON;
-    TLorentzVector lead(leading[0],leading[1],leading[2],ELead);
-    TLorentzVector rec(recoil[0],recoil[1],recoil[2],ERec);
-    TLorentzVector betacm(recoil[0]+leading[0]+backtracker_mom_vector[0],recoil[1]+leading[1]+backtracker_mom_vector[1],recoil[2]+leading[2]+backtracker_mom_vector[2],ERec+ELead+EMuon+MASS_MUON+2*MASS_PROTON);
-    TVector3 boost = betacm.BoostVector(); //the boost vector                                                                                                                                                                         
-    lead.Boost(-boost); //boost leading proton                                                                                                                                                                                        
-    rec.Boost(-boost); //boost recoil proton                                                                                                                                                                                           
-
-    open_angle_protons_com =lead.Angle(rec.Vect());
-    open_angle_mu_leading = backtracker_mom_vector.Angle(leading);
-    open_angle_mu_both = backtracker_mom_vector.Angle(Protons);
-
-    delta_PT = (backtracker_mom_vector + Protons).Perp();
-    delta_phiT = std::acos( (-backtracker_mom_vector.X()*Protons.X() - backtracker_mom_vector.Y()*Protons.Y()) / (backtracker_mom_vector.XYvector().Mod() * Protons.XYvector().Mod()));
-    TVector2 delta_pT_vec = (backtracker_mom_vector + Protons).XYvector();
-    delta_alphaT = std::acos( (-backtracker_mom_vector.X()*delta_pT_vec.X()- backtracker_mom_vector.Y()*delta_pT_vec.Y()) / (backtracker_mom_vector.XYvector().Mod() * delta_pT_vec.Mod()));
-    
-  }
+void twoproton_pelee_overlay::Fill_Efficiency_Thresholds(bool denom, int backtracked_pdg, bool contained_start, bool contained_end, TVector3 leading, TVector3 recoil,TVector3 backtracker_mom_vector,double mc_wgt = 1.0){
 
   if(denom == true){
-  
-    h_other_eff_denom[0]->Fill(std::cos(open_angle_protons_lab),mc_wgt); //opening angle protons lab
-    h_other_eff_denom[1]->Fill(std::cos(open_angle_protons_com),mc_wgt); //opening angle protons com 
-    h_other_eff_denom[2]->Fill(std::cos(open_angle_mu_leading),mc_wgt); //opening angle mu leading 
-    h_other_eff_denom[3]->Fill(std::cos(open_angle_mu_both),mc_wgt); //opening angle mu both 
-    h_other_eff_denom[4]->Fill(delta_PT,mc_wgt); //delta pt 
-    h_other_eff_denom[5]->Fill(delta_alphaT*180/3.14,mc_wgt); //delta alphat 
-    h_other_eff_denom[6]->Fill(delta_phiT*180/3.14,mc_wgt); //delta phit 
-    h_other_eff_denom[7]->Fill(nu_e,mc_wgt); //neutrino energy
 
+    //All Muons
     if(std::abs(backtracked_pdg) == 13){
-      h_mom_threshold_denom[0]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //muon all  
-      h_particle_denom[0][0]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //momentum       
-      h_particle_denom[0][1]->Fill(std::cos(backtracker_mom_vector.Theta()),mc_wgt); //muon costheta
-      h_particle_denom[0][2]->Fill(backtracker_mom_vector.Phi(),mc_wgt); //muon phi
-
+      h_mom_threshold_denom[0]->Fill(backtracker_mom_vector.Mag(),mc_wgt);
+      //contained muons
       if(contained_start == true && contained_end == true){
-	h_mom_threshold_denom[1]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //muon contained
-	h_particle_denom[1][0]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //momentum 
-	h_particle_denom[1][1]->Fill(std::cos(backtracker_mom_vector.Theta()),mc_wgt); //muon costheta                 
-	h_particle_denom[1][2]->Fill(backtracker_mom_vector.Phi(),mc_wgt); //muon phi  
+	h_mom_threshold_denom[1]->Fill(backtracker_mom_vector.Mag(),mc_wgt);
 	denom_contained++;
-
+	//uncontained muons
       } else if(contained_start == true && contained_end == false){
-	h_mom_threshold_denom[2]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //muon uncontained 
-	h_particle_denom[2][0]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //momentum 
-	h_particle_denom[2][1]->Fill(std::cos(backtracker_mom_vector.Theta()),mc_wgt); //muon costheta                 
-	h_particle_denom[2][2]->Fill(backtracker_mom_vector.Phi(),mc_wgt); //muon phi
+	h_mom_threshold_denom[2]->Fill(backtracker_mom_vector.Mag(),mc_wgt);
 	denom_uncontained++;
       } 
-
+      //all protons
     }else if (std::abs(backtracked_pdg) == 2212){
-      h_mom_threshold_denom[3]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //proton all
-
+      h_mom_threshold_denom[3]->Fill(backtracker_mom_vector.Mag(),mc_wgt);
+      //leading proton
       if(backtracker_mom_vector.Mag() == leading.Mag()){
-	h_mom_threshold_denom[4]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //proton leading
-	h_particle_denom[3][0]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //momentum 
-	h_particle_denom[3][1]->Fill(std::cos(backtracker_mom_vector.Theta()),mc_wgt); //proton costheta                                      
-	h_particle_denom[3][2]->Fill(backtracker_mom_vector.Phi(),mc_wgt); //proton phi 
-
+	h_mom_threshold_denom[4]->Fill(backtracker_mom_vector.Mag(),mc_wgt);
+	//recoil proton
       } else if (backtracker_mom_vector.Mag() == recoil.Mag()){
-	h_mom_threshold_denom[5]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //proton recoil 
-	h_particle_denom[4][0]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //momentum 
-	h_particle_denom[4][1]->Fill(std::cos(backtracker_mom_vector.Theta()),mc_wgt); //proton costheta                                     
-	h_particle_denom[4][2]->Fill(backtracker_mom_vector.Phi(),mc_wgt); //proton phi 
+	h_mom_threshold_denom[5]->Fill(backtracker_mom_vector.Mag(),mc_wgt);
       }
+      //pion+
     }else if (backtracked_pdg == 211){
-      h_mom_threshold_denom[6]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //pion+
+      h_mom_threshold_denom[6]->Fill(backtracker_mom_vector.Mag(),mc_wgt);
+      //pion-
     }else if (backtracked_pdg == -211){
-      h_mom_threshold_denom[7]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //pion-
+      h_mom_threshold_denom[7]->Fill(backtracker_mom_vector.Mag(),mc_wgt);
+      //pion0
     }else if(backtracked_pdg == 111){
-      h_mom_threshold_denom[8]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //pion0  
+      h_mom_threshold_denom[8]->Fill(backtracker_mom_vector.Mag(),mc_wgt);
     } //end of else if pion
 
     
   } else if (denom == false){
-
-    h_other_eff_num[0]->Fill(std::cos(open_angle_protons_lab),mc_wgt); //opening angle protons lab
-    h_other_eff_num[1]->Fill(std::cos(open_angle_protons_com),mc_wgt); //opening angle protons com 
-    h_other_eff_num[2]->Fill(std::cos(open_angle_mu_leading),mc_wgt); //opening angle mu leading 
-    h_other_eff_num[3]->Fill(std::cos(open_angle_mu_both),mc_wgt); //opening angle mu both 
-    h_other_eff_num[4]->Fill(delta_PT,mc_wgt); //delta pt 
-    h_other_eff_num[5]->Fill(delta_alphaT*180/3.14,mc_wgt); //delta alphat 
-    h_other_eff_num[6]->Fill(delta_phiT*180/3.14,mc_wgt); //delta phit 
-    h_other_eff_num[7]->Fill(nu_e,mc_wgt); //neutrino energy
-
+    
+    //All Muons                                                                                                                                                                                                                                                      
     if(std::abs(backtracked_pdg) == 13){
-      h_mom_threshold_num[0]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //muon all  
-      h_particle_num[0][0]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //momentum
-      h_particle_num[0][1]->Fill(std::cos(backtracker_mom_vector.Theta()),mc_wgt); //muon costheta
-      h_particle_num[0][2]->Fill(backtracker_mom_vector.Phi(),mc_wgt); //muon phi
-
+      h_mom_threshold_num[0]->Fill(backtracker_mom_vector.Mag(),mc_wgt);
+      //contained muons                                                                                                                                                                                                                                              
       if(contained_start == true && contained_end == true){
-	h_mom_threshold_num[1]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //muon contained
-	h_particle_num[1][0]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //momentum       
-	h_particle_num[1][1]->Fill(std::cos(backtracker_mom_vector.Theta()),mc_wgt); //muon costheta                   
-	h_particle_num[1][2]->Fill(backtracker_mom_vector.Phi(),mc_wgt); //muon phi  
-	num_contained++;
-
+        h_mom_threshold_num[1]->Fill(backtracker_mom_vector.Mag(),mc_wgt);
+        denom_contained++;
+        //uncontained muons                                                                                                                                                                                                                                          
       } else if(contained_start == true && contained_end == false){
-	h_mom_threshold_num[2]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //muon uncontained 
-	h_particle_num[2][0]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //momentum       
-	h_particle_num[2][1]->Fill(std::cos(backtracker_mom_vector.Theta()),mc_wgt); //muon costheta                   
-	h_particle_num[2][2]->Fill(backtracker_mom_vector.Phi(),mc_wgt); //muon phi
-	num_uncontained++;
-      } 
-
-    }else if (std::abs(backtracked_pdg) == 2212){
-      h_mom_threshold_num[3]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //proton all
-
-      if(backtracker_mom_vector.Mag() == leading.Mag()){
-	h_mom_threshold_num[4]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //proton leading
-	h_particle_num[3][0]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //momentum       
-	h_particle_num[3][1]->Fill(std::cos(backtracker_mom_vector.Theta()),mc_wgt); //proton costheta                                      
-	h_particle_num[3][2]->Fill(backtracker_mom_vector.Phi(),mc_wgt); //proton phi 
-
-      } else if (backtracker_mom_vector.Mag() == recoil.Mag()){
-	h_mom_threshold_num[5]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //proton recoil 
-	h_particle_num[4][0]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //momentum       
-	h_particle_num[4][1]->Fill(std::cos(backtracker_mom_vector.Theta()),mc_wgt); //proton costheta                                     
-	h_particle_num[4][2]->Fill(backtracker_mom_vector.Phi(),mc_wgt); //proton phi 
+        h_mom_threshold_num[2]->Fill(backtracker_mom_vector.Mag(),mc_wgt);
+        denom_uncontained++;
       }
+      //all protons                                                                                                                                                                                                                                                  
+    }else if (std::abs(backtracked_pdg) == 2212){
+      h_mom_threshold_num[3]->Fill(backtracker_mom_vector.Mag(),mc_wgt);
+      //leading proton                                                                                                                                                                                                                                               
+      if(backtracker_mom_vector.Mag() == leading.Mag()){
+        h_mom_threshold_num[4]->Fill(backtracker_mom_vector.Mag(),mc_wgt);
+        //recoil proton                                                                                                                                                                                                                                              
+      } else if (backtracker_mom_vector.Mag() == recoil.Mag()){
+        h_mom_threshold_num[5]->Fill(backtracker_mom_vector.Mag(),mc_wgt);
+      }
+      //pion+                                                                                                                                                                                                                                                        
     }else if (backtracked_pdg == 211){
-      h_mom_threshold_num[6]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //pion+
+      h_mom_threshold_num[6]->Fill(backtracker_mom_vector.Mag(),mc_wgt);
+      //pion-                                                                                                                                                                                                                                                        
     }else if (backtracked_pdg == -211){
-      h_mom_threshold_num[7]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //pion-
+      h_mom_threshold_num[7]->Fill(backtracker_mom_vector.Mag(),mc_wgt);
+      //pion0                                                                                                                                                                                                                                                        
     }else if(backtracked_pdg == 111){
-      h_mom_threshold_num[8]->Fill(backtracker_mom_vector.Mag(),mc_wgt); //pion0  
-    } //end of else if pion
+      h_mom_threshold_num[8]->Fill(backtracker_mom_vector.Mag(),mc_wgt);
+    } //end of else if pion  
   } //end of num loop
 
-}//end of Fill_Eff
+}//end of Fill_Eff_Thresholds
+
+
+void twoproton_pelee_overlay::Fill_Efficiency_XSec(bool denom, bool contained_start, bool contained_end, TVector3 vMuon,TVector3 vLead, TVector3 vRec,double mc_wgt = 1.0){
+
+  // Run the Calculate Variables function inside of variables.h. Returns following:                                                                                                                                                                                   
+  // 1) vector: momenta(muon_mom,lead_mom,rec_mom);                                                                                                                                                                                                                     // 2) vector: Energies(KE_muon, TotE_muon, KE_Lead, TotE_Lead, KE_Rec, TotE_Rec);                                                                                                                                                                                     // 3) vector: detector_angles(muon_theta,muon_phi,lead_theta,lead_phi,recoil_theta,recoil_phi);                                                                                                                                                                       // 4) vector: opening_angles(opening_angle_protons_lab,opening_angle_protons_mu_leading,opening_angle_protons_mu_both);  // 5) double: opening_angle_protons_COM                                                                                                      // 6) vector: STVS(delta_pT,delta_alphaT,delta_phiT);                                                                                                                                                                                                                 // 7) double: calculated_nu_E                                                                                                                                                                                                                                        
+  variables.Calculate_Variables(vMuon,vLead,vRec,add_protons);
+
+  //muon                                                                                                                                                                                                                                                             
+  double muon_mom = variables.momenta[0];
+  double muon_theta = variables.detector_angles[0]; //cosine applied                                                                                                                                                                                                 
+  double muon_phi = variables.detector_angles[1];
+  double EMuon = variables.Energies[0]; //KE                                                                                                                                                                                                                           
+  //lead proton                                                                                                                                                                                                                                                      
+  double lead_mom = variables.momenta[1];
+  double lead_theta = variables.detector_angles[2]; //cosine applied                                                                                                                                                                                                 
+  double lead_phi = variables.detector_angles[3];
+  double ELead = variables.Energies[2]; //KE                                                                                                                                                                                                                           
+  //recoil proton                                                                                                                                                                                                                                                    
+  double recoil_mom = variables.momenta[2];
+  double recoil_theta = variables.detector_angles[4]; //cosine applied                                                                                                                                                                                               
+  double recoil_phi =  variables.detector_angles[5];
+  double ERec = variables.Energies[4]; //KE                                                                                                                                                                                                                            
+  //opening angles                                                                                                                                                                                                                                                   
+  double opening_angle_protons_lab = variables.opening_angles[0]; //cosine applied                                                                                                                                                                                   
+  double opening_angle_protons_COM = variables.opening_angle_protons_COM; //cosine applied                                                                                                                                                                           
+  double opening_angle_protons_mu_leading = variables.opening_angles[1]; //cosine applied                                                                                                                                                                           
+  double opening_angle_protons_mu_both = variables.opening_angles[2]; //cosine applied                                                                                                                                                                                 
+  //stvs                                                                                                                                                                                                                                                             
+  double delta_PT = variables.stvs[0];
+  double delta_alphaT = variables.stvs[1]; //degrees                                                                                                                                                                                                                 
+  double delta_phiT = variables.stvs[2]; //degrees                             
+
+  //neutrino energy
+  double Eneutrino = variables.calculated_nu_E;                                                                                                                                                                        
+  
+if(denom == true){
+  
+    //All Muons
+    h_particle_denom[0][0]->Fill(muon_mom,mc_wgt); //momentum       
+    h_particle_denom[0][1]->Fill(muon_theta,mc_wgt); //muon costheta
+    h_particle_denom[0][2]->Fill(muon_phi,mc_wgt); //muon phi
+      
+    //contained muons
+    if(contained_start == true && contained_end == true){
+      h_particle_denom[1][0]->Fill(muon_mom,mc_wgt); //momentum 
+      h_particle_denom[1][1]->Fill(muon_theta,mc_wgt); //muon costheta                 
+      h_particle_denom[1][2]->Fill(muon_phi,mc_wgt); //muon phi  
+      
+      //uncontained muons
+    } else if(contained_start == true && contained_end == false){
+	h_particle_denom[2][0]->Fill(muon_mom,mc_wgt); //momentum 
+	h_particle_denom[2][1]->Fill(muon_theta,mc_wgt); //muon costheta                 
+	h_particle_denom[2][2]->Fill(muon_phi,mc_wgt); //muon phi
+      } 
+
+    //leading proton
+    h_particle_denom[3][0]->Fill(lead_mom,mc_wgt); //momentum 
+    h_particle_denom[3][1]->Fill(lead_theta,mc_wgt); //proton costheta                                      
+    h_particle_denom[3][2]->Fill(lead_phi,mc_wgt); //proton phi 
+    
+    //recoil proton
+    h_particle_denom[4][0]->Fill(recoil_mom,mc_wgt); //momentum 
+    h_particle_denom[4][1]->Fill(recoil_theta,mc_wgt); //proton costheta                                     
+    h_particle_denom[4][2]->Fill(recoil_phi,mc_wgt); //proton phi 
+
+    //Other physics variables
+    h_other_eff_denom[0]->Fill(opening_angle_protons_lab,mc_wgt); //opening angle protons lab                                                                                                                                                                  
+    h_other_eff_denom[1]->Fill(opening_angle_protons_COM,mc_wgt); //opening angle protons com                                                                                                                                                                 
+    h_other_eff_denom[2]->Fill(opening_angle_protons_mu_leading,mc_wgt); //opening angle mu leading                                                                                                                                                                   
+    h_other_eff_denom[3]->Fill(opening_angle_protons_mu_both,mc_wgt); //opening angle mu both                                                                                                                                                                         
+    h_other_eff_denom[4]->Fill(delta_PT,mc_wgt); //delta pt                                                                                                                                                                                                          
+    h_other_eff_denom[5]->Fill(delta_alphaT,mc_wgt); //delta alphat                                                                                                                                                                                         
+    h_other_eff_denom[6]->Fill(delta_phiT,mc_wgt); //delta phit                                                                                                                                                                                            
+    h_other_eff_denom[7]->Fill(Eneutrino,mc_wgt); //neutrino energy   
+    
+  } else if (denom == false){
+
+  //All Muons                                                                                                                                                                                                                                                        
+  h_particle_num[0][0]->Fill(muon_mom,mc_wgt); //momentum                                                                                                                                                                                                          
+  h_particle_num[0][1]->Fill(muon_theta,mc_wgt); //muon costheta                                                                                                                                                                                                   
+  h_particle_num[0][2]->Fill(muon_phi,mc_wgt); //muon phi                                                                                                                                                                                                          
+
+  //contained muons                                                                                                                                                                                                                                                  
+  if(contained_start == true && contained_end == true){
+    h_particle_num[1][0]->Fill(muon_mom,mc_wgt); //momentum                                                                                                                                                                                                        
+    h_particle_num[1][1]->Fill(muon_theta,mc_wgt); //muon costheta                                                                                                                                                                                                 
+    h_particle_num[1][2]->Fill(muon_phi,mc_wgt); //muon phi                                                                                                                                                                                                        
+
+    //uncontained muons                                                                                                                                                                                                                                              
+  } else if(contained_start == true && contained_end == false){
+    h_particle_num[2][0]->Fill(muon_mom,mc_wgt); //momentum                                                                                                                                                                                                      
+    h_particle_num[2][1]->Fill(muon_theta,mc_wgt); //muon costheta                                                                                                                                                                                               
+    h_particle_num[2][2]->Fill(muon_phi,mc_wgt); //muon phi                                                                                                                                                                                                      
+  }
+
+  //leading proton                                                                                                                                                                                                                                                   
+  h_particle_num[3][0]->Fill(lead_mom,mc_wgt); //momentum                                                                                                                                                                                                          
+  h_particle_num[3][1]->Fill(lead_theta,mc_wgt); //proton costheta                                                                                                                                                                                                 
+  h_particle_num[3][2]->Fill(lead_phi,mc_wgt); //proton phi                                                                                                                                                                                                        
+
+  //recoil proton                                                                                                                                                                                                                                                    
+  h_particle_num[4][0]->Fill(recoil_mom,mc_wgt); //momentum                                                                                                                                                                                                        
+  h_particle_num[4][1]->Fill(recoil_theta,mc_wgt); //proton costheta                                                                                                                                                                                               
+  h_particle_num[4][2]->Fill(recoil_phi,mc_wgt); //proton phi                                                                                                                                                                                                      
+
+  //Other physics variables                                                                                                                                                                                                                                          
+  h_other_eff_num[0]->Fill(opening_angle_protons_lab,mc_wgt); //opening angle protons lab                                                                                                                                                                          
+  h_other_eff_num[1]->Fill(opening_angle_protons_COM,mc_wgt); //opening angle protons com                                                                                                                                                                          
+  h_other_eff_num[2]->Fill(opening_angle_protons_mu_leading,mc_wgt); //opening angle mu leading                                                                                                                                                                   
+  h_other_eff_num[3]->Fill(opening_angle_protons_mu_both,mc_wgt); //opening angle mu both                                                                                                                                                                         
+  h_other_eff_num[4]->Fill(delta_PT,mc_wgt); //delta pt                                                                                                                                                                                                            
+  h_other_eff_num[5]->Fill(delta_alphaT,mc_wgt); //delta alphat                                                                                                                                                                                                    
+  h_other_eff_num[6]->Fill(delta_phiT,mc_wgt); //delta phit                                                                                                                                                                                                        
+  h_other_eff_num[7]->Fill(Eneutrino,mc_wgt); //neutrino energy  
+
+  } //end of num loop
+
+}
+
 
 void twoproton_pelee_overlay::Fill_Matrices(TVector3 vMuon, TVector3 muon,TVector3 vLead, TVector3 lead,TVector3 vRec, TVector3 rec, bool contained_start, bool true_contained_start,bool contained_end, bool true_contained_end,double mc_wgt){
 
@@ -2914,6 +2964,7 @@ void twoproton_pelee_overlay::Fill_Histograms_Raquel(int i, double wgt, bool fv)
 
 
 void twoproton_pelee_overlay::Fill_Particles(int j, TVector3 vMuon, TLorentzVector muon, TVector3 vLead, TLorentzVector lead, TVector3 vRec, TLorentzVector rec, double wgt){
+
   //first index indicates which variable is being filled: mom, energy, theta, phi                                                           
   //second index represents what channel we are filling                                                                                  
   h_muon_overlay[0][j]->Fill(vMuon.Mag(),wgt);
@@ -3087,6 +3138,7 @@ void twoproton_pelee_overlay::Fill_Histograms_Particles(int mc_n_threshold_muon,
   if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_proton == 0 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
     Fill_Particles(1, vMuon,muon,vLead,lead,vRec,rec,wgt);
     cc0p0pi[number]++;
+
     //cc1p0pi                                                                                                                            
   } else if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_proton == 1 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
     Fill_Particles(2, vMuon,muon,vLead,lead,vRec,rec,wgt);

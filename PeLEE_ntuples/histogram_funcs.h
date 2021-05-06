@@ -331,8 +331,10 @@ void histogram_funcs::Fill_Particles(TVector3 vMuon, TLorentzVector muon, TVecto
   h_opening_angle_mu_leading->Fill(opening_angle_protons_mu_leading,wgt);
   h_opening_angle_mu_both->Fill(opening_angle_protons_mu_both,wgt);
   h_delta_PT->Fill(delta_PT,wgt);
+
   h_delta_alphaT->Fill(delta_alphaT,wgt);
   h_delta_phiT->Fill(delta_phiT,wgt);
+
   h_nu_E->Fill(Eneutrino,wgt);
   h_mom_struck_nuc->Fill(p_struck_nuc,wgt);
   h_tot_pz->Fill(pz_tot,wgt);
