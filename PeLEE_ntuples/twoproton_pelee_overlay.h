@@ -2527,6 +2527,12 @@ if(denom == true){
 
   } //end of num loop
 
+ variables.momenta.clear();                                                                                                                                                                                                                                           
+ variables.detector_angles.clear();                                                                                                                                                                                                                                   
+ variables.opening_angles.clear();                                                                                                                                                                                                                                    
+ variables.stvs.clear();                                                                                                                                                                                                                                              
+ variables.Energies.clear();  
+
 }
 
 
@@ -2542,7 +2548,7 @@ void twoproton_pelee_overlay::Fill_Matrices(TVector3 vMuon, TVector3 muon,TVecto
 
   //Define all the reconstructed quantities
   ////////////////////////////////////////
-  variables.Calculate_Variables(vMuon,vLead,vRec,add_protons);
+  /*  variables.Calculate_Variables(vMuon,vLead,vRec,add_protons);
   double reco_muon_mom = variables.momenta[0];
   double reco_muon_theta = variables.detector_angles[0];
   double reco_muon_phi = variables.detector_angles[1];
@@ -2602,7 +2608,7 @@ void twoproton_pelee_overlay::Fill_Matrices(TVector3 vMuon, TVector3 muon,TVecto
   variables.stvs.clear();
   variables.Energies.clear();
 
-  /*
+  */
   //Define Reco Quantities
   /////////////////////////
   double reco_muon_mom = vMuon.Mag();
@@ -2678,7 +2684,7 @@ void twoproton_pelee_overlay::Fill_Matrices(TVector3 vMuon, TVector3 muon,TVecto
   true_LEAD.Boost(-true_boost); //boost leading proton                                                                                                                                                                
   true_REC.Boost(-true_boost); //boost recoil proton                      
   double true_opening_angle_protons_COM = std::cos(true_LEAD.Angle(true_REC.Vect()));
-  */
+  
   if(true_lead_theta >= -0.6 && true_lead_theta <= -0.4 && reco_lead_theta >= 0.8) {
     std::cout<<"Value of reco lead theta: "<<reco_lead_theta<<std::endl;
     std::cout<<"Value of true lead theta: "<<true_lead_theta<<std::endl;
