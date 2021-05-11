@@ -2968,7 +2968,6 @@ void twoproton_pelee_overlay::Fill_Histograms_Raquel(int i, double wgt, bool fv)
   } 
 }
 
-
 void twoproton_pelee_overlay::Fill_Particles(int j, TVector3 vMuon, TLorentzVector muon, TVector3 vLead, TLorentzVector lead, TVector3 vRec, TLorentzVector rec, double wgt){
 
   //first index indicates which variable is being filled: mom, energy, theta, phi                                                           
@@ -3141,28 +3140,29 @@ void twoproton_pelee_overlay::Fill_Histograms_Particles(int mc_n_threshold_muon,
   Fill_Particles(0,vMuon,muon,vLead,lead,vRec,rec,wgt);
 
   //cc0p0pi                                                                                                                               
-  if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_proton == 0 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
+  if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton == 0 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
     Fill_Particles(1, vMuon,muon,vLead,lead,vRec,rec,wgt);
     cc0p0pi[number]++;
 
     //cc1p0pi                                                                                                                            
-  } else if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_proton == 1 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
+  } else if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton == 1 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
     Fill_Particles(2, vMuon,muon,vLead,lead,vRec,rec,wgt);
     cc1p0pi[number]++;
+
     //cc2p0pi                                                                                                                            
-  } else if (ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_proton == 2 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
+  } else if (ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton == 2 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
     Fill_Particles(3, vMuon,muon,vLead,lead,vRec,rec,wgt);
     cc2p0pi[number]++;
     //ccNp0pi                                                                                                                            
-  } else if (ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_proton > 2 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
+  } else if (ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton > 2 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
     Fill_Particles(4, vMuon,muon,vLead,lead,vRec,rec,wgt);
     ccNp0pi[number]++;
     //ccNp1pi                                                                                                                            
-  } else if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_proton >= 0 && (mc_n_threshold_pion0 == 1 || mc_n_threshold_pionpm == 1) && fv == true){
+  } else if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton >= 0 && (mc_n_threshold_pion0 == 1 || mc_n_threshold_pionpm == 1) && fv == true){
     Fill_Particles(5, vMuon,muon,vLead,lead,vRec,rec,wgt);
     ccNp1pi[number]++;
     //ccNpNpi                                                                                                                            
-  } else if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_proton >= 0 && (mc_n_threshold_pion0 > 1 || mc_n_threshold_pionpm > 1) && fv == true){
+  } else if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton >= 0 && (mc_n_threshold_pion0 > 1 || mc_n_threshold_pionpm > 1) && fv == true){
     Fill_Particles(6, vMuon,muon,vLead,lead,vRec,rec,wgt);
     ccNpNpi[number]++;
     //CC NUE                                                                                                                             
