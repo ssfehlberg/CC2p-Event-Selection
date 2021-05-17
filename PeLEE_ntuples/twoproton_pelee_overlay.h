@@ -2291,12 +2291,12 @@ void twoproton_pelee_overlay::Define_Histograms(){
     }
 
     //make sure to handle the weights correcly
-    for (int i = 0; i < h_list.size(); i++){
-      h_list[i]->Sumw2();
-    }
-    for(int i = 0; i < h_list_2D.size(); i++){
-     h_list_2D[i]->Sumw2();
-    }
+    //for (int i = 0; i < h_list.size(); i++){
+    //  h_list[i]->Sumw2();
+    // }
+    //for(int i = 0; i < h_list_2D.size(); i++){
+    // h_list_2D[i]->Sumw2();
+    // }
 }
 /*
 void twoproton_pelee_overlay::MC_Definitions(){

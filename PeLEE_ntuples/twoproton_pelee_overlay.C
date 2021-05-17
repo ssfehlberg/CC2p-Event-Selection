@@ -159,14 +159,14 @@ void twoproton_pelee_overlay::Loop()
       if(mc_proton_mom.size() == 0){ //no protons exsist                                                                                                                                                                                                              
 	leading.SetXYZ(-9999.,-9999.,-9999.);
         recoil.SetXYZ(-9999.,-9999.,-9999.);
-	Fill_Efficiency_XSec(true,true_contained_start,true_contained_end,vmuon,leading,recoil,mc_wgt);
+	Fill_Efficiency_XSec(true,true_contained_start,true_contained_end,vmuon,leading,recoil,mc_wgt*pot_wgt);
 	ohshit++;
       
       } else if (mc_proton_mom.size() == 1){ //only 1 proton exists
 	leading_id = mc_protons_id[0];
 	leading.SetXYZ(backtracked_px->at(leading_id),backtracked_py->at(leading_id),backtracked_pz->at(leading_id));
 	recoil.SetXYZ(-9999.,-9999.,-9999.);
-	Fill_Efficiency_XSec(true,true_contained_start,true_contained_end,vmuon,leading,recoil,mc_wgt);
+	Fill_Efficiency_XSec(true,true_contained_start,true_contained_end,vmuon,leading,recoil,mc_wgt*pot_wgt);
 
       } else if (mc_proton_mom.size() >= 2){ //case we actually want
       
@@ -181,13 +181,13 @@ void twoproton_pelee_overlay::Loop()
 	recoil_id = mc_protons_id[1]; //recoil proton id
 	leading.SetXYZ(mc_px->at(leading_id),mc_py->at(leading_id),mc_pz->at(leading_id));
 	recoil.SetXYZ(mc_px->at(recoil_id),mc_py->at(recoil_id),mc_pz->at(recoil_id));
-	Fill_Efficiency_XSec(true,true_contained_start,true_contained_end,vmuon,leading,recoil,mc_wgt);
+	Fill_Efficiency_XSec(true,true_contained_start,true_contained_end,vmuon,leading,recoil,mc_wgt*pot_wgt);
       
 	for(int j=0; j < mc_pdg->size(); j++){
 	  TVector3 backtracker_mom_vector(mc_px->at(j),mc_py->at(j),mc_pz->at(j)); //mc momentum of particular mc particle
 	  bool contained_start = cuts.In_FV(10,10,10,10,10,10,mc_vx->at(j),mc_vy->at(j),mc_vz->at(j)); //is the particle start contained in FV
 	  bool contained_end = cuts.In_FV(0,0,0,0,0,0,mc_endx->at(j),mc_endy->at(j),mc_endz->at(j)); //is the particle end contained in the detector
-	  Fill_Efficiency_Thresholds(true, mc_pdg->at(j), contained_start, contained_end, leading, recoil, backtracker_mom_vector,mc_wgt); //filling the efficiency to test the thresholds
+	  Fill_Efficiency_Thresholds(true, mc_pdg->at(j), contained_start, contained_end, leading, recoil, backtracker_mom_vector,mc_wgt*pot_wgt); //filling the efficiency to test the thresholds
 	} //end of for loop over the mc particles
       } //end of loop over 2
     } //end of if same size
@@ -384,14 +384,14 @@ void twoproton_pelee_overlay::Loop()
 	leading.SetXYZ(-9999.,-9999.,-9999.);
         recoil.SetXYZ(-9999.,-9999.,-9999.);
         Fill_Matrices(vMuon,vmuon,vLead,leading,vRec,recoil,muon_start_contained,true_contained_start,muon_end_contained,true_contained_end, mc_wgt*pot_wgt);//testing the weight garbage mc_wgt*pot_wgt);                                                            
-	Fill_Efficiency_XSec(false,true_contained_start,true_contained_end,vmuon,leading,recoil,mc_wgt);
+	Fill_Efficiency_XSec(false,true_contained_start,true_contained_end,vmuon,leading,recoil,mc_wgt*pot_wgt);
 
       }else if (mc_proton_mom.size() == 1){ //only one proton exists
 	leading_id = mc_protons_id[0];
 	leading.SetXYZ(backtracked_px->at(leading_id),backtracked_py->at(leading_id),backtracked_pz->at(leading_id));
 	recoil.SetXYZ(-9999.,-9999.,-9999.);
         Fill_Matrices(vMuon,vmuon,vLead,leading,vRec,recoil,muon_start_contained,true_contained_start,muon_end_contained,true_contained_end, mc_wgt*pot_wgt);//testing the weight garbage mc_wgt*pot_wgt);                                                            
-	Fill_Efficiency_XSec(false,true_contained_start,true_contained_end,vmuon,leading,recoil,mc_wgt);
+	Fill_Efficiency_XSec(false,true_contained_start,true_contained_end,vmuon,leading,recoil,mc_wgt*pot_wgt);
 
       }else if (mc_proton_mom.size() >= 2){ //what we want ultimately
 
@@ -407,13 +407,13 @@ void twoproton_pelee_overlay::Loop()
 	recoil.SetXYZ(backtracked_px->at(recoil_id),backtracked_py->at(recoil_id),backtracked_pz->at(recoil_id));
 
 	Fill_Matrices(vMuon,vmuon,vLead,leading,vRec,recoil,muon_start_contained,true_contained_start,muon_end_contained,true_contained_end, mc_wgt*pot_wgt);//testing the weight garbage mc_wgt*pot_wgt);
-	Fill_Efficiency_XSec(false,true_contained_start,true_contained_end,vmuon,leading,recoil,mc_wgt);
+	Fill_Efficiency_XSec(false,true_contained_start,true_contained_end,vmuon,leading,recoil,mc_wgt*pot_wgt);
 
 	for(int j=0; j < n_pfps; j++){
 	  TVector3 backtracker_mom_vector(backtracked_px->at(j),backtracked_py->at(j),backtracked_pz->at(j));
 	  bool contained_start = cuts.In_FV(10,10,10,10,10,10,mc_vx->at(j),mc_vy->at(j),mc_vz->at(j));
           bool contained_end = cuts.In_FV(0,0,0,0,0,0,mc_endx->at(j),mc_endy->at(j),mc_endz->at(j));
-	  Fill_Efficiency_Thresholds(false, backtracked_pdg->at(j), contained_start, contained_end, leading, recoil, backtracker_mom_vector, mc_wgt);//testing the weight garbage mc_wgt);
+	  Fill_Efficiency_Thresholds(false, backtracked_pdg->at(j), contained_start, contained_end, leading, recoil, backtracker_mom_vector, mc_wgt*pot_wgt);//testing the weight garbage mc_wgt);
 	} //end of for
       } //end of if mc_proton_mom_size > 2
     }//end of if specific event
@@ -535,6 +535,7 @@ void twoproton_pelee_overlay::Loop()
   std::cout<<"Num Uncontained: "<<num_uncontained<<std::endl;
 
   std::cout<<"OHshit: "<<ohshit<<std::endl;
+  std::cout<<"Value of pot_wgt: "<<pot_wgt<<std::endl;
 
   //Don't forget to write all of your histograms before you leave!                                                                       
   ///////////////////////////////////////////////////////////////                                                                 
