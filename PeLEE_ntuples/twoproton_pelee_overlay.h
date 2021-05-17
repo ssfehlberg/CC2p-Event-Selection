@@ -2414,7 +2414,14 @@ void twoproton_pelee_overlay::Fill_Efficiency_Thresholds(bool denom, int backtra
 void twoproton_pelee_overlay::Fill_Efficiency_XSec(bool denom, bool contained_start, bool contained_end, TVector3 vMuon,TVector3 vLead, TVector3 vRec,double mc_wgt = 1.0){
 
   // Run the Calculate Variables function inside of variables.h. Returns following:                                                                                                                                                                                   
-  // 1) vector: momenta(muon_mom,lead_mom,rec_mom);                                                                                                                                                                                                                     // 2) vector: Energies(KE_muon, TotE_muon, KE_Lead, TotE_Lead, KE_Rec, TotE_Rec);                                                                                                                                                                                     // 3) vector: detector_angles(muon_theta,muon_phi,lead_theta,lead_phi,recoil_theta,recoil_phi);                                                                                                                                                                       // 4) vector: opening_angles(opening_angle_protons_lab,opening_angle_protons_mu_leading,opening_angle_protons_mu_both);  // 5) double: opening_angle_protons_COM                                                                                                      // 6) vector: STVS(delta_pT,delta_alphaT,delta_phiT);                                                                                                                                                                                                                 // 7) double: calculated_nu_E                                                                                                                                                                                                                                        
+  // 1) vector: momenta(muon_mom,lead_mom,rec_mom);                                                                                                                                                                                                                     
+  // 2) vector: Energies(KE_muon, TotE_muon, KE_Lead, TotE_Lead, KE_Rec, TotE_Rec);                                                                                                                                                                                     
+  // 3) vector: detector_angles(muon_theta,muon_phi,lead_theta,lead_phi,recoil_theta,recoil_phi);                                                                                                                                                                       
+  // 4) vector: opening_angles(opening_angle_protons_lab,opening_angle_protons_mu_leading,opening_angle_protons_mu_both);  
+  // 5) double: opening_angle_protons_COM                                                                                                      
+  // 6) vector: STVS(delta_pT,delta_alphaT,delta_phiT);                                                                                                                                                                                                                 
+  // 7) double: calculated_nu_E                   
+                                                                                                                                                                                                                   
   variables.Calculate_Variables(vMuon,vLead,vRec,add_protons);
 
   //muon                                                                                                                                                                                                                                                             
@@ -2878,6 +2885,7 @@ void twoproton_pelee_overlay::Fill_Histograms_Mine(int i, double wgt, int mc_n_t
   } else if (ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton == 2 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
     Fill_Mine(i,3,wgt);
     cc2p0pi[i]++;
+
     //ccNp0pi                                                                                                                                  
   } else if (ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton > 2 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
     Fill_Mine(i,4,wgt);

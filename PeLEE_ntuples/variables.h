@@ -28,10 +28,33 @@ class variables{
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 vector<double> variables::Calculate_Momenta(TVector3 vmuon, TVector3 vlead, TVector3 vrec){
 
-  double muon_mom = double(vmuon.Mag());
-  double lead_mom = double(vlead.Mag());
-  double rec_mom = double(vrec.Mag());
-  //vector<double> momenta{muon_mom,lead_mom,rec_mom}; 
+  //muon
+  double muon_mom;
+  if(vmuon[0] == -9999. && vmuon[1] == -9999. && vmuon[2] == -9999.){
+    muon_mom = -9999.0;
+  } else {
+    muon_mom = double(vmuon.Mag());
+  }
+
+  //lead proton
+  double lead_mom;
+  if(vlead[0] == -9999. && vlead[1] == -9999. && vlead[2] == -9999.){
+    std::cout<<"[VARIABLES] WE GOT A GARBAGE MOMENTUM FOR LEAD!"<<std::endl;
+    lead_mom = -9999.0;
+  } else {
+    lead_mom = double(vlead.Mag());
+  }
+
+  //recoil proton
+  double rec_mom;
+  if(vrec[0] == -9999. && vrec[1] == -9999. && vrec[2] == -9999.){
+    std::cout<<"[VARIABLES] WE GOT A GARBAGE MOMENTUM FOR RECOIL!"<<std::endl;
+    rec_mom = -9999.0;
+  } else {
+    rec_mom = double(vlead.Mag());
+  }
+
+  //vector<double> momenta{muon_mom,lead_mom,rec_mom};
   momenta.push_back(muon_mom);
   momenta.push_back(lead_mom);
   momenta.push_back(rec_mom);
@@ -43,12 +66,39 @@ vector<double> variables::Calculate_Momenta(TVector3 vmuon, TVector3 vlead, TVec
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 vector<double> variables::Calculate_Energy(TVector3 vmuon, TVector3 vlead, TVector3 vrec){
 
-  double KE_Muon = help.Which_Energy(false,vmuon,MASS_MUON);
-  double TotE_Muon = help.Which_Energy(true,vmuon,MASS_MUON);
-  double KE_Lead = help.Which_Energy(false,vlead,MASS_PROTON);
-  double TotE_Lead = help.Which_Energy(true,vlead,MASS_PROTON);
-  double KE_Rec = help.Which_Energy(false,vrec,MASS_PROTON);
-  double TotE_Rec = help.Which_Energy(true,vrec,MASS_PROTON);
+  //muon
+  double KE_Muon;
+  double TotE_Muon;
+  if(vmuon[0] == -9999. && vmuon[1] == -9999. && vmuon[2] == -9999.){
+    KE_Muon = -9999.0;
+    TotE_Muon = -9999.0;
+  } else {
+    KE_Muon = help.Which_Energy(false,vmuon,MASS_MUON);
+    TotE_Muon = help.Which_Energy(true,vmuon,MASS_MUON);
+  }
+
+  //lead proton    
+  double KE_Lead;
+  double TotE_Lead;
+  if(vlead[0] == -9999. && vlead[1] == -9999. && vlead[2] == -9999.){
+    KE_Lead = -9999.0;
+    TotE_Lead = -9999.0;
+  } else {
+    KE_Lead = help.Which_Energy(false,vlead,MASS_PROTON);
+    TotE_Lead = help.Which_Energy(true,vlead,MASS_PROTON);
+  }
+
+  //recoil proton  
+  double KE_Rec;
+  double TotE_Rec;
+  if(vrec[0] == -9999. && vrec[1] == -9999. && vrec[2] == -9999.){
+    KE_Rec = -9999.0;
+    TotE_Rec = -9999.0;
+  } else {
+    KE_Rec = help.Which_Energy(false,vrec,MASS_PROTON);
+    TotE_Rec = help.Which_Energy(true,vrec,MASS_PROTON);
+  }
+
   //vector<double> Energies{KE_Muon, TotE_Muon, KE_Lead, TotE_Lead, KE_Rec, TotE_Rec};
   Energies.push_back(KE_Muon);
   Energies.push_back(TotE_Muon);
@@ -64,12 +114,38 @@ vector<double> variables::Calculate_Energy(TVector3 vmuon, TVector3 vlead, TVect
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 vector<double> variables::Calculate_Detector_Angles(TVector3 vmuon, TVector3 vlead, TVector3 vrec){
 
-  double muon_phi = double(vmuon.Phi());
-  double lead_phi = double(vlead.Phi());
-  double recoil_phi = double(vrec.Phi());
-  double muon_theta = double(cos(vmuon.Theta()));
-  double lead_theta = double(cos(vlead.Theta()));
-  double recoil_theta = double(cos(vrec.Theta()));
+  //muon
+  double muon_phi;
+  double muon_theta;
+  if(vmuon[0] == -9999. && vmuon[1] == -9999. && vmuon[2] == -9999.){
+    muon_phi = -9999.0;
+    muon_theta = -9999.0;
+  } else {
+    muon_phi = double(vmuon.Phi());
+    muon_theta = double(std::cos(vmuon.Theta()));
+  }
+
+  //lead proton                                                                                                                                                                                                                                                                    
+  double lead_phi;
+  double lead_theta;
+  if(vlead[0] == -9999. && vlead[1] == -9999. && vlead[2] == -9999.){
+    lead_phi = -9999.0;
+    lead_theta = -9999.0;
+  } else {
+    lead_phi = double(vlead.Phi());
+    lead_theta = double(std::cos(vlead.Theta()));
+  }
+
+  //recoil proton   
+  double recoil_phi;
+  double recoil_theta;                                                                                                                                                                                                                                                                 if(vrec[0] == -9999. && vrec[1] == -9999. && vrec[2] == -9999.){
+    recoil_phi = -9999.0;
+    recoil_theta = -9999.0;
+  } else {
+    recoil_phi = double(vrec.Phi());
+    recoil_theta= double(std::cos(vrec.Theta()));
+  }
+
   //vector<double> detector_angles{muon_theta,muon_phi,lead_theta,lead_phi,recoil_theta,recoil_phi};
   detector_angles.push_back(muon_theta);
   detector_angles.push_back(muon_phi);
@@ -85,10 +161,31 @@ vector<double> variables::Calculate_Detector_Angles(TVector3 vmuon, TVector3 vle
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 vector<double> variables::Calculate_Opening_Angles(TVector3 vmuon, TVector3 vlead, TVector3 vrec){
 
-  TVector3 vProton(vlead[0]+vrec[0],vlead[1]+vrec[1],vlead[2]+vrec[2]);
-  double opening_angle_protons_lab = std::cos(vlead.Angle(vrec)); //((vlead[0]*vrec[0])+(vlead[1]*vrec[1])+(vlead[2]*vrec[2]))/(vlead.Mag()*vrec.Mag()); //vlead.Angle(vrec);                                                                  
-  double opening_angle_protons_mu_leading = std::cos(vmuon.Angle(vlead)); //((vlead[0]*vMuon[0])+(vlead[1]*vMuon[1])+(vlead[2]*vMuon[2]))/(vlead.Mag()*vMuon.Mag());                                                                           
-  double opening_angle_protons_mu_both = std::cos(vmuon.Angle(vProton)); //((vProton[0]*vMuon[0])+(vProton[1]*vMuon[1])+(vProton[2]*vMuon[2]))/(vProton.Mag()*vMuon.Mag());                  
+  //opening angle between the protons in the lab frame
+  double opening_angle_protons_lab;
+  if((vlead[0] == -9999. && vlead[1] == -9999. && vlead[2] == -9999.) || (vrec[0] == -9999. && vrec[1] == -9999. && vrec[2] == -9999.)){
+    opening_angle_protons_lab = -9999.0;
+  } else{
+    opening_angle_protons_lab = std::cos(vlead.Angle(vrec)); //((vlead[0]*vrec[0])+(vlead[1]*vrec[1])+(vlead[2]*vrec[2]))/(vlead.Mag()*vrec.Mag()); //vlead.Angle(vrec); 
+  }
+
+  //opening angle between the muon and leading proton
+  double opening_angle_protons_mu_leading;
+  if(vlead[0] == -9999. && vlead[1] == -9999. && vlead[2] == -9999.){
+    opening_angle_protons_mu_leading = -9999.0;
+  }else{
+    opening_angle_protons_mu_leading = std::cos(vmuon.Angle(vlead)); //((vlead[0]*vMuon[0])+(vlead[1]*vMuon[1])+(vlead[2]*vMuon[2]))/(vlead.Mag()*vMuon.Mag());                                                                           
+  }
+  
+  //opening angle between the muon and both protons
+  double opening_angle_protons_mu_both;
+  TVector3 vProton(vlead[0]+vrec[0],vlead[1]+vrec[1],vlead[2]+vrec[2]); 
+  if((vlead[0] == -9999. && vlead[1] == -9999. && vlead[2] == -9999.) || (vrec[0] == -9999. && vrec[1] == -9999. && vrec[2] == -9999.)){
+    opening_angle_protons_mu_both = -9999.0;
+  } else{
+    opening_angle_protons_mu_both = std::cos(vmuon.Angle(vProton)); //((vProton[0]*vMuon[0])+(vProton[1]*vMuon[1])+(vProton[2]*vMuon[2]))/(vProton.Mag()*vMuon.Mag());
+  }
+
   //vector<double> opening_angles{opening_angle_protons_lab,opening_angle_protons_mu_leading,opening_angle_protons_mu_both};
   opening_angles.push_back(opening_angle_protons_lab);
   opening_angles.push_back(opening_angle_protons_mu_leading);
@@ -138,19 +235,36 @@ double variables::Boost(TVector3 vLead, double ELead, TVector3 vRec, double ERec
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 vector<double> variables::Calculate_STVS(bool add_protons, TVector3 vMuon, TVector3 vLead, TVector3 vRec){
 
- TVector3 vProton;
+  //add the protons together (if you want of courses)
+  TVector3 vProton;
   if(add_protons){
     vProton.SetXYZ(vLead[0]+vRec[0],vLead[1]+vRec[1],vLead[2]+vRec[2]);
   }else{
     vProton.SetXYZ(vLead[0],vLead[1],vLead[2]);
   }
 
-  double delta_pT = double((vMuon + vProton).Perp()); //perp takes the magnitude as well. stv delta pt                                                                                     
-  double delta_phiT = double(180.0/3.14)*double(std::acos( (-vMuon.X()*vProton.X() - vMuon.Y()*vProton.Y()) / (vMuon.XYvector().Mod() * vProton.XYvector().Mod()))); //stv delta phi t \
+  //delta PT and delta phiT
+  double delta_pT;
+  double delta_phiT;
+  if((vLead[0] == -9999. && vLead[1] == -9999. && vLead[2] == -9999.) || (vRec[0] == -9999. && vRec[1] == -9999. && vRec[2] == -9999.)){
+    delta_pT = -9999.0;
+    delta_phiT = -9999.0;
+  }else {
+    delta_pT = double((vMuon + vProton).Perp()); //perp takes the magnitude as well. stv delta pt                                                                                                                                                                            
+    delta_phiT = double(180.0/3.14)*double(std::acos( (-vMuon.X()*vProton.X() - vMuon.Y()*vProton.Y()) / (vMuon.XYvector().Mod() * vProton.XYvector().Mod()))); //stv delta phi t  
+  }
 
-  TVector3 delta_pT_vec;// = (vMuon + vProton).XYvector(); //need this to calculate stuff
+  //delta alpha T
+  double delta_alphaT;
+  TVector3 delta_pT_vec;
   delta_pT_vec.SetXYZ((vMuon[0]+vProton[0]),(vMuon[1]+vProton[1]),0.0);
-  double delta_alphaT = double(180.0/3.14)*double(std::acos( (-vMuon.X()*delta_pT_vec.X()- vMuon.Y()*delta_pT_vec.Y()) / (vMuon.XYvector().Mod() * delta_pT_vec.XYvector().Mod()) )); //stv delta alpha T    
+
+  if((vLead[0] == -9999. && vLead[1] == -9999. && vLead[2] == -9999.) || (vRec[0] == -9999. && vRec[1] == -9999. && vRec[2] == -9999.)){
+    delta_alphaT = -9999.0;
+  } else {
+    delta_alphaT = double(180.0/3.14)*double(std::acos( (-vMuon.X()*delta_pT_vec.X()- vMuon.Y()*delta_pT_vec.Y()) / (vMuon.XYvector().Mod() * delta_pT_vec.XYvector().Mod()) )); //stv delta alpha T    
+  }
+
   //vector<double> stvs{delta_pT,delta_alphaT,delta_phiT};
   stvs.push_back(delta_pT);
   stvs.push_back(delta_alphaT);
@@ -164,7 +278,11 @@ vector<double> variables::Calculate_STVS(bool add_protons, TVector3 vMuon, TVect
 double variables::Calculate_Beam(TVector3 vMuon, TVector3 vLead, TVector3 vRec,double EMuon, double ELead, double ERec){
 
   TVector3 PT_miss(vMuon[0]+vLead[0]+vRec[0],vMuon[1]+vRec[1]+vLead[1],0);
-  calculated_nu_E = (EMuon+MASS_MUON) + ELead + ERec +((PT_miss.Mag2())/(2.0*35.37)) + 0.0304;; //based on formula in Raquel's technote and the argoneut paper
+  if((vLead[0] == -9999. && vLead[1] == -9999. && vLead[2] == -9999.) || (vRec[0] == -9999. && vRec[1] == -9999. && vRec[2] == -9999.)){
+    calculated_nu_E = -9999.0;
+  } else {
+    calculated_nu_E = (EMuon+MASS_MUON) + ELead + ERec +((PT_miss.Mag2())/(2.0*35.37)) + 0.0304;; //based on formula in Raquel's technote and the argoneut paper
+  }
   return calculated_nu_E;
 
 } 
