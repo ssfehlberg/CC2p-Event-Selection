@@ -1460,7 +1460,7 @@ public :
    //virtual void     MC_Definitions();
    virtual void     Fill_Efficiency_Thresholds(bool denom, int backtracked_pdg, bool contained_start, bool contained_end, TVector3 leading, TVector3 recoil,TVector3 backtracker_mom_vector,double mc_wgt = 1.0);
    virtual void     Fill_Efficiency_XSec(bool denom, bool contained_start, bool contained_end, TVector3 vMuon,TVector3 vLead, TVector3 vRec,double mc_wgt = 1.0);
-   virtual void     Fill_Matrices(TVector3 vMuon, TVector3 muon,TVector3 vLead, TVector3 lead,TVector3 vRec, TVector3 rec, bool contained_start, bool true_contained_start,bool contained_end, bool true_contained_end,double mc_wgt);
+   virtual void     Fill_Matrices(TVector3 vMuon, TVector3 muon,TVector3 vLead, TVector3 lead,TVector3 vRec, TVector3 rec, bool contained_start, bool true_contained_start,bool contained_end, bool true_contained_end,double mc_wgt = 1.0);
    virtual void     Fill_Histograms_Mine(int i, double wgt, int mc_n_threshold_muon, int mc_n_threshold_proton, int mc_n_threshold_pion0, double mc_n_threshold_pionpm, bool fv);
    virtual void     Fill_Histograms_Raquel(int i, double wgt, bool fv);
    virtual void     Fill_Track_Plots(int which_cut,float value, int pdg, bool contained_start,bool contained_end, double wgt); //fills the track variables 
@@ -2413,6 +2413,9 @@ void twoproton_pelee_overlay::Fill_Efficiency_Thresholds(bool denom, int backtra
 
 void twoproton_pelee_overlay::Fill_Efficiency_XSec(bool denom, bool contained_start, bool contained_end, TVector3 vMuon,TVector3 vLead, TVector3 vRec,double mc_wgt = 1.0){
 
+
+  std::cout<<"Fill Efficiency XSec: "<<mc_wgt<<std::endl;
+
   // Run the Calculate Variables function inside of variables.h. Returns following:                                                                                                                                                                                   
   // 1) vector: momenta(muon_mom,lead_mom,rec_mom);                                                                                                                                                                                                                     
   // 2) vector: Energies(KE_muon, TotE_muon, KE_Lead, TotE_Lead, KE_Rec, TotE_Rec);                                                                                                                                                                                     
@@ -2555,7 +2558,7 @@ void twoproton_pelee_overlay::Fill_Matrices(TVector3 vMuon, TVector3 muon,TVecto
 
   //Define all the reconstructed quantities
   ////////////////////////////////////////
-  /*  variables.Calculate_Variables(vMuon,vLead,vRec,add_protons);
+  variables.Calculate_Variables(vMuon,vLead,vRec,add_protons);
   double reco_muon_mom = variables.momenta[0];
   double reco_muon_theta = variables.detector_angles[0];
   double reco_muon_phi = variables.detector_angles[1];
@@ -2615,7 +2618,10 @@ void twoproton_pelee_overlay::Fill_Matrices(TVector3 vMuon, TVector3 muon,TVecto
   variables.stvs.clear();
   variables.Energies.clear();
 
-  */
+  std::cout<<"RECO MUON MOM: "<<reco_muon_mom<<std::endl;
+  std::cout<<"TRUE MUON MOM: "<<true_muon_mom<<std::endl;
+
+  /*
   //Define Reco Quantities
   /////////////////////////
   double reco_muon_mom = vMuon.Mag();
@@ -2709,6 +2715,7 @@ void twoproton_pelee_overlay::Fill_Matrices(TVector3 vMuon, TVector3 muon,TVecto
 
   h_test_leading->Fill((true_lead_theta-reco_lead_theta),true_lead_mom);
   h_test_recoil->Fill((true_recoil_theta-reco_recoil_theta),true_recoil_mom);
+  */
 
   //Now to do all the fancy filling stuff: this uses y,x,wgt form
   ///////////////////////////////////////////////////////////////
@@ -2976,6 +2983,7 @@ void twoproton_pelee_overlay::Fill_Histograms_Raquel(int i, double wgt, bool fv)
   } 
 }
 
+/*
 void twoproton_pelee_overlay::Fill_Particles(int j, TVector3 vMuon, TLorentzVector muon, TVector3 vLead, TLorentzVector lead, TVector3 vRec, TLorentzVector rec, double wgt){
 
   //first index indicates which variable is being filled: mom, energy, theta, phi                                                           
@@ -3144,6 +3152,8 @@ void twoproton_pelee_overlay::Fill_Particles_Raquel(int j, TVector3 vMuon, TLore
   h_PT_squared_raquel[j]->Fill(PT_miss.Mag2(),wgt);
 
 }//end of fill particles raquel
+*/
+
 void twoproton_pelee_overlay::Fill_Histograms_Particles(int mc_n_threshold_muon, int mc_n_threshold_proton, int mc_n_threshold_pion0, double mc_n_threshold_pionpm, bool fv,TVector3 vMuon, TLorentzVector muon, TVector3 vLead, TLorentzVector lead, TVector3 vRec, TLorentzVector rec, double wgt){
   Fill_Particles(0,vMuon,muon,vLead,lead,vRec,rec,wgt);
 
@@ -3242,10 +3252,18 @@ void twoproton_pelee_overlay::Fill_Histograms_Particles_Raquel(TVector3 vMuon, T
   } 
 } //end of fill particles raquel
 
-/*
-void twoproton_pelee_overlay::Fill_Particles(int j, TVector3 vMuon, TVector3 vLead, TVector3 vRec, double wgt){
 
-  //Going to use Calculate Variables function inside of variables.h. Returns Following                                                                                                                                                                 // 1) vector: momenta(muon_mom,lead_mom,rec_mom);                                                                                                                                                                                                    // 2) vector: Energies(KE_muon, TotE_muon, KE_Lead, TotE_Lead, KE_Rec, TotE_Rec);                                                                                                                                                                    // 3) vector: detector_angles(muon_theta,muon_phi,lead_theta,lead_phi,recoil_theta,recoil_phi);                                                                                                                                                      // 4) vector: opening_angles(opening_angle_protons_lab,opening_angle_protons_mu_leading,opening_angle_protons_mu_both);   // 5) double: opening_angle_protons_COM                                                                                    // 6) vector: STVS(delta_pT,delta_alphaT,delta_phiT);                                                                                                                                                                                                // 7) double: calculated_nu_E                                                                                                                                                                                                                      
+void twoproton_pelee_overlay::Fill_Particles(int j, TVector3 vMuon, TLorentzVector muon, TVector3 vLead, TLorentzVector lead, TVector3 vRec, TLorentzVector rec, double wgt){
+
+  //Going to use Calculate Variables function inside of variables.h. Returns Following 
+  // 1) vector: momenta(muon_mom,lead_mom,rec_mom);                                  
+  // 2) vector: Energies(KE_muon, TotE_muon, KE_Lead, TotE_Lead, KE_Rec, TotE_Rec);
+  // 3) vector: detector_angles(muon_theta,muon_phi,lead_theta,lead_phi,recoil_theta,recoil_phi);
+  // 4) vector: opening_angles(opening_angle_protons_lab,opening_angle_protons_mu_leading,opening_angle_protons_mu_both);  
+  // 5) double: opening_angle_protons_COM 
+  // 6) vector: STVS(delta_pT,delta_alphaT,delta_phiT);  
+  // 7) double: calculated_nu_E                                                                                                                                                                                                                      
+  
   variables.Calculate_Variables(vMuon,vLead,vRec,add_protons);
 
   h_muon_overlay[0][j]->Fill(variables.momenta[0],wgt);
@@ -3291,26 +3309,40 @@ void twoproton_pelee_overlay::Fill_Particles(int j, TVector3 vMuon, TVector3 vLe
   //Energy of Struck Nucleon:
   double En = std::sqrt(std::pow(MASS_NEUTRON,2) + vmiss.Mag2()); //energy of struck nucleon 
 
-  h_opening_angle_protons_overlay[j]->Fill(variables.opening_angles[0],wgt);
-  h_cos_gamma_cm_overlay[j]->Fill(variables.opening_angle_protons_COM,wgt);  
+  h_opening_angle_protons_lab_overlay[j]->Fill(variables.opening_angles[0],wgt);
+  h_opening_angle_protons_com_overlay[j]->Fill(variables.opening_angle_protons_COM,wgt);  
   h_opening_angle_mu_leading_overlay[j]->Fill(variables.opening_angles[1],wgt);
   h_opening_angle_mu_both_overlay[j]->Fill(variables.opening_angles[2],wgt);
   h_delta_PT_overlay[j]->Fill(variables.stvs[0],wgt);
   h_delta_alphaT_overlay[j]->Fill(variables.stvs[1],wgt);
   h_delta_phiT_overlay[j]->Fill(variables.stvs[2],wgt);
+  h_nu_E_overlay[j]->Fill(Eneutrino,wgt);  
   h_mom_struck_nuc_overlay[j]->Fill(p_struck_nuc,wgt);
   h_tot_pz_overlay[j]->Fill(pz_tot,wgt);
   h_tot_E_overlay[j]->Fill(E_tot,wgt);
   h_tot_E_minus_beam_overlay[j]->Fill(E_tot_minus_beam,wgt);
-  h_E_neutrino_overlay[j]->Fill(Eneutrino,wgt);
   h_E_resolution_overlay[j]->Fill(Eneutrino - double(nu_e) ,wgt);
   h_PT_squared_overlay[j]->Fill(PT_miss.Mag2(),wgt);
   
+  variables.momenta.clear();
+  variables.detector_angles.clear();
+  variables.opening_angles.clear();
+  variables.stvs.clear();
+  variables.Energies.clear();
+
 }
 
-void twoproton_pelee_overlay::Fill_Particles_Raquel(int j, TVector3 vMuon, TVector3 vLead, TVector3 vRec, double wgt){
+void twoproton_pelee_overlay::Fill_Particles_Raquel(int j, TVector3 vMuon, TLorentzVector muon, TVector3 vLead, TLorentzVector lead, TVector3 vRec, TLorentzVector rec, double wgt){
 
-  //Going to use Calculate Variables function inside of variables.h. Returns Following                                                                                                                                                                 // 1) vector: momenta(muon_mom,lead_mom,rec_mom);                                                                                                                                                                                                    // 2) vector: Energies(KE_muon, TotE_muon, KE_Lead, TotE_Lead, KE_Rec, TotE_Rec);                                                                                                                                                                    // 3) vector: detector_angles(muon_theta,muon_phi,lead_theta,lead_phi,recoil_theta,recoil_phi);                                                                                                                                                      // 4) vector: opening_angles(opening_angle_protons_lab,opening_angle_protons_mu_leading,opening_angle_protons_mu_both);   // 5) double: opening_angle_protons_COM                                                                                    // 6) vector: STVS(delta_pT,delta_alphaT,delta_phiT);                                                                                                                                                                                                // 7) double: calculated_nu_E                                                                                                                                                                                                                      
+  //Going to use Calculate Variables function inside of variables.h. Returns Following 
+  // 1) vector: momenta(muon_mom,lead_mom,rec_mom); 
+  // 2) vector: Energies(KE_muon, TotE_muon, KE_Lead, TotE_Lead, KE_Rec, TotE_Rec);
+  // 3) vector: detector_angles(muon_theta,muon_phi,lead_theta,lead_phi,recoil_theta,recoil_phi); 
+  // 4) vector: opening_angles(opening_angle_protons_lab,opening_angle_protons_mu_leading,opening_angle_protons_mu_both);   
+  // 5) double: opening_angle_protons_COM  
+  // 6) vector: STVS(delta_pT,delta_alphaT,delta_phiT); 
+  // 7) double: calculated_nu_E                                                                                                                                                                                                                      
+  
   variables.Calculate_Variables(vMuon,vLead,vRec,add_protons);
 
   h_muon_raquel[0][j]->Fill(variables.momenta[0],wgt);
@@ -3356,23 +3388,29 @@ void twoproton_pelee_overlay::Fill_Particles_Raquel(int j, TVector3 vMuon, TVect
   //Energy of Struck Nucleon:
   double En = std::sqrt(std::pow(MASS_NEUTRON,2) + vmiss.Mag2()); //energy of struck nucleon 
 
-  h_opening_angle_protons_raquel[j]->Fill(variables.opening_angles[0],wgt);
-  h_cos_gamma_cm_raquel[j]->Fill(variables.opening_angle_protons_COM,wgt);  
+  h_opening_angle_protons_lab_raquel[j]->Fill(variables.opening_angles[0],wgt);
+  h_opening_angle_protons_com_raquel[j]->Fill(variables.opening_angle_protons_COM,wgt);  
   h_opening_angle_mu_leading_raquel[j]->Fill(variables.opening_angles[1],wgt);
   h_opening_angle_mu_both_raquel[j]->Fill(variables.opening_angles[2],wgt);
   h_delta_PT_raquel[j]->Fill(variables.stvs[0],wgt);
   h_delta_alphaT_raquel[j]->Fill(variables.stvs[1],wgt);
   h_delta_phiT_raquel[j]->Fill(variables.stvs[2],wgt);
+  h_nu_E_raquel[j]->Fill(Eneutrino,wgt);
   h_mom_struck_nuc_raquel[j]->Fill(p_struck_nuc,wgt);
   h_tot_pz_raquel[j]->Fill(pz_tot,wgt);
   h_tot_E_raquel[j]->Fill(E_tot,wgt);
   h_tot_E_minus_beam_raquel[j]->Fill(E_tot_minus_beam,wgt);
-  h_E_neutrino_raquel[j]->Fill(Eneutrino,wgt);
   h_E_resolution_raquel[j]->Fill(Eneutrino - double(nu_e) ,wgt);
   h_PT_squared_raquel[j]->Fill(PT_miss.Mag2(),wgt);
 
-}
+  variables.momenta.clear();
+  variables.detector_angles.clear();
+  variables.opening_angles.clear();
+  variables.stvs.clear();
+  variables.Energies.clear();
 
+}
+/*
 void twoproton_pelee_overlay::Fill_Histograms_Particles(int mc_n_threshold_muon, int mc_n_threshold_proton, int mc_n_threshold_pion0, double mc_n_threshold_pionpm, bool fv,TVector3 vMuon, TVector3 vLead, TVector3 vRec, double wgt){
   Fill_Particles(0,vMuon,vLead,vRec,wgt);
 
