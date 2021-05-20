@@ -32,9 +32,10 @@ void twoproton_pelee_overlay::Loop()
   int ohshit1 = 0;
   int ohshit2 = 0;
   int ohshit3 = 0;
+  int ohshit_denom = 0;
 
   if (fChain == 0) return;
-  Long64_t nentries = 1000;//fChain->GetEntriesFast();
+  Long64_t nentries = 10000;//fChain->GetEntriesFast();
   std::cout<<"Total Number of Entries: "<<nentries<<std::endl;
   Long64_t nbytes = 0, nb = 0;
   for (Long64_t jentry=0; jentry<nentries;jentry++) {
@@ -135,6 +136,8 @@ void twoproton_pelee_overlay::Loop()
     std::vector<int> mc_protons_id; //the mc ids of the protons
     std::vector<double> mc_proton_mom; //the mc momentum of the protons
     std::vector<std::pair<double,int>> zipped; //pair of the id and the momentum to help me identify the leading and recoil proton
+    int leading_id_denom;
+    int recoil_id_denom;
 
     if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_proton == 2 && mc_n_threshold_muon == 1 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && cuts.fv == true){
 
@@ -167,7 +170,7 @@ void twoproton_pelee_overlay::Loop()
       TVector3 recoil;
 
       if(mc_proton_mom.size() != 2){
-	ohshit++;
+	ohshit_denom++;
       }
 
       //casse we actually want
@@ -177,13 +180,13 @@ void twoproton_pelee_overlay::Loop()
 	  mc_proton_mom[j] = zipped[j].first;
 	  mc_protons_id[j] = zipped[j].second;
 	}
-	leading_id = mc_protons_id[0]; //leading proton id
-	recoil_id = mc_protons_id[1]; //recoil proton id
-	leading.SetXYZ(mc_px->at(leading_id),mc_py->at(leading_id),mc_pz->at(leading_id));
-	recoil.SetXYZ(mc_px->at(recoil_id),mc_py->at(recoil_id),mc_pz->at(recoil_id));
+	leading_id_denom = mc_protons_id[0]; //leading proton id
+	recoil_id_denom = mc_protons_id[1]; //recoil proton id
+	leading.SetXYZ(mc_px->at(leading_id_denom),mc_py->at(leading_id_denom),mc_pz->at(leading_id_denom));
+	recoil.SetXYZ(mc_px->at(recoil_id_denom),mc_py->at(recoil_id_denom),mc_pz->at(recoil_id_denom));
 
-	std::cout<<"Leading ID FOR DENOM: "<<leading_id<<std::endl;
-	std::cout<<"Recoil ID FOR DENOM: "<<recoil_id<<std::endl;
+	std::cout<<"Leading ID FOR DENOM: "<<leading_id_denom<<std::endl;
+	std::cout<<"Recoil ID FOR DENOM: "<<recoil_id_denom<<std::endl;
 	std::cout<<"Leading Momentum in DENOM: "<<leading.Mag()<<std::endl;
 	std::cout<<"Recoil Momentum in DENOM: "<<recoil.Mag()<<std::endl;
 
@@ -373,6 +376,8 @@ void twoproton_pelee_overlay::Loop()
     std::vector<int> reco_protons_id; //the mc ids of the protons                                                                                                                                                                                                            
     std::vector<double> reco_proton_mom; //the mc momentum of the protons                                                                                                                                                                                                    
     std::vector<std::pair<double,int>> zipped_reco; //pair of the id and the momentum to help me identify the leading and recoil proton     
+    int leading_id_num;
+    int recoil_id_num;
 
     if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_proton == 2 && mc_n_threshold_muon == 1 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && cuts.fv == true){
       //ohshit++;
@@ -389,6 +394,7 @@ void twoproton_pelee_overlay::Loop()
 	std::cout<<"Value of PDG in NUM: "<<pdg<<std::endl;
 	std::cout<<"Value of TID in NUM: "<<tid<<std::endl;
 	TVector3 backtracker_mom_vector(backtracked_px->at(j),backtracked_py->at(j),backtracked_pz->at(j));
+	std::cout<<"value of momentum before any particles are id'd: "<<backtracker_mom_vector.Mag()<<std::endl;
 
 	//muon
 	if(pdg == 13){
@@ -405,16 +411,24 @@ void twoproton_pelee_overlay::Loop()
 	if(pdg == 2212){
 	  if(backtracker_mom_vector.Mag() > PROTON_MOM_CUT_LOW && backtracker_mom_vector.Mag() < PROTON_MOM_CUT_HIGH){	  
 	    reco_proton_mom.push_back(backtracker_mom_vector.Mag());
+	    std::cout<<"Value of Backtracker Momentum in side the Loop: "<<backtracker_mom_vector.Mag()<<std::endl;
+
 	    reco_protons_id.push_back(j);
 	    zipped_reco.push_back(std::make_pair(backtracker_mom_vector.Mag(),j));   
 	  } //end of mom threshold
 	} //end of proton loop
       } //end of loop over npfps
 
-      int leading_id;
-      int recoil_id;
       TVector3 leading;
       TVector3 recoil;
+
+      std::cout<<"Size of the proton momentum vector in the Num: "<<reco_proton_mom.size()<<std::endl;
+      for(int i =0; i < reco_proton_mom.size(); i++){
+	std::cout<<"Value of Rec_Proton_Mom Vector at "<<i<<" : "<<reco_proton_mom[i]<<std::endl;
+      }
+
+      TVector3 test(-9999.,-9999.,-9999.);
+      std::cout<<"Just a Test: "<<test.Mag()<<std::endl;
 
       if(reco_proton_mom.size() == 0){ //no protons exsist
 	ohshit0++;
@@ -423,9 +437,9 @@ void twoproton_pelee_overlay::Loop()
 
       }else if (reco_proton_mom.size() == 1){ //only one proton exists
 	ohshit1++;
-	leading_id = reco_protons_id[0];
-	std::cout<<"Leading ID in 1 case :"<<leading_id<<std::endl;
-	leading.SetXYZ(backtracked_px->at(leading_id),backtracked_py->at(leading_id),backtracked_pz->at(leading_id));
+	leading_id_num = reco_protons_id[0];
+	std::cout<<"Leading ID in 1 case :"<<leading_id_num<<std::endl;
+	leading.SetXYZ(backtracked_px->at(leading_id_num),backtracked_py->at(leading_id_num),backtracked_pz->at(leading_id_num));
 	recoil.SetXYZ(-9999.,-9999.,-9999.);
 
       }else if(reco_proton_mom.size() > 2){ //more than 2 protons
@@ -440,15 +454,15 @@ void twoproton_pelee_overlay::Loop()
 	  reco_protons_id[j] = zipped_reco[j].second;
 	}
 
-	leading_id = reco_protons_id[0];
-	recoil_id = reco_protons_id[1];
-	leading.SetXYZ(backtracked_px->at(leading_id),backtracked_py->at(leading_id),backtracked_pz->at(leading_id));
-	recoil.SetXYZ(backtracked_px->at(recoil_id),backtracked_py->at(recoil_id),backtracked_pz->at(recoil_id));
+	leading_id_num = reco_protons_id[0];
+	recoil_id_num = reco_protons_id[1];
+	leading.SetXYZ(backtracked_px->at(leading_id_num),backtracked_py->at(leading_id_num),backtracked_pz->at(leading_id_num));
+	recoil.SetXYZ(backtracked_px->at(recoil_id_num),backtracked_py->at(recoil_id_num),backtracked_pz->at(recoil_id_num));
 
-	std::cout<<"Leading ID in 2>= case :"<<leading_id<<std::endl;
-	std::cout<<"Recoil ID in 2>= case :"<<recoil_id<<std::endl;
+	std::cout<<"Leading ID in 2>= case :"<<leading_id_num<<std::endl;
+	std::cout<<"Recoil ID in 2>= case :"<<recoil_id_num<<std::endl;
 	std::cout<<"Value of Leading in 2>= case: "<<leading.Mag()<<std::endl;
-	std::cout<<"Value of Leading in 2>= case: "<<recoil.Mag()<<std::endl;
+	std::cout<<"Value of Recoil in 2>= case: "<<recoil.Mag()<<std::endl;
 
 	for(int j=0; j < n_pfps; j++){
 	  TVector3 backtracker_mom_vector(backtracked_px->at(j),backtracked_py->at(j),backtracked_pz->at(j));
@@ -464,6 +478,22 @@ void twoproton_pelee_overlay::Loop()
     }//end of if specific event
 
     //Make sure to clean up before you finish
+
+    if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_proton == 2 && mc_n_threshold_muon == 1 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && cuts.fv == true){
+      if(leading_proton_id != leading_id_num || recoil_proton_id != recoil_id_num){
+	ohshit++;
+	std::cout<<"RIGHT BEFORE CLEANUP"<<std::endl;
+	std::cout<<"Leading Denom: "<<leading_id_denom<<std::endl;
+	std::cout<<"Leading Reco: "<<leading_proton_id<<std::endl;
+	std::cout<<"Leading Num: "<<leading_id_num<<std::endl;
+	
+	std::cout<<"Recoil Denom: "<<recoil_id_denom<<std::endl;
+	std::cout<<"Recoil Reco: "<<recoil_proton_id<<std::endl;
+	std::cout<<"Recoil Num: "<<recoil_id_num<<std::endl;
+	std::cout<<"YOU ARE NOW CLEARED TO FUCK OFF"<<std::endl;
+      }
+    }
+
     reco_protons_id.clear();
     reco_proton_mom.clear();
     zipped_reco.clear();
@@ -584,6 +614,7 @@ void twoproton_pelee_overlay::Loop()
   std::cout<<"OHshit1: "<<ohshit1<<std::endl;
   std::cout<<"OHshit2: "<<ohshit2<<std::endl;
   std::cout<<"OHshit2: "<<ohshit3<<std::endl;
+  std::cout<<"Ohshit_denom: "<<ohshit_denom<<std::endl;
 
   //Don't forget to write all of your histograms before you leave!                                                                       
   ///////////////////////////////////////////////////////////////                                                                 
