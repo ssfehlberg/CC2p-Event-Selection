@@ -51,7 +51,7 @@ vector<double> variables::Calculate_Momenta(TVector3 vmuon, TVector3 vlead, TVec
     std::cout<<"[VARIABLES] WE GOT A GARBAGE MOMENTUM FOR RECOIL!"<<std::endl;
     rec_mom = -9999.0;
   } else {
-    rec_mom = double(vlead.Mag());
+    rec_mom = double(vrec.Mag());
   }
 
   //vector<double> momenta{muon_mom,lead_mom,rec_mom};

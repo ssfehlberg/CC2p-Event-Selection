@@ -2413,9 +2413,6 @@ void twoproton_pelee_overlay::Fill_Efficiency_Thresholds(bool denom, int backtra
 
 void twoproton_pelee_overlay::Fill_Efficiency_XSec(bool denom, bool contained_start, bool contained_end, TVector3 vMuon,TVector3 vLead, TVector3 vRec,double mc_wgt = 1.0){
 
-
-  std::cout<<"Fill Efficiency XSec: "<<mc_wgt<<std::endl;
-
   // Run the Calculate Variables function inside of variables.h. Returns following:                                                                                                                                                                                   
   // 1) vector: momenta(muon_mom,lead_mom,rec_mom);                                                                                                                                                                                                                     
   // 2) vector: Energies(KE_muon, TotE_muon, KE_Lead, TotE_Lead, KE_Rec, TotE_Rec);                                                                                                                                                                                     
@@ -2617,9 +2614,6 @@ void twoproton_pelee_overlay::Fill_Matrices(TVector3 vMuon, TVector3 muon,TVecto
   variables.opening_angles.clear();
   variables.stvs.clear();
   variables.Energies.clear();
-
-  std::cout<<"RECO MUON MOM: "<<reco_muon_mom<<std::endl;
-  std::cout<<"TRUE MUON MOM: "<<true_muon_mom<<std::endl;
 
   /*
   //Define Reco Quantities
@@ -2892,7 +2886,6 @@ void twoproton_pelee_overlay::Fill_Histograms_Mine(int i, double wgt, int mc_n_t
   } else if (ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton == 2 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
     Fill_Mine(i,3,wgt);
     cc2p0pi[i]++;
-
     //ccNp0pi                                                                                                                                  
   } else if (ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton > 2 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
     Fill_Mine(i,4,wgt);
@@ -3160,43 +3153,53 @@ void twoproton_pelee_overlay::Fill_Histograms_Particles(int mc_n_threshold_muon,
   //cc0p0pi                                                                                                                               
   if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton == 0 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
     Fill_Particles(1, vMuon,muon,vLead,lead,vRec,rec,wgt);
+    std::cout<<"Classified as CC0p0pi"<<std::endl;
     cc0p0pi[number]++;
 
     //cc1p0pi                                                                                                                            
   } else if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton == 1 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
     Fill_Particles(2, vMuon,muon,vLead,lead,vRec,rec,wgt);
+    std::cout<<"Classified as CC1p0pi"<<std::endl;
     cc1p0pi[number]++;
 
     //cc2p0pi                                                                                                                            
   } else if (ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton == 2 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
     Fill_Particles(3, vMuon,muon,vLead,lead,vRec,rec,wgt);
+    std::cout<<"Classified as CC2p0pi"<<std::endl;
     cc2p0pi[number]++;
     //ccNp0pi                                                                                                                            
   } else if (ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton > 2 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
     Fill_Particles(4, vMuon,muon,vLead,lead,vRec,rec,wgt);
+    std::cout<<"Classified as CCNp0pi"<<std::endl;
     ccNp0pi[number]++;
     //ccNp1pi                                                                                                                            
   } else if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton >= 0 && (mc_n_threshold_pion0 == 1 || mc_n_threshold_pionpm == 1) && fv == true){
     Fill_Particles(5, vMuon,muon,vLead,lead,vRec,rec,wgt);
+    std::cout<<"Classified as CCNp1pi"<<std::endl;
     ccNp1pi[number]++;
     //ccNpNpi                                                                                                                            
   } else if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton >= 0 && (mc_n_threshold_pion0 > 1 || mc_n_threshold_pionpm > 1) && fv == true){
     Fill_Particles(6, vMuon,muon,vLead,lead,vRec,rec,wgt);
+    std::cout<<"Classified as CCNpNpi"<<std::endl;
     ccNpNpi[number]++;
     //CC NUE                                                                                                                             
   } else if(ccnc == 0 && abs(nu_pdg) == 12 && fv == true){
     Fill_Particles(7, vMuon,muon,vLead,lead,vRec,rec,wgt);
+    std::cout<<"Classified as CCNue"<<std::endl;
     ccnue[number]++;
     //OUT OF FV                                                                                                                            
   } else if(fv == false){                                                                                                                     
     Fill_Particles(8, vMuon,muon,vLead,lead,vRec,rec,wgt);
+    std::cout<<"Classified as OOFV"<<std::endl;
     outfv[number]++;
     //NC                                                                                                                                 
   } else if(ccnc == 1 && fv == true){
+    std::cout<<"Classified as NC"<<std::endl;
     Fill_Particles(9, vMuon,muon,vLead,lead,vRec,rec,wgt);
     nc[number]++;    
     //else                                                                                                                               
   } else{
+    std::cout<<"Classified as Else"<<std::endl;
     Fill_Particles(10, vMuon,muon,vLead,lead,vRec,rec,wgt);
     other[number]++;
   }

@@ -17,9 +17,9 @@ namespace Constants{
   double PID_CUT = 0.2;
 
   //Momentum Cut Values (only used by the overlay)
-  double MUON_MOM_CUT = 0.1;
-  double PROTON_MOM_CUT_LOW = 0.25;
-  double PROTON_MOM_CUT_HIGH = 1.2;
+  double MUON_MOM_CUT = 0.0;////0.1;
+  double PROTON_MOM_CUT_LOW = 0.0;//0.25;
+  double PROTON_MOM_CUT_HIGH = 99999;//1.2;
   double CHARGED_PI_MOM_CUT = 0.065;
   double PION0_MOM_CUT = 0.065;
 

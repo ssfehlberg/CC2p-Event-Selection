@@ -34,7 +34,7 @@ void twoproton_pelee_overlay::Loop()
   int ohshit3 = 0;
 
   if (fChain == 0) return;
-  Long64_t nentries = fChain->GetEntriesFast();
+  Long64_t nentries = 1000;//fChain->GetEntriesFast();
   std::cout<<"Total Number of Entries: "<<nentries<<std::endl;
   Long64_t nbytes = 0, nb = 0;
   for (Long64_t jentry=0; jentry<nentries;jentry++) {
@@ -99,7 +99,11 @@ void twoproton_pelee_overlay::Loop()
 	}
       }
     }
-    
+
+
+    if(_debug) std::cout<<"Value of Muon Mom Cut: "<<MUON_MOM_CUT<<std::endl;
+    if(_debug) std::cout<<"Value of Proton Low Cut: "<<PROTON_MOM_CUT_LOW<<std::endl;
+    if(_debug) std::cout<<"Value of Proton High Cut: "<<PROTON_MOM_CUT_HIGH<<std::endl;
     if(_debug) std::cout<<"Number of threshold muons: "<<mc_n_threshold_muon<<std::endl;
     if(_debug) std::cout<<"Number of threshold protons: "<<mc_n_threshold_proton<<std::endl;
     if(_debug) std::cout<<"Number of threshold pion0: "<<mc_n_threshold_pion0<<std::endl;
@@ -151,18 +155,20 @@ void twoproton_pelee_overlay::Loop()
       
 	//Now to identify the protons
 	if (pdg == 2212){
-	  if(true_mom_vector.Mag() > PROTON_MOM_CUT_LOW && true_mom_vector.Mag() <  PROTON_MOM_CUT_HIGH){
-	    mc_proton_mom.push_back(true_mom_vector.Mag());
-	    mc_protons_id.push_back(j);
-	    zipped.push_back(std::make_pair(true_mom_vector.Mag(),j));
-	  }
+	  mc_proton_mom.push_back(true_mom_vector.Mag());
+	  mc_protons_id.push_back(j);
+	  zipped.push_back(std::make_pair(true_mom_vector.Mag(),j));
 	}
       } //end loop over pfps
-
+      
       int leading_id;
       int recoil_id;
       TVector3 leading;
       TVector3 recoil;
+
+      if(mc_proton_mom.size() != 2){
+	ohshit++;
+      }
 
       //casse we actually want
       if (mc_proton_mom.size() == 2){
@@ -175,8 +181,12 @@ void twoproton_pelee_overlay::Loop()
 	recoil_id = mc_protons_id[1]; //recoil proton id
 	leading.SetXYZ(mc_px->at(leading_id),mc_py->at(leading_id),mc_pz->at(leading_id));
 	recoil.SetXYZ(mc_px->at(recoil_id),mc_py->at(recoil_id),mc_pz->at(recoil_id));
-	Fill_Efficiency_XSec(true,true_contained_start,true_contained_end,vmuon,leading,recoil,1.0);//mc_wgt*pot_wgt);
-      
+
+	std::cout<<"Leading ID FOR DENOM: "<<leading_id<<std::endl;
+	std::cout<<"Recoil ID FOR DENOM: "<<recoil_id<<std::endl;
+	std::cout<<"Leading Momentum in DENOM: "<<leading.Mag()<<std::endl;
+	std::cout<<"Recoil Momentum in DENOM: "<<recoil.Mag()<<std::endl;
+
 	for(int j=0; j < mc_pdg->size(); j++){
 	  TVector3 backtracker_mom_vector(mc_px->at(j),mc_py->at(j),mc_pz->at(j)); //mc momentum of particular mc particle
 	  bool contained_start = cuts.In_FV(10,10,10,10,10,10,mc_vx->at(j),mc_vy->at(j),mc_vz->at(j)); //is the particle start contained in FV
@@ -184,12 +194,13 @@ void twoproton_pelee_overlay::Loop()
 	  Fill_Efficiency_Thresholds(true, mc_pdg->at(j), contained_start, contained_end, leading, recoil, backtracker_mom_vector,mc_wgt*pot_wgt); //filling the efficiency to test the thresholds
 	} //end of for loop over the mc particles
       } //end of loop over 2
+      Fill_Efficiency_XSec(true,true_contained_start,true_contained_end,vmuon,leading,recoil,1.0);//mc_wgt*pot_wgt); 
     } //end of if same size
     
     mc_protons_id.clear();
     mc_proton_mom.clear();
     zipped.clear();
-    
+
     //Okay. This Selection requires the following things:
     // 1) The reconstructed neutrino vertex is inside the FV 
     // 2) There are exactly 3 PFP's in the event
@@ -240,6 +251,7 @@ void twoproton_pelee_overlay::Loop()
 	protons++;                                             
       }                                                                                                       
     }                                                                                                     
+
     //Three pfps with track score above 0.8
     if(y != 3) continue; 
     threetrkcntr++;
@@ -280,21 +292,30 @@ void twoproton_pelee_overlay::Loop()
     for(int i=0; i < trk_pfp_id_v->size(); i++){
       int trk_id = trk_pfp_id_v->at(i);
       double trk_pid = trk_llr_pid_score_v->at(i);	
-      if(trk_pid > 1 || trk_pid < -1) continue;
 
+      if(trk_pid > 1 || trk_pid < -1) continue;
       if(trk_pid > PID_CUT) {
 	muon_id = trk_id - 1;
       }
+
       if(trk_pid < PID_CUT){
 	proton_id_vector.push_back(trk_id);
+	std::cout<<"trk_id inside of proton PID loop: "<<trk_id<<std::endl;
+	float energy = trk_energy_proton_v->at(trk_id - 1);
+	float mom = (std::sqrt(std::pow(energy + MASS_PROTON,2) - std::pow(MASS_PROTON,2)));
+	std::cout<<"Momentum: "<<mom<<std::endl;
       }
     }
 
     if(proton_id_vector[0] == 0 || proton_id_vector[1] ==0) continue; 
     uhoh++;
 
-    float mom0 = trk_energy_proton_v->at(proton_id_vector[0]-1);
-    float mom1 = trk_energy_proton_v->at(proton_id_vector[1]-1);
+    float mom0 = std::sqrt(std::pow(trk_energy_proton_v->at(proton_id_vector[0]-1) + MASS_PROTON,2) - std::pow(MASS_PROTON,2));
+    float mom1 = std::sqrt(std::pow(trk_energy_proton_v->at(proton_id_vector[1]-1) + MASS_PROTON,2) - std::pow(MASS_PROTON,2));
+
+    std::cout<<"Value of mom0: "<<mom0<<std::endl;
+    std::cout<<"Value of mom1: "<<mom1<<std::endl;
+
     if (abs(mom0) > abs(mom1)){
       leading_proton_id = proton_id_vector[0] - 1; //you have to do the -1 cause of course the id's are indexed at one like fucking losers
       recoil_proton_id = proton_id_vector[1] - 1;
@@ -340,36 +361,54 @@ void twoproton_pelee_overlay::Loop()
     vRec.SetPhi(trk_phi_v->at(recoil_proton_id));
     TLorentzVector rec(vRec[0],vRec[1],vRec[2],ERec); 
 
+    std::cout<<"Reco Leading Proton ID: "<<leading_proton_id<<std::endl;
+    std::cout<<"Reco Recoil Proton ID: "<<recoil_proton_id<<std::endl;
+    std::cout<<"Value of Lead Momentum Right Before Filling: "<<vLead.Mag()<<std::endl;
+    std::cout<<"Value of Recoil Momentum Right Before Filling: "<<vRec.Mag()<<std::endl;
+
     Fill_Histograms_Particles(mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0, mc_n_threshold_pionpm, cuts.fv, vMuon, muon, vLead, lead, vRec, rec, 1.0);//mc_wgt*pot_wgt);
     Fill_Histograms_Particles_Raquel(vMuon, muon, vLead, lead, vRec, rec, mc_wgt*pot_wgt, cuts.fv);
 
     //Make sure to fill the efficiency stuff and the migration matrices
+    std::vector<int> reco_protons_id; //the mc ids of the protons                                                                                                                                                                                                            
+    std::vector<double> reco_proton_mom; //the mc momentum of the protons                                                                                                                                                                                                    
+    std::vector<std::pair<double,int>> zipped_reco; //pair of the id and the momentum to help me identify the leading and recoil proton     
+
     if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_proton == 2 && mc_n_threshold_muon == 1 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && cuts.fv == true){
-      ohshit++;
+      //ohshit++;
 
       //muon stuff only for filling the matrices and the xsec efficiency
       bool true_contained_start;
       bool true_contained_end;
       TVector3 vmuon;
+      
       for(int j=0u; j < n_pfps; j++){
 	int pdg = backtracked_pdg->at(j);
+	int tid = backtracked_tid->at(j);
+	std::cout<<"Value of i in NUM: "<<j<<std::endl;
+	std::cout<<"Value of PDG in NUM: "<<pdg<<std::endl;
+	std::cout<<"Value of TID in NUM: "<<tid<<std::endl;
 	TVector3 backtracker_mom_vector(backtracked_px->at(j),backtracked_py->at(j),backtracked_pz->at(j));
 
 	//muon
 	if(pdg == 13){
-	  vmuon.SetXYZ(backtracked_px->at(j),backtracked_py->at(j),backtracked_pz->at(j));
-	  if(mc_pdg->size() == n_pfps){                                                                                                                                                                                                                   
-	    true_contained_start = cuts.In_FV(10,10,10,10,10,10,mc_vx->at(j),mc_vy->at(j),mc_vz->at(j)); //I don't have the right size mc_vx....sooo                                                                                         
-	    true_contained_end = cuts.In_FV(0,0,0,0,0,0,mc_endx->at(j),mc_endy->at(j),mc_endz->at(j));//i don't have the right size mc_vx......                                                                                              
+	  if(backtracker_mom_vector.Mag() > MUON_MOM_CUT) {
+	    vmuon.SetXYZ(backtracked_px->at(j),backtracked_py->at(j),backtracked_pz->at(j));
+	    if(mc_pdg->size() == n_pfps){                                                                                                                                                                                                                   
+	      true_contained_start = cuts.In_FV(10,10,10,10,10,10,mc_vx->at(j),mc_vy->at(j),mc_vz->at(j)); //I don't have the right size mc_vx....sooo                                                                                         
+	      true_contained_end = cuts.In_FV(0,0,0,0,0,0,mc_endx->at(j),mc_endy->at(j),mc_endz->at(j));//i don't have the right size mc_vx......                                                                                              
+	    }
 	  }
 	} //end of muon loop
 
 	//proton loop used to find the leading and recoil ids
 	if(pdg == 2212){
-	    mc_proton_mom.push_back(backtracker_mom_vector.Mag());
-	    mc_protons_id.push_back(j);
-	    zipped.push_back(std::make_pair(backtracker_mom_vector.Mag(),j));   
-	} //end proton loop
+	  if(backtracker_mom_vector.Mag() > PROTON_MOM_CUT_LOW && backtracker_mom_vector.Mag() < PROTON_MOM_CUT_HIGH){	  
+	    reco_proton_mom.push_back(backtracker_mom_vector.Mag());
+	    reco_protons_id.push_back(j);
+	    zipped_reco.push_back(std::make_pair(backtracker_mom_vector.Mag(),j));   
+	  } //end of mom threshold
+	} //end of proton loop
       } //end of loop over npfps
 
       int leading_id;
@@ -377,40 +416,39 @@ void twoproton_pelee_overlay::Loop()
       TVector3 leading;
       TVector3 recoil;
 
-      if(mc_proton_mom.size() == 0){ //no protons exsist
+      if(reco_proton_mom.size() == 0){ //no protons exsist
 	ohshit0++;
 	leading.SetXYZ(-9999.,-9999.,-9999.);
 	recoil.SetXYZ(-9999.,-9999.,-9999.);
-        //Fill_Matrices(vMuon,vmuon,vLead,leading,vRec,recoil,muon_start_contained,true_contained_start,muon_end_contained,true_contained_end, 1.0);//mc_wgt*pot_wgt);//testing the weight garbage mc_wgt*pot_wgt);                                                            
-	//Fill_Efficiency_XSec(false,true_contained_start,true_contained_end,vmuon,leading,recoil,1.0);
 
-      }else if (mc_proton_mom.size() == 1){ //only one proton exists
+      }else if (reco_proton_mom.size() == 1){ //only one proton exists
 	ohshit1++;
-	leading_id = mc_protons_id[0];
+	leading_id = reco_protons_id[0];
+	std::cout<<"Leading ID in 1 case :"<<leading_id<<std::endl;
 	leading.SetXYZ(backtracked_px->at(leading_id),backtracked_py->at(leading_id),backtracked_pz->at(leading_id));
 	recoil.SetXYZ(-9999.,-9999.,-9999.);
-	//Fill_Matrices(vMuon,vmuon,vLead,leading,vRec,recoil,muon_start_contained,true_contained_start,muon_end_contained,true_contained_end, 1.0);//mc_wgt*pot_wgt);//testing the weight garbage mc_wgt*pot_wgt);                                                            
-	//Fill_Efficiency_XSec(false,true_contained_start,true_contained_end,vmuon,leading,recoil,1.0);//mc_wgt*pot_wgt);
 
-      }else if(mc_proton_mom.size() > 2){
-	  ohshit3++;
+      }else if(reco_proton_mom.size() > 2){ //more than 2 protons
+	ohshit3++;
 	  
-      }else if (mc_proton_mom.size() => 2){ //what we want ultimately
+      }else if (reco_proton_mom.size() >= 2){ //what we want...sort of
 	ohshit2++;
 
-	std::sort(zipped.begin(), zipped.end(), greater());
-	for(int j=0; j < mc_protons_id.size(); j++){
-	  mc_proton_mom[j] = zipped[j].first;
-	  mc_protons_id[j] = zipped[j].second;
+	std::sort(zipped_reco.begin(), zipped_reco.end(), greater());
+	for(int j=0; j < reco_protons_id.size(); j++){
+	  reco_proton_mom[j] = zipped_reco[j].first;
+	  reco_protons_id[j] = zipped_reco[j].second;
 	}
-	
-	leading_id = mc_protons_id[0];
-	recoil_id = mc_protons_id[1];
+
+	leading_id = reco_protons_id[0];
+	recoil_id = reco_protons_id[1];
 	leading.SetXYZ(backtracked_px->at(leading_id),backtracked_py->at(leading_id),backtracked_pz->at(leading_id));
 	recoil.SetXYZ(backtracked_px->at(recoil_id),backtracked_py->at(recoil_id),backtracked_pz->at(recoil_id));
-      
-	//Fill_Matrices(vMuon,vmuon,vLead,leading,vRec,recoil,muon_start_contained,true_contained_start,muon_end_contained,true_contained_end, 1.0);//mc_wgt*pot_wgt);//testing the weight garbage mc_wgt*pot_wgt);
-	//Fill_Efficiency_XSec(false,true_contained_start,true_contained_end,vmuon,leading,recoil,1.0);//mc_wgt*pot_wgt);
+
+	std::cout<<"Leading ID in 2>= case :"<<leading_id<<std::endl;
+	std::cout<<"Recoil ID in 2>= case :"<<recoil_id<<std::endl;
+	std::cout<<"Value of Leading in 2>= case: "<<leading.Mag()<<std::endl;
+	std::cout<<"Value of Leading in 2>= case: "<<recoil.Mag()<<std::endl;
 
 	for(int j=0; j < n_pfps; j++){
 	  TVector3 backtracker_mom_vector(backtracked_px->at(j),backtracked_py->at(j),backtracked_pz->at(j));
@@ -426,9 +464,9 @@ void twoproton_pelee_overlay::Loop()
     }//end of if specific event
 
     //Make sure to clean up before you finish
-    mc_protons_id.clear();
-    mc_proton_mom.clear();
-    zipped.clear();
+    reco_protons_id.clear();
+    reco_proton_mom.clear();
+    zipped_reco.clear();
     proton_id_vector.clear();
     testVector.clear();
     events_remaining++;
