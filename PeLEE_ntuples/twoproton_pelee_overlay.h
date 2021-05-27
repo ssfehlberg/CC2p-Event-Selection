@@ -1457,11 +1457,11 @@ public :
    virtual void     Show(Long64_t entry = -1);
    virtual void     Which_Run();
    virtual void     Define_Histograms(); //defines histograms. works for all samples
-   //virtual void     MC_Definitions();
+   virtual void     MC_Definitions(int mc_n_threshold_muon, int mc_n_threshold_proton, int mc_n_threshold_pion0, int mc_n_threshold_pionpm);
    virtual void     Fill_Efficiency_Thresholds(bool denom, int backtracked_pdg, bool contained_start, bool contained_end, TVector3 leading, TVector3 recoil,TVector3 backtracker_mom_vector,double mc_wgt = 1.0);
    virtual void     Fill_Efficiency_XSec(bool denom, bool contained_start, bool contained_end, TVector3 vMuon,TVector3 vLead, TVector3 vRec,double mc_wgt = 1.0);
    virtual void     Fill_Matrices(TVector3 vMuon, TVector3 muon,TVector3 vLead, TVector3 lead,TVector3 vRec, TVector3 rec, bool contained_start, bool true_contained_start,bool contained_end, bool true_contained_end,double mc_wgt = 1.0);
-   virtual void     Fill_Histograms_Mine(int i, double wgt, int mc_n_threshold_muon, int mc_n_threshold_proton, int mc_n_threshold_pion0, double mc_n_threshold_pionpm, bool fv);
+   virtual void     Fill_Histograms_Mine(int i, double wgt, int mc_n_threshold_muon, int mc_n_threshold_proton, int mc_n_threshold_pion0, int mc_n_threshold_pionpm, bool fv);
    virtual void     Fill_Histograms_Raquel(int i, double wgt, bool fv);
    virtual void     Fill_Track_Plots(int which_cut,float value, int pdg, bool contained_start,bool contained_end, double wgt); //fills the track variables 
    /*virtual void     Fill_Histograms_Particles(int mc_n_threshold_muon, int mc_n_threshold_proton, int mc_n_threshold_pion0, double mc_n_threshold_pionpm, bool fv,TVector3 vMuon, TVector3 vLead, TVector3 vRec, double wgt);
@@ -1485,7 +1485,6 @@ public :
    const char* directory;
    const char* file;
    double pot_wgt;
-   double mc_wgt;
 
    //Defining all the histograms becaues I wrote the classes stupidly
    //////////////////////////////////////////////////////////////////
@@ -1653,13 +1652,15 @@ public :
   vector<TH2*> h_list_2D; //vector of all the 2D histograms
 
   //defining class stuff
+  helper_funcs cuts; //helper_funcs.h
   variables variables; //variables_funcs.h
 
-  //Definitions of MC Thresholds
-  int mc_n_threshold_muon = 0;
-  int mc_n_threshold_proton = 0;
-  int mc_n_threshold_pion0 = 0;
-  int mc_n_threshold_pionpm = 0;
+  //Definitions of MC Thresholds and MC weight
+  double mc_wgt;
+  //int mc_n_threshold_muon = 0;
+  //int mc_n_threshold_proton = 0;
+  //int mc_n_threshold_pion0 = 0;
+  //int mc_n_threshold_pionpm = 0;
 
   //Other parameters:                                                                                                                                                                                  
   double open_angle; //note this is the cos(opening angle)                                                                                                                                             
@@ -2291,21 +2292,26 @@ void twoproton_pelee_overlay::Define_Histograms(){
     }
 
     //make sure to handle the weights correcly
-    //for (int i = 0; i < h_list.size(); i++){
-    //  h_list[i]->Sumw2();
-    // }
-    //for(int i = 0; i < h_list_2D.size(); i++){
-    // h_list_2D[i]->Sumw2();
-    // }
+    for (int i = 0; i < h_list.size(); i++){
+      h_list[i]->Sumw2();
+     }
+    for(int i = 0; i < h_list_2D.size(); i++){
+     h_list_2D[i]->Sumw2();
+     }
 }
-/*
-void twoproton_pelee_overlay::MC_Definitions(){
+
+void twoproton_pelee_overlay::MC_Definitions(int mc_n_threshold_muon, int mc_n_threshold_proton, int mc_n_threshold_pion0, int mc_n_threshold_pionpm){
 
   if(std::isfinite(weightTune) && weightTune <= 100.) {
     mc_wgt = weightSplineTimesTune;
   } else {
     mc_wgt = 1 * weightSpline;
   }
+
+  //int mc_n_threshold_muon = 0;
+  //int mc_n_threshold_proton = 0;
+  //int mc_n_threshold_pion0 = 0;
+  //int mc_n_threshold_pionpm = 0;
 
   for ( size_t p = 0u; p < mc_pdg->size(); ++p ) {
     int pdg = mc_pdg->at( p );
@@ -2331,8 +2337,17 @@ void twoproton_pelee_overlay::MC_Definitions(){
     }
   }
 
+  if(_debug) std::cout<<"[MC_DEFINITIONS] Value of MC_Wgt: "<<mc_wgt<<std::endl;
+  if(_debug) std::cout<<"[MC_DEFINITIONS] Value of Muon Mom Cut: "<<MUON_MOM_CUT<<std::endl;
+  if(_debug) std::cout<<"[MC_DEFINITIONS] Value of Proton Low Cut: "<<PROTON_MOM_CUT_LOW<<std::endl;
+  if(_debug) std::cout<<"[MC_DEFINITIONS] Value of Proton High Cut: "<<PROTON_MOM_CUT_HIGH<<std::endl;
+  if(_debug) std::cout<<"[MC_DEFINITIONS] Number of threshold muons: "<<mc_n_threshold_muon<<std::endl;
+  if(_debug) std::cout<<"[MC_DEFINITIONS] Number of threshold protons: "<<mc_n_threshold_proton<<std::endl;
+  if(_debug) std::cout<<"[MC_DEFINITIONS] Number of threshold pion0: "<<mc_n_threshold_pion0<<std::endl;
+  if(_debug) std::cout<<"[MC_DEFINITIONS] Number of threshold pionpm: "<<mc_n_threshold_pionpm<<std::endl;
+
+
 }//MC_definitions
-*/
 
 void twoproton_pelee_overlay::Fill_Efficiency_Thresholds(bool denom, int backtracked_pdg, bool contained_start, bool contained_end, TVector3 leading, TVector3 recoil,TVector3 backtracker_mom_vector,double mc_wgt = 1.0){
 
@@ -2872,7 +2887,7 @@ void twoproton_pelee_overlay::Fill_Raquel(int i, int j, double wgt){
  }
 
 
-void twoproton_pelee_overlay::Fill_Histograms_Mine(int i, double wgt, int mc_n_threshold_muon, int mc_n_threshold_proton, int mc_n_threshold_pion0, double mc_n_threshold_pionpm, bool fv){
+void twoproton_pelee_overlay::Fill_Histograms_Mine(int i, double wgt, int mc_n_threshold_muon, int mc_n_threshold_proton, int mc_n_threshold_pion0, int mc_n_threshold_pionpm, bool fv){
   Fill_Mine(i,0,wgt);
   //cc0p0pi                                                                                                                                  
   if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton == 0 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
