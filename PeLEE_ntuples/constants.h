@@ -3,7 +3,7 @@
 namespace Constants{
 
   //debug statements
-  bool _debug = false; 
+  bool _debug = true; 
 
   //Are we adding protons together in the STVs?
   bool add_protons = true;
