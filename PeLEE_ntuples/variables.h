@@ -30,15 +30,17 @@ vector<double> variables::Calculate_Momenta(TVector3 vmuon, TVector3 vlead, TVec
 
   //muon
   double muon_mom;
-  if(vmuon[0] == -9999. && vmuon[1] == -9999. && vmuon[2] == -9999.){
+
+  if((vmuon[0] == -9999. && vmuon[1] == -9999. && vmuon[2] == -9999.) || vmuon.Mag() > 9999.){
     muon_mom = -9999.0;
+    std::cout<<"[VARIABLES] WE GOT A GARBAGE MOMENTUM FOR MUON!"<<std::endl;
   } else {
     muon_mom = double(vmuon.Mag());
   }
-
+    
   //lead proton
   double lead_mom;
-  if(vlead[0] == -9999. && vlead[1] == -9999. && vlead[2] == -9999.){
+  if((vlead[0] == -9999. && vlead[1] == -9999. && vlead[2] == -9999.) || vlead.Mag() > 9999.){
     std::cout<<"[VARIABLES] WE GOT A GARBAGE MOMENTUM FOR LEAD!"<<std::endl;
     lead_mom = -9999.0;
   } else {
@@ -47,7 +49,7 @@ vector<double> variables::Calculate_Momenta(TVector3 vmuon, TVector3 vlead, TVec
 
   //recoil proton
   double rec_mom;
-  if(vrec[0] == -9999. && vrec[1] == -9999. && vrec[2] == -9999.){
+  if((vrec[0] == -9999. && vrec[1] == -9999. && vrec[2] == -9999.) || vrec.Mag() > 9999.){
     std::cout<<"[VARIABLES] WE GOT A GARBAGE MOMENTUM FOR RECOIL!"<<std::endl;
     rec_mom = -9999.0;
   } else {

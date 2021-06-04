@@ -3,7 +3,7 @@
 namespace Constants{
 
   //debug statements
-  bool _debug = true; 
+  bool _debug = false; 
 
   //Are we adding protons together in the STVs?
   bool add_protons = true;
@@ -17,7 +17,8 @@ namespace Constants{
   double PID_CUT = 0.2;
 
   //Momentum Cut Values (only used by the overlay)
-  double MUON_MOM_CUT = 0.1;
+  double MUON_MOM_CUT_LOW = 0.1;
+  double MUON_MOM_CUT_HIGH = 2.5;
   double PROTON_MOM_CUT_LOW = 0.25;
   double PROTON_MOM_CUT_HIGH = 1.2;
   double CHARGED_PI_MOM_CUT = 0.065;
