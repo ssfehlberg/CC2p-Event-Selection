@@ -1572,7 +1572,7 @@ public :
   TH1D* h_mom_threshold_num[num_threshold]; //these are for the threshold determination plots: numerator of the the efficiency
   TH1D* h_mom_threshold_denom[num_threshold]; //same as above but the denominator of the efficinecy
   int num_bins_eff[num_threshold] = {50,50,50,50,50,50,50,50,50};
-  float x_high_eff[num_threshold] = {2.5,2.5,2.5,2.0,2.0,2.0,0.5,0.5,0.5};
+  float x_high_eff[num_threshold] = {5.0,5.0,5.0,2.0,2.0,2.0,0.5,0.5,0.5};
 
   //Effieincy Plots and Migration Matrices of XSec Variables
   ////////////////////////////////////////////////////////////

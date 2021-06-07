@@ -195,13 +195,6 @@ void twoproton_pelee_overlay::Loop()
 	leading_denom.SetXYZ(mc_px->at(leading_id_denom),mc_py->at(leading_id_denom),mc_pz->at(leading_id_denom));
 	recoil_denom.SetXYZ(mc_px->at(recoil_id_denom),mc_py->at(recoil_id_denom),mc_pz->at(recoil_id_denom));
 
-	std::cout<<"MUON ID FOR DENOM: "<<muon_id_denom<<std::endl;
-	std::cout<<"Leading ID FOR DENOM: "<<leading_id_denom<<std::endl;
-	std::cout<<"Recoil ID FOR DENOM: "<<recoil_id_denom<<std::endl;
-	std::cout<<"Leading Momentum in DENOM: "<<leading_denom.Mag()<<std::endl;
-	std::cout<<"Recoil Momentum in DENOM: "<<recoil_denom.Mag()<<std::endl;
-	std::cout<<"Muon Momentum in DENOM: "<<vmuon_denom.Mag()<<std::endl;
-
 	for(size_t j=0u; j < mc_pdg->size(); j++){
 	  TVector3 backtracker_mom_vector(mc_px->at(j),mc_py->at(j),mc_pz->at(j)); //mc momentum of particular mc particle
 	  bool contained_start = cuts.In_FV(10,10,10,10,10,10,mc_vx->at(j),mc_vy->at(j),mc_vz->at(j)); //is the particle start contained in FV
@@ -253,6 +246,8 @@ void twoproton_pelee_overlay::Loop()
       float track_score = trk_score_v->at(i);                                                                         
       float track_distance = trk_distance_v->at(i);
       float track_pid = trk_llr_pid_score_v->at(i);
+      bool track_start_contained = cuts.In_FV(10,10,10,10,10,10,trk_start_x_v->at(i),trk_start_y_v->at(i),trk_start_z_v->at(i));
+      bool track_end_contained = cuts.In_FV(10,10,10,10,10,10,trk_end_x_v->at(i),trk_end_y_v->at(i),trk_end_z_v->at(i));
       if(track_score >= TRACK_SCORE_CUT){
 	y++; 
       }
@@ -267,7 +262,6 @@ void twoproton_pelee_overlay::Loop()
       }                                                                                                       
     }                                                                                                     
 
-    
     //Three pfps with track score above 0.8
     if(y != 3) continue; 
     threetrkcntr++;
@@ -372,7 +366,7 @@ void twoproton_pelee_overlay::Loop()
     TLorentzVector rec(vRec[0],vRec[1],vRec[2],ERec); 
 
 
-    /*if(vMuon.Mag() < MUON_MOM_CUT_LOW || vMuon.Mag() > MUON_MOM_CUT_HIGH) continue;
+    /*    if(vMuon.Mag() < MUON_MOM_CUT_LOW || vMuon.Mag() > MUON_MOM_CUT_HIGH) continue;
     ohshit++;
     if(vLead.Mag() < PROTON_MOM_CUT_LOW || vLead.Mag() > PROTON_MOM_CUT_HIGH) continue;
     ohshit0++;
@@ -402,9 +396,9 @@ void twoproton_pelee_overlay::Loop()
           if(true_mom_vector.Mag() >  MUON_MOM_CUT_LOW && true_mom_vector.Mag() < MUON_MOM_CUT_HIGH){
             vmuon_num.SetXYZ(mc_px->at(j),mc_py->at(j),mc_pz->at(j));
 	    muon_id_num = j;
-	    true_contained_start = cuts.In_FV(10,10,10,10,10,10,mc_vx->at(j),mc_vy->at(j),mc_vz->at(j)); //I don't have the right size mc_vx....sooo                                                                                                                          
-	    true_contained_end = cuts.In_FV(0,0,0,0,0,0,mc_endx->at(j),mc_endy->at(j),mc_endz->at(j));//i don't have the right size mc_vx......                                                                                                                                
-          }
+	    true_contained_start = cuts.In_FV(10,10,10,10,10,10,mc_vx->at(j),mc_vy->at(j),mc_vz->at(j)); //I don't have the right size mc_vx....sooo                                                                                                   
+	    true_contained_end = cuts.In_FV(0,0,0,0,0,0,mc_endx->at(j),mc_endy->at(j),mc_endz->at(j));//i don't have the right size mc_vx......                                                                                                        
+	  }
         }
         
 	//Now to identify the protons                                                                                                                                                                                                                                           
@@ -413,7 +407,7 @@ void twoproton_pelee_overlay::Loop()
             mc_proton_mom.push_back(true_mom_vector.Mag());
             mc_protons_id.push_back(j);
             zipped.push_back(std::make_pair(true_mom_vector.Mag(),j));
-          }
+	  }
         }
       } //end loop over pfps   
 
