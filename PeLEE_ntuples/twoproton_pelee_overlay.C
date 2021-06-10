@@ -246,8 +246,6 @@ void twoproton_pelee_overlay::Loop()
       float track_score = trk_score_v->at(i);                                                                         
       float track_distance = trk_distance_v->at(i);
       float track_pid = trk_llr_pid_score_v->at(i);
-      bool track_start_contained = cuts.In_FV(10,10,10,10,10,10,trk_start_x_v->at(i),trk_start_y_v->at(i),trk_start_z_v->at(i));
-      bool track_end_contained = cuts.In_FV(10,10,10,10,10,10,trk_end_x_v->at(i),trk_end_y_v->at(i),trk_end_z_v->at(i));
       if(track_score >= TRACK_SCORE_CUT){
 	y++; 
       }
@@ -366,14 +364,18 @@ void twoproton_pelee_overlay::Loop()
     TLorentzVector rec(vRec[0],vRec[1],vRec[2],ERec); 
 
 
-    /*    if(vMuon.Mag() < MUON_MOM_CUT_LOW || vMuon.Mag() > MUON_MOM_CUT_HIGH) continue;
-    ohshit++;
-    if(vLead.Mag() < PROTON_MOM_CUT_LOW || vLead.Mag() > PROTON_MOM_CUT_HIGH) continue;
-    ohshit0++;
-    if(vRec.Mag() < PROTON_MOM_CUT_LOW|| vRec.Mag() > PROTON_MOM_CUT_HIGH) continue;
-    ohshit1++;
-    */
+    //We had to add another cut: The muon and protons must have reconstructed momentum within the thresholdss defined
+    // this is the only way to get the closure test to work
 
+    if(vMuon.Mag() < MUON_MOM_CUT_LOW || vMuon.Mag() > MUON_MOM_CUT_HIGH) continue;
+    ohshit++;
+    //if(vLead.Mag() < PROTON_MOM_CUT_LOW || vLead.Mag() > PROTON_MOM_CUT_HIGH) continue;
+    //ohshit0++;
+    //if(vRec.Mag() < PROTON_MOM_CUT_LOW|| vRec.Mag() > PROTON_MOM_CUT_HIGH) continue;
+    ohshit1++;
+    
+    Fill_Histograms_Mine(6, pot_wgt*mc_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv);
+    Fill_Histograms_Raquel(6, pot_wgt*mc_wgt, cuts.fv);
     Fill_Histograms_Particles(mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0, mc_n_threshold_pionpm, cuts.fv, vMuon, muon, vLead, lead, vRec, rec, mc_wgt*pot_wgt);
     Fill_Histograms_Particles_Raquel(vMuon, muon, vLead, lead, vRec, rec, mc_wgt*pot_wgt, cuts.fv);
 
@@ -384,14 +386,14 @@ void twoproton_pelee_overlay::Loop()
     int recoil_id_num;
     if(ccnc == 0 && nu_pdg == 14 && mc_n_threshold_proton == 2 && mc_n_threshold_muon == 1 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && cuts.fv == true){
 
-      //muon stuff for filling the xsec efficiency                                                                                                                                                                                                                              
+      //muon stuff for filling the xsec efficiency                                                                                                                                                                                                    
       bool true_contained_start;
       bool true_contained_end;
       for(int j=0; j < mc_pdg->size(); j++){
         int pdg = mc_pdg->at(j);
         TVector3 true_mom_vector(mc_px->at(j),mc_py->at(j),mc_pz->at(j));
         
-	//fill the muon                                                                                                                                                                                                                                                         
+	//fill the muon                                                                                                                                                                                                                                
 	if(std::abs(pdg) == 13){
           if(true_mom_vector.Mag() >  MUON_MOM_CUT_LOW && true_mom_vector.Mag() < MUON_MOM_CUT_HIGH){
             vmuon_num.SetXYZ(mc_px->at(j),mc_py->at(j),mc_pz->at(j));
@@ -401,7 +403,7 @@ void twoproton_pelee_overlay::Loop()
 	  }
         }
         
-	//Now to identify the protons                                                                                                                                                                                                                                           
+	//Now to identify the protons                                                                                                                                                                                                                  
 	if(std::abs(pdg) == 2212){
           if(true_mom_vector.Mag() > PROTON_MOM_CUT_LOW && true_mom_vector.Mag() < PROTON_MOM_CUT_HIGH){
             mc_proton_mom.push_back(true_mom_vector.Mag());
@@ -417,32 +419,26 @@ void twoproton_pelee_overlay::Loop()
         ohshit_num++;
       }
 
-      //casse we actually want                                                                                                                                                                                                                                                  
+      //casse we actually want                                                                                                                                                                                                                         
       if (mc_proton_mom.size() == 2){
 	std::sort(zipped.begin(), zipped.end(), greater());
         for(int j=0; j < mc_protons_id.size(); j++){
           mc_proton_mom[j] = zipped[j].first;
           mc_protons_id[j] = zipped[j].second;
         }
-        leading_id_num = mc_protons_id[0]; //leading proton id                                                                                                                                                                                                                
-	recoil_id_num = mc_protons_id[1]; //recoil proton id                                                                                                                                                                                                                  
+        leading_id_num = mc_protons_id[0]; //leading proton id                                                                                                                                                                                         
+	recoil_id_num = mc_protons_id[1]; //recoil proton id                                                                                                                                                                                           
 	leading_num.SetXYZ(mc_px->at(leading_id_num),mc_py->at(leading_id_num),mc_pz->at(leading_id_num));
         recoil_num.SetXYZ(mc_px->at(recoil_id_num),mc_py->at(recoil_id_num),mc_pz->at(recoil_id_num));
 
-	std::cout<<"Muon ID FOR NUM: "<<muon_id_num<<std::endl;
-	std::cout<<"Leading ID FOR NUM: "<<leading_id_num<<std::endl;
-	std::cout<<"Recoil ID FOR NUM: "<<recoil_id_num<<std::endl;
-	std::cout<<"Leading Momentum in NUM: "<<leading_num.Mag()<<std::endl;
-	std::cout<<"Recoil Momentum in NUM: "<<recoil_num.Mag()<<std::endl;
-	std::cout<<"Muon Momentum in NUM: "<<vmuon_num.Mag()<<std::endl;
 
 	for(size_t j=0u; j < mc_pdg->size(); j++){
-          TVector3 backtracker_mom_vector(mc_px->at(j),mc_py->at(j),mc_pz->at(j)); //mc momentum of particular mc particle                                                                                                                                                      
-	  bool contained_start = cuts.In_FV(10,10,10,10,10,10,mc_vx->at(j),mc_vy->at(j),mc_vz->at(j)); //is the particle start contained in FV                                                                                                                                  
-	  bool contained_end = cuts.In_FV(0,0,0,0,0,0,mc_endx->at(j),mc_endy->at(j),mc_endz->at(j)); //is the particle end contained in the detector                                                                                                                            
-	  Fill_Efficiency_Thresholds(false, mc_pdg->at(j), contained_start, contained_end, leading_num, recoil_num, backtracker_mom_vector,mc_wgt*pot_wgt); //filling the efficiency to test the thresholds                                                                  
-	} //end of for loop over the mc particles                                                                                                                                                                                                                               
-      } //end of loop over 2                                                                                                                                                                                                                                                    
+          TVector3 backtracker_mom_vector(mc_px->at(j),mc_py->at(j),mc_pz->at(j)); //mc momentum of particular mc particle                                                                                                                             
+	  bool contained_start = cuts.In_FV(10,10,10,10,10,10,mc_vx->at(j),mc_vy->at(j),mc_vz->at(j)); //is the particle start contained in FV                                                                                                        
+	  bool contained_end = cuts.In_FV(0,0,0,0,0,0,mc_endx->at(j),mc_endy->at(j),mc_endz->at(j)); //is the particle end contained in the detector                                                                                                  
+	  Fill_Efficiency_Thresholds(false, mc_pdg->at(j), contained_start, contained_end, leading_num, recoil_num, backtracker_mom_vector,mc_wgt*pot_wgt); //filling the efficiency to test the thresholds                                             
+	} //end of for loop over the mc particles                                                                                                                                                                                                      
+      } //end of loop over 2                                                                                                                                                                                                                       
       Fill_Matrices(vMuon,vmuon_num,vLead,leading_num,vRec,recoil_num,muon_start_contained,true_contained_start,muon_end_contained,true_contained_end, mc_wgt*pot_wgt);
       Fill_Efficiency_XSec(false,true_contained_start,true_contained_end,vmuon_num,leading_num,recoil_num,mc_wgt*pot_wgt);                                       
     }//end of if specific event
@@ -459,7 +455,7 @@ void twoproton_pelee_overlay::Loop()
 
   //Before we finish, we need to make the efficiency and purity plots:
   ///////////////////////////////////////////////////////////////////
-  std::vector<int> cut_values = {static_cast<int>(nentries),fvcntr,threepfps,threetrkcntr, threetrk_connected, pid};
+  std::vector<int> cut_values = {static_cast<int>(nentries),fvcntr,threepfps,threetrkcntr, threetrk_connected, pid, ohshit1};
   for(int i = 0; i < cut_values.size(); i++){
     double eff = double(cc2p0pi[i]) / double(cc2p0pi[0]);
     double purity = double(cc2p0pi[i]) / double(cut_values[i]);
@@ -476,6 +472,9 @@ void twoproton_pelee_overlay::Loop()
   std::cout << "[ANALYZER] Number of Events with 3 Tracks: "<<threetrkcntr<<" Fraction of Total: "<<float(100.*float(threetrkcntr)/float(nentries))<<"%"<<std::endl;
   std::cout << "[ANALYZER] Number of Events with 3 Tracks Connected to Vertex: "<<threetrk_connected<<" Fraction of Total: "<<float(100.*float(threetrk_connected)/float(nentries))<<"%"<<std::endl; 
   std::cout << "[ANALYZER] Number of Events with 1 Muon and 2 Protons: "<<pid<<" Fraction of Total: "<<float(100.*float(pid)/float(nentries))<<"%"<<std::endl;
+  std::cout << "[ANALYZER] Number of Events with Reco. Muon Momentum above 0.1 GeV and below 2.5 GeV: "<<ohshit<<" Fraction of Total: "<<float(100.*float(ohshit)/float(nentries))<<"%"<<std::endl;
+  std::cout << "[ANALYZER] Number of Events with Reco. Lead Proton Momentum above 0.25 GeV and below 1.2 GeV: "<<ohshit0<<" Fraction of Total: "<<float(100.*float(ohshit0)/float(nentries))<<"%"<<std::endl;
+  std::cout << "[ANALYZER] Number of Events with Reco. Recoil Proton Momentum above 0.25 GeV and below 1.2 GeV:: "<<ohshit1<<" Fraction of Total: "<<float(100.*float(ohshit1)/float(nentries))<<"%"<<std::endl;
   std::cout << "[ANALYZER] Sanity Check of the Total Number of Events Remaining: "<<events_remaining<<std::endl;
   std::cout <<"-----CLOSING TIME. YOU DON'T HAVE TO GO HOME, BUT YOU CAN'T STAY HERE-----"<<std::endl;
    
