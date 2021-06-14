@@ -38,6 +38,7 @@ namespace Constants{
   int threetrkcntr = 0; //Number of events with three tracks    
   int threetrk_connected = 0; //Number of Events with three tracks attached to the vertex
   int pid = 0; //Number of events with 1 track with PID > 0.6 and 2 tracks with PID < 0.6
+  int reco_muon_mom_cut = 0; //Number of events where reco muon momentum is < 0.1 and > 2.5
   int events_remaining = 0; //sanity check for number of events remaining
 
   //Neutrino counters                                                                                     

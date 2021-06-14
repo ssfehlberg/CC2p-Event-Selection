@@ -27,11 +27,6 @@ void twoproton_pelee_overlay::Loop()
   /////////////////////////////////////////////////////////////
   Define_Histograms();
   double mc_wgt; //mc cv weight
-  int ohshit = 0;
-  int ohshit0 = 0;
-  int ohshit1 = 0;
-  int ohshit2 = 0;
-  int ohshit3 = 0;
   int ohshit_denom = 0;
   int ohshit_num = 0;
 
@@ -300,12 +295,10 @@ void twoproton_pelee_overlay::Loop()
     for(int i=0; i < trk_pfp_id_v->size(); i++){
       int trk_id = trk_pfp_id_v->at(i);
       double trk_pid = trk_llr_pid_score_v->at(i);	
-
       if(trk_pid > 1 || trk_pid < -1) continue; //instances in which the PID is a dumb value
       if(trk_pid >= PID_CUT) { //muon
 	muon_id = trk_id - 1;
       }
-
       if(trk_pid < PID_CUT){ //proton
 	proton_id_vector.push_back(trk_id);
       }
@@ -366,14 +359,9 @@ void twoproton_pelee_overlay::Loop()
 
     //We had to add another cut: The muon and protons must have reconstructed momentum within the thresholdss defined
     // this is the only way to get the closure test to work
-
     if(vMuon.Mag() < MUON_MOM_CUT_LOW || vMuon.Mag() > MUON_MOM_CUT_HIGH) continue;
-    ohshit++;
-    //if(vLead.Mag() < PROTON_MOM_CUT_LOW || vLead.Mag() > PROTON_MOM_CUT_HIGH) continue;
-    //ohshit0++;
-    //if(vRec.Mag() < PROTON_MOM_CUT_LOW|| vRec.Mag() > PROTON_MOM_CUT_HIGH) continue;
-    ohshit1++;
-    
+    reco_muon_mom_cut++;
+ 
     Fill_Histograms_Mine(6, pot_wgt*mc_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv);
     Fill_Histograms_Raquel(6, pot_wgt*mc_wgt, cuts.fv);
     Fill_Histograms_Particles(mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0, mc_n_threshold_pionpm, cuts.fv, vMuon, muon, vLead, lead, vRec, rec, mc_wgt*pot_wgt);
@@ -455,7 +443,7 @@ void twoproton_pelee_overlay::Loop()
 
   //Before we finish, we need to make the efficiency and purity plots:
   ///////////////////////////////////////////////////////////////////
-  std::vector<int> cut_values = {static_cast<int>(nentries),fvcntr,threepfps,threetrkcntr, threetrk_connected, pid, ohshit1};
+  std::vector<int> cut_values = {static_cast<int>(nentries),fvcntr,threepfps,threetrkcntr, threetrk_connected, pid, reco_muon_mom_cut};
   for(int i = 0; i < cut_values.size(); i++){
     double eff = double(cc2p0pi[i]) / double(cc2p0pi[0]);
     double purity = double(cc2p0pi[i]) / double(cut_values[i]);
@@ -472,9 +460,7 @@ void twoproton_pelee_overlay::Loop()
   std::cout << "[ANALYZER] Number of Events with 3 Tracks: "<<threetrkcntr<<" Fraction of Total: "<<float(100.*float(threetrkcntr)/float(nentries))<<"%"<<std::endl;
   std::cout << "[ANALYZER] Number of Events with 3 Tracks Connected to Vertex: "<<threetrk_connected<<" Fraction of Total: "<<float(100.*float(threetrk_connected)/float(nentries))<<"%"<<std::endl; 
   std::cout << "[ANALYZER] Number of Events with 1 Muon and 2 Protons: "<<pid<<" Fraction of Total: "<<float(100.*float(pid)/float(nentries))<<"%"<<std::endl;
-  std::cout << "[ANALYZER] Number of Events with Reco. Muon Momentum above 0.1 GeV and below 2.5 GeV: "<<ohshit<<" Fraction of Total: "<<float(100.*float(ohshit)/float(nentries))<<"%"<<std::endl;
-  std::cout << "[ANALYZER] Number of Events with Reco. Lead Proton Momentum above 0.25 GeV and below 1.2 GeV: "<<ohshit0<<" Fraction of Total: "<<float(100.*float(ohshit0)/float(nentries))<<"%"<<std::endl;
-  std::cout << "[ANALYZER] Number of Events with Reco. Recoil Proton Momentum above 0.25 GeV and below 1.2 GeV:: "<<ohshit1<<" Fraction of Total: "<<float(100.*float(ohshit1)/float(nentries))<<"%"<<std::endl;
+  std::cout << "[ANALYZER] Number of Events with Reco. Muon Momentum above 0.1 GeV and below 2.5 GeV: "<<reco_muon_mom_cut<<" Fraction of Total: "<<float(100.*float(reco_muon_mom_cut)/float(nentries))<<"%"<<std::endl;
   std::cout << "[ANALYZER] Sanity Check of the Total Number of Events Remaining: "<<events_remaining<<std::endl;
   std::cout <<"-----CLOSING TIME. YOU DON'T HAVE TO GO HOME, BUT YOU CAN'T STAY HERE-----"<<std::endl;
    
@@ -562,11 +548,6 @@ void twoproton_pelee_overlay::Loop()
   std::cout<<"Num Contained: "<<num_contained<<std::endl;
   std::cout<<"Num Uncontained: "<<num_uncontained<<std::endl;
 
-  std::cout<<"OHSHI: "<<ohshit<<std::endl;
-  std::cout<<"OHshit0: "<<ohshit0<<std::endl;
-  std::cout<<"OHshit1: "<<ohshit1<<std::endl;
-  std::cout<<"OHshit2: "<<ohshit2<<std::endl;
-  std::cout<<"OHshit2: "<<ohshit3<<std::endl;
   std::cout<<"Ohshit_denom: "<<ohshit_denom<<std::endl;
   std::cout<<"OHSHIT_num: "<<ohshit_num<<std::endl;
 

@@ -93,7 +93,7 @@ void twoproton_pelee_bnb::Loop()
       if(track_distance <= TRACK_DIST_CUT){
 	y1++;
       }                                            
-      if(track_pid > PID_CUT){
+      if(track_pid >= PID_CUT){
 	muons++;
       }
       if(track_pid < PID_CUT){
@@ -138,10 +138,8 @@ void twoproton_pelee_bnb::Loop()
     for(int i=0; i < trk_pfp_id_v->size(); i++){
       int trk_id = trk_pfp_id_v->at(i);
       double trk_pid = trk_llr_pid_score_v->at(i);	
-      if(trk_pid > 1 || trk_pid < -1){
-	std::cout<<"FUCKING SHIT"<<std::endl;  
-      }
-      if(trk_pid > PID_CUT) {
+      if(trk_pid > 1 || trk_pid < -1) continue;
+      if(trk_pid >= PID_CUT) {
 	muon_id = trk_id - 1;
       }
       if(trk_pid < PID_CUT){
@@ -194,9 +192,14 @@ void twoproton_pelee_bnb::Loop()
     vRec.SetPhi(trk_phi_v->at(recoil_proton_id));
     TLorentzVector rec(vRec[0],vRec[1],vRec[2],ERec);
 
+    //We had to add another cut: The muon and protons must have reconstructed momentum within the thresholdss defined
+    // this is the only way to get the closure test to work
+    if(vMuon.Mag() < MUON_MOM_CUT_LOW || vMuon.Mag() > MUON_MOM_CUT_HIGH) continue;
+    reco_muon_mom_cut++;
+
     hist.Fill_Particles(vMuon,muon,vLead,lead,vRec,rec,pot_wgt);
 
-    //One last thing: Make sure to ssave the RSE for the good events before you end your loop                                                                                                                                                                    
+    //One last thing: Make sure to ssave the RSE for the good events before you end your loop                            
     myfile << run << " " << sub << " " << evt << " " ;
     myfile << endl;
     
@@ -213,6 +216,7 @@ void twoproton_pelee_bnb::Loop()
   std::cout << "[ANALYZER] Number of Events with 3 Tracks: "<<threetrkcntr<<" Fraction of Total: "<<float(100.*float(threetrkcntr)/float(nentries))<<"%"<<std::endl;
   std::cout << "[ANALYZER] Number of Events with 3 Tracks Connected to Vertex: "<<threetrk_connected<<" Fraction of Total: "<<float(100.*float(threetrk_connected)/float(nentries))<<"%"<<std::endl; 
   std::cout << "[ANALYZER] Number of Events with 1 Muon and 2 Protons: "<<pid<<" Fraction of Total: "<<float(100.*float(pid)/float(nentries))<<"%"<<std::endl;
+  std::cout << "[ANALYZER] Number of Events with Reco. Muon Momentum above 0.1 GeV and below 2.5 GeV: "<<reco_muon_mom_cut<<" Fraction of Total: "<<float(100.*float(reco_muon_mom_cut)/float(nentries))<<"%"<<std::endl;
   std::cout << "[ANALYZER] Sanity Check of the Total Number of Events Remaining: "<<events_remaining<<std::endl;
   std::cout <<"-----CLOSING TIME. YOU DON'T HAVE TO GO HOME, BUT YOU CAN'T STAY HERE-----"<<std::endl;
   
