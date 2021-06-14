@@ -283,8 +283,13 @@ double variables::Calculate_Beam(TVector3 vMuon, TVector3 vLead, TVector3 vRec,d
   if((vLead[0] == -9999. && vLead[1] == -9999. && vLead[2] == -9999.) || (vRec[0] == -9999. && vRec[1] == -9999. && vRec[2] == -9999.)){
     calculated_nu_E = -9999.0;
   } else {
-    calculated_nu_E = (EMuon+MASS_MUON) + ELead + ERec +((PT_miss.Mag2())/(2.0*35.37)) + 0.0304;; //based on formula in Raquel's technote and the argoneut paper
+    //based on formula in Raquel's technote (Eq. 1) and the argoneut paper  
+    // E_nu = Total Energy Muon + kinetic Energy Proton + Kinetic Energy Proton + (P^{T}_{Miss})/2*M_{A-2} + E_{Miss}
+    //P^{T}_{Miss}  = p_mu^T + p_{Lead}^T + p_{recoil}^T i.e. transverse components of all the vectors
+    // E_{miss} is estimated to be 30.4 MeV. M_{A-2} is taken to be 35.37 GeV. 
+    calculated_nu_E = (EMuon+MASS_MUON) + ELead + ERec +((PT_miss.Mag2())/(2.0*35.37)) + 0.0304;;
   }
+  if(_debug) std::cout<<"[VARIABLES] Value of Calculated_Nu_E: "<<calculated_nu_E<<std::endl;
   return calculated_nu_E;
 
 } 

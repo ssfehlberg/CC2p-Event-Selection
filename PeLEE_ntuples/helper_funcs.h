@@ -56,10 +56,10 @@ double helper_funcs::real_sqrt( double x ) {
 //Calculates either the kinetic or total energy of a particle. Total_e = true -> total energy, Total_E = false-> KE. Needs momentum and mass of particle                                                                                          /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 double helper_funcs::Which_Energy(bool total_E, TVector3 mom, double mass){
   double Energy;
-  if(total_E == true){
+  if(total_E == true){ //Total Energy
     Energy = std::sqrt(mom.Mag2() + std::pow(mass,2));
   } else if (total_E == false){
-    Energy = std::sqrt(mom.Mag2() + std::pow(mass,2)) - mass;
+    Energy = std::sqrt(mom.Mag2() + std::pow(mass,2)) - mass; //Kinetic Energy
   }
   return Energy;
 }

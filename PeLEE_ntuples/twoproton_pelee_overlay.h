@@ -2059,7 +2059,7 @@ void twoproton_pelee_overlay::Define_Histograms(){
 
       } else if (i == 7){ //neutrino energy
         const Int_t bins = 6;
-        Double_t edges[bins+1] = {0,0.3,0.5,0.7,0.9,1.2,2.5};
+        Double_t edges[bins+1] = {0,0.3,0.5,0.7,0.9,1.2,4.0};
 	//const Int_t bins = 25;
 	//Double_t edges[bins+1] = {0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5};
         h_other_eff_num[i] = new TH1D(Form("h_other_eff_num%s",other_eff[i]),Form("h_other_eff_num%s",other_eff[i]),bins,edges);
@@ -2182,7 +2182,7 @@ void twoproton_pelee_overlay::Define_Histograms(){
 	h_delta_phiT_overlay[i] = new TH1D(Form("h_delta_phiT%s",channel[i]),Form("h_delta_phiT%s; #delta #phi_{T} [Deg.];Counts",channel[i]),bins_stv_angles,edges_stv_angles);                                                               
 
 	const Int_t bins_nuE = 6;
-        Double_t edges_nuE[bins_nuE+1] = {0,0.3,0.5,0.7,0.9,1.2,2.5};
+        Double_t edges_nuE[bins_nuE+1] = {0,0.3,0.5,0.7,0.9,1.2,4.0};
 	h_nu_E_overlay[i] =  new TH1D(Form("h_nu_E%s",channel[i]),Form("h_nu_E%s; Total Energy; Counts;",channel[i]),bins_nuE,edges_nuE);
 
 	//basic bitches
@@ -2247,7 +2247,7 @@ void twoproton_pelee_overlay::Define_Histograms(){
 	h_delta_phiT_raquel[i] = new TH1D(Form("h_delta_phiT_raquel%s",channel2[i]),Form("h_delta_phiT_raquel%s; #delta #phi_{T} [Deg.];Counts",channel2[i]),bins_stv_angles,edges_stv_angles);                                            
 
 	const Int_t bins_nuE = 6;
-        Double_t edges_nuE[bins_nuE+1] = {0,0.3,0.5,0.7,0.9,1.2,2.5};
+        Double_t edges_nuE[bins_nuE+1] = {0,0.3,0.5,0.7,0.9,1.2,4.0};
 	h_nu_E_raquel[i] =  new TH1D(Form("h_nu_E_raquel%s",channel2[i]),Form("h_nu_E_raquel%s; Total Energy; Counts;",channel2[i]),bins_nuE,edges_nuE);
 
 	//basic bitches
@@ -2466,8 +2466,8 @@ void twoproton_pelee_overlay::Fill_Efficiency_XSec(bool denom, bool contained_st
   double delta_phiT = variables.stvs[2]; //degrees                             
 
   //neutrino energy
-  double Eneutrino = variables.calculated_nu_E;                                                                                                                                                                        
-  
+  double Eneutrino = nu_e;//variables.calculated_nu_E;                                                                                                                                                                        
+
 if(denom == true){
   
   //All Muons
@@ -2593,7 +2593,7 @@ void twoproton_pelee_overlay::Fill_Matrices(TVector3 vMuon, TVector3 muon,TVecto
   double reco_ERec = variables.Energies[4];
   TVector3 reco_PT_miss(vMuon[0]+vLead[0]+vRec[0],vMuon[1]+vRec[1]+vLead[1],0);
   double reco_nu_E = variables.calculated_nu_E;
- 
+
   variables.momenta.clear();
   variables.detector_angles.clear();
   variables.opening_angles.clear();
@@ -2624,7 +2624,7 @@ void twoproton_pelee_overlay::Fill_Matrices(TVector3 vMuon, TVector3 muon,TVecto
   double true_ERec = variables.Energies[4];
   TVector3 true_PT_miss(vMuon[0]+vLead[0]+vRec[0],vMuon[1]+vRec[1]+vLead[1],0);
   double true_nu_E = nu_e;
-  
+
   variables.momenta.clear();
   variables.detector_angles.clear();
   variables.opening_angles.clear();
@@ -2946,6 +2946,7 @@ void twoproton_pelee_overlay::Fill_Histograms_Particles(int mc_n_threshold_muon,
     Fill_Particles(10, vMuon,muon,vLead,lead,vRec,rec,wgt);
     other[number]++;
   }
+
 }
 
 void twoproton_pelee_overlay::Fill_Histograms_Particles_Raquel(TVector3 vMuon, TLorentzVector muon, TVector3 vLead, TLorentzVector lead, TVector3 vRec, TLorentzVector rec, double wgt, bool fv){
@@ -3093,7 +3094,7 @@ void twoproton_pelee_overlay::Fill_Particles_Raquel(int j, TVector3 vMuon, TLore
   // 7) double: calculated_nu_E                                                                                                                                                                                                                      
   
   variables.Calculate_Variables(vMuon,vLead,vRec,add_protons);
-
+  
   h_muon_raquel[0][j]->Fill(variables.momenta[0],wgt);
   h_leading_raquel[0][j]->Fill(variables.momenta[1],wgt);
   h_recoil_raquel[0][j]->Fill(variables.momenta[2],wgt);

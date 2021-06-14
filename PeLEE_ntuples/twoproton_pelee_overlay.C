@@ -364,6 +364,7 @@ void twoproton_pelee_overlay::Loop()
  
     Fill_Histograms_Mine(6, pot_wgt*mc_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv);
     Fill_Histograms_Raquel(6, pot_wgt*mc_wgt, cuts.fv);
+    std::cout<<"[MAIN] Calling Fill_Histograms"<<std::endl;
     Fill_Histograms_Particles(mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0, mc_n_threshold_pionpm, cuts.fv, vMuon, muon, vLead, lead, vRec, rec, mc_wgt*pot_wgt);
     Fill_Histograms_Particles_Raquel(vMuon, muon, vLead, lead, vRec, rec, mc_wgt*pot_wgt, cuts.fv);
 
