@@ -2632,6 +2632,14 @@ void twoproton_pelee_overlay::Fill_Matrices(TVector3 vMuon, TVector3 muon,TVecto
   variables.Energies.clear();
 
 
+  if(true_lead_theta > -1.0 && true_lead_theta < -0.8 && reco_lead_theta > 0.8 && reco_lead_theta < 1.0){
+    std::cout<<"Leading Proton Reco 3 Vector: ("<<vLead[0]<<","<<vLead[1]<<","<<vLead[2]<<") And Magnitude: "<<reco_lead_mom<<std::endl;
+    std::cout<<"Leading Proton True 3 Vector: ("<<lead[0]<<","<<lead[1]<<","<<lead[2]<<") And Magnitude: "<<true_lead_mom<<std::endl;
+    std::cout<<"Recoil Proton Reco 3 Vector: ("<<vRec[0]<<","<<vRec[1]<<","<<vRec[2]<<") And Magnitude: "<<reco_recoil_mom<<std::endl;
+    std::cout<<"Recoil Proton True 3 Vector: ("<<rec[0]<<","<<rec[1]<<","<<rec[2]<<") And Magnitude: "<<true_recoil_mom<<std::endl;
+  }
+
+
   //Now to do all the fancy filling stuff: this uses y,x,wgt form
   ///////////////////////////////////////////////////////////////
 

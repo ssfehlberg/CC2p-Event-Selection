@@ -29,6 +29,10 @@ void twoproton_pelee_overlay::Loop()
   double mc_wgt; //mc cv weight
   int ohshit_denom = 0;
   int ohshit_num = 0;
+  int total_lead = 0;
+  int flip_lead = 0;
+  int total_recoil = 0;
+  int flip_recoil = 0;
 
   if (fChain == 0) return;
   Long64_t nentries = fChain->GetEntriesFast();
@@ -321,7 +325,7 @@ void twoproton_pelee_overlay::Loop()
     //Finally. Let's define some stuff then fill some variables!
     ////////////////////////////////////////////////////////////    
     
-    //Muon
+    ///Muon///
     TVector3 vMuon(1,1,1);
     bool muon_start_contained = cuts.In_FV(10,10,10,10,10,10,trk_sce_start_x_v->at(muon_id),trk_sce_start_y_v->at(muon_id),trk_sce_start_z_v->at(muon_id));
     bool muon_end_contained = cuts.In_FV(0,0,0,0,0,0,trk_sce_end_x_v->at(muon_id),trk_sce_end_y_v->at(muon_id),trk_sce_end_z_v->at(muon_id));
@@ -340,31 +344,105 @@ void twoproton_pelee_overlay::Loop()
     vMuon.SetPhi(trk_phi_v->at(muon_id));
     TLorentzVector muon(vMuon[0],vMuon[1],vMuon[2],EMuon);  
 
-    //Leading Proton
+    //We will need these to flip the protons
+    TVector3 nu_vtx_reco(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z);
+    TVector3 nu_vtx_true(true_nu_vtx_x,true_nu_vtx_y,true_nu_vtx_z);
+    std::cout<<"Location of True Neutrino Vertex: ("<<nu_vtx_true[0]<<","<<nu_vtx_true[2]<<","<<nu_vtx_true[2]<<")"<<std::endl;
+    std::cout<<"Location of Reco Neutrino Vertex: ("<<nu_vtx_reco[0]<<","<<nu_vtx_reco[2]<<","<<nu_vtx_reco[2]<<")"<<std::endl;
+
+    ///Leading Proton///
+    /////////////////////
+
+    //lead proton: start
+    //TVector3 lead_track_start_true(mc_endx->at(leading_proton_id),mc_endy->at(leading_proton_id),mc_endz->at(leading_proton_id));
+    //lead_track_start_true -= nu_vtx_true;
+    float lead_track_start_distance_reco = trk_distance_v->at(leading_proton_id); //distance from start to vertex: reconstructed 
+    //double lead_track_start_distance_true = lead_track_start_true.Mag(); //distance from start to vertex: truth    
+
+    //lead proton: end
+    TVector3 lead_track_end_reco(trk_sce_end_x_v->at(leading_proton_id),trk_sce_end_y_v->at(leading_proton_id),trk_sce_end_z_v->at(leading_proton_id)); //leading track end reco
+    //TVector3 lead_track_end_true(mc_endx->at(leading_proton_id),mc_endy->at(leading_proton_id),mc_endz->at(leading_proton_id)); //leading track end true
+    lead_track_end_reco -= nu_vtx_reco;
+    //lead_track_end_true -= nu_vtx_true;
+    double lead_track_end_distance_reco = lead_track_end_reco.Mag(); //distance from end to vertex: reconstructed                                                                                                                                                                 
+    //double lead_track_end_distance_true = lead_track_end_true.Mag();  //distance from end to vertex: truth   
+
     TVector3 vLead(1,1,1);
     double ELead = trk_energy_proton_v->at(leading_proton_id);
     vLead.SetMag(std::sqrt(std::pow(ELead + MASS_PROTON,2) - std::pow(MASS_PROTON,2)));
     vLead.SetTheta(trk_theta_v->at(leading_proton_id));
     vLead.SetPhi(trk_phi_v->at(leading_proton_id));
     TLorentzVector lead(vLead[0],vLead[1],vLead[2],ELead); 
+    total_lead++;
 
-    //Recoil Proton
+    //std::cout<<"Leading Proton 3 Vector: ("<<vLead[0]<<","<<vLead[1]<<","<<vLead[2]<<") And Magnitude: "<<vLead.Mag()<<std::endl;
+    //std::cout<<"Leading Proton 4 Vector: ("<<lead[0]<<","<<lead[1]<<","<<lead[2]<<","<<lead[3]<<")"<<std::endl;
+    //std::cout<<"[Reconstructed] Leading Start Distance: "<<lead_track_start_distance_reco<<" Leading End Distance: "<<lead_track_end_distance_reco<<std::endl;
+    ////std::cout<<"[True] Leading Start Distance: "<<lead_track_start_distance_true<<" Leading End Distance: "<<lead_track_end_distance_true<<std::endl;
+    //std::cout<<"Leading PID Value: "<<trk_llr_pid_score_v->at(leading_proton_id)<<std::endl;
+
+    //flip momentum if this occurs
+    if(lead_track_start_distance_reco > lead_track_end_distance_reco){
+      std::cout<<"Flipping the lead proton momentum"<<std::endl;
+      vLead *= (-1.0); //three vector
+      lead.SetPxPyPzE(vLead[0],vLead[1],vLead[2],ELead); //four vector
+      flip_lead++;
+    }
+    std::cout<<"After Flipping: Leading Proton 3 Vector: ("<<vLead[0]<<","<<vLead[1]<<","<<vLead[2]<<") And Magnitude: "<<vLead.Mag()<<std::endl;
+    std::cout<<"After Flipping: Leading Proton 4 Vector: ("<<lead[0]<<","<<lead[1]<<","<<lead[2]<<","<<lead[3]<<")"<<std::endl;
+
+    ///Recoil Proton///
+    /////////////////////
+
+    //recoil: start                                                                                                                                                                                                                                                               
+    //TVector3 recoil_track_start_true(mc_endx->at(recoil_proton_id),mc_endy->at(recoil_proton_id),mc_endz->at(recoil_proton_id));
+    //recoil_track_start_true -= nu_vtx_true;
+    float recoil_track_start_distance_reco = trk_distance_v->at(recoil_proton_id); //distance from start to vertex: reconstructed                                                                                                                                                 
+    //double recoil_track_start_distance_true = recoil_track_start_true.Mag(); //distance from start to vertex: truth                                                                                                                                                                 
+    //recoil:end                                                                                                                                                                                                                                                                  
+    TVector3 recoil_track_end_reco(trk_sce_end_x_v->at(recoil_proton_id),trk_sce_end_y_v->at(recoil_proton_id),trk_sce_end_z_v->at(recoil_proton_id));
+    //TVector3 recoil_track_end_true(mc_endx->at(recoil_proton_id),mc_endy->at(recoil_proton_id),mc_endz->at(recoil_proton_id));//recoil track end true                                                                                                                            
+    recoil_track_end_reco -= nu_vtx_reco;
+    //recoil_track_end_true -= nu_vtx_true;
+    double recoil_track_end_distance_reco = recoil_track_end_reco.Mag(); //distance from end to vertex: reconstructed                                                                                                                                                             
+    //double recoil_track_end_distance_true = recoil_track_end_true.Mag(); //distance from end to vertex: truth     
+
+
     TVector3 vRec(1,1,1);
     double ERec = trk_energy_proton_v->at(recoil_proton_id);
     vRec.SetMag(std::sqrt(std::pow(ERec + MASS_PROTON,2) - std::pow(MASS_PROTON,2)));
     vRec.SetTheta(trk_theta_v->at(recoil_proton_id));
     vRec.SetPhi(trk_phi_v->at(recoil_proton_id));
     TLorentzVector rec(vRec[0],vRec[1],vRec[2],ERec); 
+    total_recoil++;
+    
+    //std::cout<<"Recoil Proton 3 Vector: ("<<vRec[0]<<","<<vRec[1]<<","<<vRec[2]<<") And Magnitude: "<<vRec.Mag()<<std::endl;
+    //std::cout<<"Recoil Proton 4 Vector: ("<<rec[0]<<","<<rec[1]<<","<<rec[2]<<","<<rec[3]<<")"<<std::endl;
+    //std::cout<<"[Reconstructed] Recoil Start Distance: "<<recoil_track_start_distance_reco<<" Recoil End Distance: "<<recoil_track_end_distance_reco<<std::endl;
+    ////std::cout<<"[True] Recoil Start Distance: "<<recoil_track_start_distance_true<<" Recoil End Distance: "<<recoil_track_end_distance_true<<std::endl;
+    //std::cout<<"Recoil PID Value: "<<trk_llr_pid_score_v->at(recoil_proton_id)<<std::endl;
+    //std::cout<<"Flipping the recoil proton momentum"<<std::endl;
 
-
+    //flip the momentum if this occurs
+    if(recoil_track_start_distance_reco > recoil_track_end_distance_reco){
+      std::cout<<"Flipping the recoil proton momentum"<<std::endl;
+      vRec *= (-1.0); //three vector                                                                                                                                                                                                                                        
+      rec.SetPxPyPzE(vRec[0],vRec[1],vRec[2],ERec); //four vector 
+      flip_recoil++;
+    }
+    std::cout<<"After Flipping: Recoil Proton 3 Vector: ("<<vRec[0]<<","<<vRec[1]<<","<<vRec[2]<<") And Magnitude: "<<vRec.Mag()<<std::endl;
+    std::cout<<"After Flipping: Recoil Proton 4 Vector: ("<<rec[0]<<","<<rec[1]<<","<<rec[2]<<","<<rec[3]<<")"<<std::endl;
+ 
     //We had to add another cut: The muon and protons must have reconstructed momentum within the thresholdss defined
     // this is the only way to get the closure test to work
+    /////////////////////////////////////////////////////
     if(vMuon.Mag() < MUON_MOM_CUT_LOW || vMuon.Mag() > MUON_MOM_CUT_HIGH) continue;
     reco_muon_mom_cut++;
- 
+
+    //Now you can fill your final histograms!
+    /////////////////////////////////////
     Fill_Histograms_Mine(6, pot_wgt*mc_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv);
     Fill_Histograms_Raquel(6, pot_wgt*mc_wgt, cuts.fv);
-    std::cout<<"[MAIN] Calling Fill_Histograms"<<std::endl;
     Fill_Histograms_Particles(mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0, mc_n_threshold_pionpm, cuts.fv, vMuon, muon, vLead, lead, vRec, rec, mc_wgt*pot_wgt);
     Fill_Histograms_Particles_Raquel(vMuon, muon, vLead, lead, vRec, rec, mc_wgt*pot_wgt, cuts.fv);
 
@@ -420,6 +498,10 @@ void twoproton_pelee_overlay::Loop()
 	leading_num.SetXYZ(mc_px->at(leading_id_num),mc_py->at(leading_id_num),mc_pz->at(leading_id_num));
         recoil_num.SetXYZ(mc_px->at(recoil_id_num),mc_py->at(recoil_id_num),mc_pz->at(recoil_id_num));
 
+	//std::cout<<"Start of Leading Proton in Truth: "<<mc_start_x->at(leading_id_num)<<","<<mc_starty->at(leading_id_num)<<","<<mc_startz->at(leading_id_num)<<std::endl;
+	std::cout<<"End of Leading Proton in Truth: "<<mc_endx->at(leading_id_num)<<","<<mc_endy->at(leading_id_num)<<","<<mc_endz->at(leading_id_num)<<std::endl;
+	//std::cout<<"Start of Recoil Proton in Truth: "<<mc_start_x->at(recoil_id_num)<<","<<mc_starty->at(recoil_id_num)<<","<<mc_startz->at(recoil_id_num)<<std::endl;
+	std::cout<<"End of Recoil Proton in Truth: "<<mc_endx->at(recoil_id_num)<<","<<mc_endy->at(recoil_id_num)<<","<<mc_endz->at(recoil_id_num)<<std::endl;
 
 	for(size_t j=0u; j < mc_pdg->size(); j++){
           TVector3 backtracker_mom_vector(mc_px->at(j),mc_py->at(j),mc_pz->at(j)); //mc momentum of particular mc particle                                                                                                                             
@@ -551,6 +633,11 @@ void twoproton_pelee_overlay::Loop()
 
   std::cout<<"Ohshit_denom: "<<ohshit_denom<<std::endl;
   std::cout<<"OHSHIT_num: "<<ohshit_num<<std::endl;
+  std::cout<<"Total Number of Lead Protons: "<<total_lead<<std::endl;
+  std::cout<<"Flip Lead: "<<flip_lead<<std::endl;
+  std::cout<<"Total Number of Recoil Protons: "<<total_recoil<<std::endl;
+  std::cout<<"Flip Recoil: "<<flip_recoil<<std::endl;
+
 
   //Don't forget to write all of your histograms before you leave!                                                                       
   ///////////////////////////////////////////////////////////////                                                                 
