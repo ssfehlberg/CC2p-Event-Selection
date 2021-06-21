@@ -151,10 +151,10 @@ void efficiency::Loop()
       if(track_distance <= TRACK_DIST_CUT){
         tracks_w_good_distance++;
       }
-      if(track_pid >= PID_CUT){
+      if(track_pid >= PID_CUT && track_pid < 1 && track_pid > -1){
         muons++;
       }
-      if(track_pid < PID_CUT){
+      if(track_pid < PID_CUT && track_pid < 1 && track_pid > -1){
         protons++;
       }
     }

@@ -100,10 +100,10 @@ void twoproton_pelee_bnb::Loop()
       if(track_distance <= TRACK_DIST_CUT){
 	y1++;
       }                                            
-      if(track_pid >= PID_CUT){
+      if(track_pid >= PID_CUT && track_pid < 1 && track_pid > -1){
 	muons++;
       }
-      if(track_pid < PID_CUT){
+      if(track_pid < PID_CUT && track_pid < 1 && track_pid > -1){
 	protons++;                                             
       }  
     }                                                                                                              
