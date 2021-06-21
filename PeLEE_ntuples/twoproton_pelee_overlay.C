@@ -225,7 +225,6 @@ void twoproton_pelee_overlay::Loop()
     for(int i=0; i < trk_pfp_id_v->size(); i++){
       int trk_id = trk_pfp_id_v->at(i);
       double trk_pid = trk_llr_pid_score_v->at(i);	
-      if(trk_pid > 1 || trk_pid < -1) continue; //instances in which the PID is a dumb value
       if(trk_pid >= PID_CUT && trk_pid < 1 && trk_pid > -1.0) { //muon
 	muon_id = trk_id - 1;
       }
@@ -282,7 +281,6 @@ void twoproton_pelee_overlay::Loop()
     TVector3 lead_track_end_reco(trk_sce_end_x_v->at(leading_proton_id),trk_sce_end_y_v->at(leading_proton_id),trk_sce_end_z_v->at(leading_proton_id)); //leading track end reco
     lead_track_end_reco -= nu_vtx_reco;
     double lead_track_end_distance_reco = lead_track_end_reco.Mag(); //distance from end to vertex: reconstructed                                                                                                                     
-
     TVector3 vLead(1,1,1);
     double ELead = trk_energy_proton_v->at(leading_proton_id);
     vLead.SetMag(std::sqrt(std::pow(ELead + MASS_PROTON,2) - std::pow(MASS_PROTON,2)));

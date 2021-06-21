@@ -27,6 +27,13 @@ void twoproton_pelee_ext::Loop()
  ////////////////////////////////////////////                                                                                
   hist.Define_Histograms("ext");
 
+  //Random counters
+  /////////////////
+  int total_lead = 0;
+  int flip_lead = 0;
+  int total_recoil = 0;
+  int flip_recoil = 0;
+
    if (fChain == 0) return;
    Long64_t nentries = fChain->GetEntriesFast();
    Long64_t nbytes = 0, nb = 0;
@@ -139,11 +146,10 @@ void twoproton_pelee_ext::Loop()
     for(int i=0; i < trk_pfp_id_v->size(); i++){
       int trk_id = trk_pfp_id_v->at(i);
       double trk_pid = trk_llr_pid_score_v->at(i);	
-      if(trk_pid > 1 || trk_pid < -1) continue;
-      if(trk_pid >= PID_CUT) {
+      if(trk_pid >= PID_CUT && trk_pid < 1 && trk_pid > -1.0) {
 	muon_id = trk_id - 1;
       }
-      if(trk_pid < PID_CUT){
+      if(trk_pid < PID_CUT && trk_pid < 1 && trk_pid > -1.0){
 	proton_id_vector.push_back(trk_id);
       }
     }
@@ -177,21 +183,62 @@ void twoproton_pelee_ext::Loop()
     vMuon.SetPhi(trk_phi_v->at(muon_id));
     TLorentzVector muon(vMuon[0],vMuon[1],vMuon[2],EMuon);
 
+    //We will need these to flip the protons
+    TVector3 nu_vtx_reco(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z);
+    std::cout<<"Location of Reco Neutrino Vertex: ("<<nu_vtx_reco[0]<<","<<nu_vtx_reco[2]<<","<<nu_vtx_reco[2]<<")"<<std::endl;
+
     //Leading Proton
+    float lead_track_start_distance_reco = trk_distance_v->at(leading_proton_id); //distance from start to vertex: reconstructed 
+    TVector3 lead_track_end_reco(trk_sce_end_x_v->at(leading_proton_id),trk_sce_end_y_v->at(leading_proton_id),trk_sce_end_z_v->at(leading_proton_id)); //leading track end reco
+    lead_track_end_reco -= nu_vtx_reco;
+    double lead_track_end_distance_reco = lead_track_end_reco.Mag(); //distance from end to vertex: reconstructed                          
+
     TVector3 vLead(1,1,1);
     float ELead = trk_energy_proton_v->at(leading_proton_id);
     vLead.SetMag(std::sqrt(std::pow(ELead + MASS_PROTON,2) - std::pow(MASS_PROTON,2)));
     vLead.SetTheta(trk_theta_v->at(leading_proton_id));
     vLead.SetPhi(trk_phi_v->at(leading_proton_id));
     TLorentzVector lead(vLead[0],vLead[1],vLead[2],ELead);
+    total_lead++;
+
+    if(_debug) std::cout<<"Leading Proton 4 Vector: ("<<lead[0]<<","<<lead[1]<<","<<lead[2]<<","<<lead[3]<<")"<<std::endl;
+    if(_debug) std::cout<<"[Reconstructed] Leading Start Distance: "<<lead_track_start_distance_reco<<" Leading End Distance: "<<lead_track_end_distance_reco<<std::endl;
+    if(_debug) std::cout<<"Leading PID Value: "<<trk_llr_pid_score_v->at(leading_proton_id)<<std::endl;
+
+    //flip momentum if this occurs
+    if(lead_track_start_distance_reco > lead_track_end_distance_reco){
+      vLead *= (-1.0); //three vector
+      lead.SetPxPyPzE(vLead[0],vLead[1],vLead[2],ELead); //four vector
+      flip_lead++;
+    }
+    if(_debug) std::cout<<"After Flipping: Leading Proton 4 Vector: ("<<lead[0]<<","<<lead[1]<<","<<lead[2]<<","<<lead[3]<<")"<<std::endl;
 
     //Recoil Proton
+    float recoil_track_start_distance_reco = trk_distance_v->at(recoil_proton_id); //distance from start to vertex: reconstructed        
+    TVector3 recoil_track_end_reco(trk_sce_end_x_v->at(recoil_proton_id),trk_sce_end_y_v->at(recoil_proton_id),trk_sce_end_z_v->at(recoil_proton_id));
+    recoil_track_end_reco -= nu_vtx_reco;
+    double recoil_track_end_distance_reco = recoil_track_end_reco.Mag(); //distance from end to vertex: reconstructed                      
+
     TVector3 vRec(1,1,1);
     float ERec = trk_energy_proton_v->at(recoil_proton_id);
     vRec.SetMag(std::sqrt(std::pow(ERec + MASS_PROTON,2) - std::pow(MASS_PROTON,2)));
     vRec.SetTheta(trk_theta_v->at(recoil_proton_id));
     vRec.SetPhi(trk_phi_v->at(recoil_proton_id));
     TLorentzVector rec(vRec[0],vRec[1],vRec[2],ERec);
+    total_recoil++;
+
+    if(_debug) std::cout<<"Recoil Proton 4 Vector: ("<<rec[0]<<","<<rec[1]<<","<<rec[2]<<","<<rec[3]<<")"<<std::endl;
+    if(_debug) std::cout<<"[Reconstructed] Recoil Start Distance: "<<recoil_track_start_distance_reco<<" Recoil End Distance: "<<recoil_track_end_distance_reco<<std::endl;
+    if(_debug) std::cout<<"Recoil PID Value: "<<trk_llr_pid_score_v->at(recoil_proton_id)<<std::endl;
+
+    //flip the momentum if this occurs
+    if(recoil_track_start_distance_reco > recoil_track_end_distance_reco){
+      vRec *= (-1.0); //three vector                                                                                                         
+      rec.SetPxPyPzE(vRec[0],vRec[1],vRec[2],ERec); //four vector 
+      flip_recoil++;
+    }
+    if(_debug) std::cout<<"After Flipping: Recoil Proton 4 Vector: ("<<rec[0]<<","<<rec[1]<<","<<rec[2]<<","<<rec[3]<<")"<<std::endl;
+
 
     //We had to add another cut: The muon and protons must have reconstructed momentum within the thresholdss defined
     // this is the only way to get the closure test to work
@@ -220,6 +267,11 @@ void twoproton_pelee_ext::Loop()
   std::cout<<"Neutrinos 0: "<<neutrinos_0<<std::endl;
   std::cout<<"Neutrinos 1: "<<neutrinos_1<<std::endl;
   std::cout<<"Neutrinos Else: "<<neutrinos_else<<std::endl;
+
+  std::cout<<"Total Number of Lead Protons: "<<total_lead<<std::endl;
+  std::cout<<"Flip Lead: "<<flip_lead<<std::endl;
+  std::cout<<"Total Number of Recoil Protons: "<<total_recoil<<std::endl;
+  std::cout<<"Flip Recoil: "<<flip_recoil<<std::endl;
 
    //Don't forget to write all of your histograms before you leave!                                                                       
    ///////////////////////////////////////////////////////////////                                                                 
