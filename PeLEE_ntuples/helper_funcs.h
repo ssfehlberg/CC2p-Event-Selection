@@ -8,9 +8,27 @@ class helper_funcs{
   virtual double real_sqrt(double x);
   virtual double Which_Energy(bool total_E, TVector3 mom, double mass);
 
-  bool fv; //is event in FV?
+  bool fv; //is the overlay event in the FV?
 
 };//end of class definition
+
+
+//Used in the Overlay to help with the MC breakdown definitions. Does same thing as above but returns fv variable
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void helper_funcs::Overlay_In_FV(float x_low_edge, float x_up_edge, float y_low_edge, float y_up_edge, float z_low_edge, float z_up_edge, float x, float y, float z){
+  float_t xmin = 0.0 + x_low_edge;
+  float_t xmax = 256.35 - x_up_edge;
+  float_t ymin = -116.5 + y_low_edge;
+  float_t ymax = 116.5 - y_up_edge;
+  float_t zmin = 0.0 + z_low_edge;
+  float_t zmax = 1036.8 - z_up_edge;
+
+  if((x <= xmin || x >= xmax) || (y <= ymin || y >= ymax) || (z <= zmin || z >= zmax)){
+    fv = false;
+  } else{
+    fv = true;
+  } 
+}
 
 //Determines if the input x,y,z is wihtin the FV. The distance from any edge can be defined by VAR_low(high)_edge
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -29,22 +47,7 @@ bool helper_funcs::In_FV(float x_low_edge, float x_up_edge, float y_low_edge, fl
   } 
 }
 
-//Used in the Overlay to help with the MC breakdown definitions. Does same thing as above but returns fv variable
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void helper_funcs::Overlay_In_FV(float x_low_edge, float x_up_edge, float y_low_edge, float y_up_edge, float z_low_edge, float z_up_edge, float x, float y, float z){
-  float_t xmin = 0.0 + x_low_edge;
-  float_t xmax = 256.35 - x_up_edge;
-  float_t ymin = -116.5 + y_low_edge;
-  float_t ymax = 116.5 - y_up_edge;
-  float_t zmin = 0.0 + z_low_edge;
-  float_t zmax = 1036.8 - z_up_edge;
 
-  if((x <= xmin || x >= xmax) || (y <= ymin || y >= ymax) || (z <= zmin || z >= zmax)){
-    fv = false;
-  } else{
-    fv = true;
-  } 
-}
 
 //Defines Real Square Root in Case number is negative
 //////////////////////////////////////////////////////
