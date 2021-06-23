@@ -5,8 +5,8 @@
 // found on file: /pnfs/uboone/persistent/users/davidc/searchingfornues/v08_00_00_43/0928/prodgenie_bnb_nu_uboone_overlay_mcc9.1_v08_00_00_26_filter_run1_reco2_reco2.root
 //////////////////////////////////////////////////////////
 
-#ifndef efficiency_h
-#define efficiency_h
+#ifndef mc_efficiency_h
+#define mc_efficiency_h
 
 #include <TROOT.h>
 #include <TChain.h>
@@ -17,7 +17,7 @@
 #include "variables.h"
 using namespace Constants;
 
-class efficiency {
+class mc_efficiency {
 public :
    TTree          *fChain;   //!pointer to the analyzed TTree or TChain
    Int_t           fCurrent; //!current Tree number in a TChain
@@ -1446,8 +1446,8 @@ public :
    TBranch        *b_anglediff_U;   //!
    TBranch        *b_trkpid;   //!
 
-   efficiency(TTree *tree=0);
-   virtual ~efficiency();
+   mc_efficiency(TTree *tree=0);
+   virtual ~mc_efficiency();
    virtual Int_t    Cut(Long64_t entry);
    virtual Int_t    GetEntry(Long64_t entry);
    virtual Long64_t LoadTree(Long64_t entry);
@@ -1538,8 +1538,8 @@ public :
 
 #endif
 
-#ifdef efficiency_cxx
-efficiency::efficiency(TTree *tree) : fChain(0) 
+#ifdef mc_efficiency_cxx
+mc_efficiency::mc_efficiency(TTree *tree) : fChain(0) 
 {
   // if parameter tree is not specified (or zero), connect the file
   // used to generate this class and read the Tree.
@@ -1571,13 +1571,13 @@ efficiency::efficiency(TTree *tree) : fChain(0)
   Loop();
 }
 
-efficiency::~efficiency()
+mc_efficiency::~mc_efficiency()
 {
    if (!fChain) return;
    delete fChain->GetCurrentFile();
 }
 
-void efficiency::Which_Run(){
+void mc_efficiency::Which_Run(){
   if(response =='1'){
     directory = "Run1";
     pot_wgt = 0.124;
@@ -1590,9 +1590,9 @@ void efficiency::Which_Run(){
   }  
 } //end of which_run
 
-void efficiency::Define_Histograms(){
+void mc_efficiency::Define_Histograms(){
 
-  //Efficiency plots
+  //Mc_Efficiency plots
   ///////////////////////////////////////
   for(int i =0; i < num_threshold; i++){
     h_mom_threshold_num[i] = new TH1D(Form("h_mom_threshold_num%s",threshold[i]),Form("h_mom_threshold_num%s",threshold[i]),num_bins_eff[i],0,x_high_eff[i]);
@@ -1689,7 +1689,7 @@ void efficiency::Define_Histograms(){
     }
   }
     
-  //Other Efficiency and Matrices
+  //Other Mc_Efficiency and Matrices
   ////////////////////////////////
   for(int i = 0; i < num_other_eff; i++){
       
@@ -1800,7 +1800,7 @@ void efficiency::Define_Histograms(){
      }
 }
 
-void efficiency::Fill_Efficiency_Thresholds(bool denom, int backtracked_pdg, bool contained_start, bool contained_end, TVector3 leading, TVector3 recoil,TVector3 backtracker_mom_vector,double mc_wgt = 1.0){
+void mc_efficiency::Fill_Efficiency_Thresholds(bool denom, int backtracked_pdg, bool contained_start, bool contained_end, TVector3 leading, TVector3 recoil,TVector3 backtracker_mom_vector,double mc_wgt = 1.0){
 
   if(denom == true){
 
@@ -1877,7 +1877,7 @@ void efficiency::Fill_Efficiency_Thresholds(bool denom, int backtracked_pdg, boo
 }//end of Fill_Eff_Thresholds
 
 
-void efficiency::Fill_Efficiency_XSec(bool denom, bool contained_start, bool contained_end, TVector3 vMuon,TVector3 vLead, TVector3 vRec,double mc_wgt = 1.0){
+void mc_efficiency::Fill_Efficiency_XSec(bool denom, bool contained_start, bool contained_end, TVector3 vMuon,TVector3 vLead, TVector3 vRec,double mc_wgt = 1.0){
 
   // Run the Calculate Variables function inside of variables.h. Returns following:                                                                                                                                                                                   
   // 1) vector: momenta(muon_mom,lead_mom,rec_mom);                                                                                                                                                                                                                     
@@ -2008,7 +2008,7 @@ if(denom == true){
 
 }
 
-void efficiency::Fill_Matrices(TVector3 vMuon, TVector3 muon,TVector3 vLead, TVector3 lead,TVector3 vRec, TVector3 rec, bool contained_start, bool true_contained_start,bool contained_end, bool true_contained_end,double mc_wgt){
+void mc_efficiency::Fill_Matrices(TVector3 vMuon, TVector3 muon,TVector3 vLead, TVector3 lead,TVector3 vRec, TVector3 rec, bool contained_start, bool true_contained_start,bool contained_end, bool true_contained_end,double mc_wgt){
 
   //Going to use Calculate Variables function inside of variables.h. Returns Following
   // 1) vector: momenta(muon_mom,lead_mom,rec_mom);
@@ -2127,7 +2127,7 @@ void efficiency::Fill_Matrices(TVector3 vMuon, TVector3 muon,TVector3 vLead, TVe
 
 } //end of fill matrices
 
-void efficiency::Write_Histograms(){
+void mc_efficiency::Write_Histograms(){
   for(int i=0; i< h_list_2D.size(); i++){
     h_list_2D[i]->Write();
   }
@@ -2136,13 +2136,13 @@ void efficiency::Write_Histograms(){
   }
 }
 
-Int_t efficiency::GetEntry(Long64_t entry)
+Int_t mc_efficiency::GetEntry(Long64_t entry)
 {
 // Read contents of entry.
    if (!fChain) return 0;
    return fChain->GetEntry(entry);
 }
-Long64_t efficiency::LoadTree(Long64_t entry)
+Long64_t mc_efficiency::LoadTree(Long64_t entry)
 {
 // Set the environment to read one entry
    if (!fChain) return -5;
@@ -2155,7 +2155,7 @@ Long64_t efficiency::LoadTree(Long64_t entry)
    return centry;
 }
 
-void efficiency::Init(TTree *tree)
+void mc_efficiency::Init(TTree *tree)
 {
    // The Init() function is called when the selector needs to initialize
    // a new tree or chain. Typically here the branch addresses and branch
@@ -3081,7 +3081,7 @@ void efficiency::Init(TTree *tree)
    Notify();
 }
 
-Bool_t efficiency::Notify()
+Bool_t mc_efficiency::Notify()
 {
    // The Notify() function is called when a new file is opened. This
    // can be either for a new TTree in a TChain or when when a new TTree
@@ -3092,18 +3092,18 @@ Bool_t efficiency::Notify()
    return kTRUE;
 }
 
-void efficiency::Show(Long64_t entry)
+void mc_efficiency::Show(Long64_t entry)
 {
 // Print contents of entry.
 // If entry is not specified, print current entry
    if (!fChain) return;
    fChain->Show(entry);
 }
-Int_t efficiency::Cut(Long64_t entry)
+Int_t mc_efficiency::Cut(Long64_t entry)
 {
 // This function may be called from Loop.
 // returns  1 if entry is accepted.
 // returns -1 otherwise.
    return 1;
 }
-#endif // #ifdef efficiency_cxx
+#endif // #ifdef mc_efficiency_cxx
