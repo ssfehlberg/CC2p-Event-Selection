@@ -277,19 +277,18 @@ void efficiency::Loop()
       TLorentzVector lead(vLead[0],vLead[1],vLead[2],ELead); 
       total_lead++;
 
-      if(_debug) std::cout<<"Leading Proton 4 Vector: ("<<lead[0]<<","<<lead[1]<<","<<lead[2]<<","<<lead[3]<<")"<<std::endl;                                                                                                        
-      if(_debug) std::cout<<"[Reconstructed] Leading Start Distance: "<<lead_track_start_distance_reco<<" Leading End Distance: "<<lead_track_end_distance_reco<<std::endl;                                                       
+      if(_debug) std::cout<<"Leading Proton 4 Vector: ("<<lead[0]<<","<<lead[1]<<","<<lead[2]<<","<<lead[3]<<")"<<std::endl;                                                                                                             if(_debug) std::cout<<"[Reconstructed] Leading Start Distance: "<<lead_track_start_distance_reco<<" Leading End Distance: "<<lead_track_end_distance_reco<<std::endl;                                                       
       if(_debug) std::cout<<"Leading PID Value: "<<trk_llr_pid_score_v->at(leading_proton_id)<<std::endl;                                                                                                                                                                                  
-      //flip momentum if this occurs                                                                                                                                                                                                 
+      //flip momentum if this occurs                                                                                                                                                                                             
       if(lead_track_start_distance_reco > lead_track_end_distance_reco){
-	vLead *= (-1.0); //three vector                                                                                                                                                                                              
-	lead.SetPxPyPzE(vLead[0],vLead[1],vLead[2],ELead); //four vector                                                                                                                                                             
+	vLead *= (-1.0); //three vector                                                                                                                                                                                           
+	lead.SetPxPyPzE(vLead[0],vLead[1],vLead[2],ELead); //four vector                                                                                                                                                          
 	flip_lead++;
       }
       if(_debug) std::cout<<"After Flipping: Leading Proton 4 Vector: ("<<lead[0]<<","<<lead[1]<<","<<lead[2]<<","<<lead[3]<<")"<<std::endl;
 
       ///Recoil proton///
-      float recoil_track_start_distance_reco = trk_distance_v->at(recoil_proton_id); //distance from start to vertex: reconstructed                                                                                                  
+      float recoil_track_start_distance_reco = trk_distance_v->at(recoil_proton_id); //distance from start to vertex: reconstructed                                                                                                
       TVector3 recoil_track_end_reco(trk_sce_end_x_v->at(recoil_proton_id),trk_sce_end_y_v->at(recoil_proton_id),trk_sce_end_z_v->at(recoil_proton_id));
       recoil_track_end_reco -= nu_vtx_reco;
       double recoil_track_end_distance_reco = recoil_track_end_reco.Mag(); //distance from end to vertex: reconstructed                                                                                                                                                             
@@ -306,16 +305,14 @@ void efficiency::Loop()
 
       //flip the momentum if this occurs
       if(recoil_track_start_distance_reco > recoil_track_end_distance_reco){
-	vRec *= (-1.0); //three vector                                                                                                                                                                                               
+	vRec *= (-1.0); //three vector                                                                                                                                                                                             
 	rec.SetPxPyPzE(vRec[0],vRec[1],vRec[2],ERec); //four vector 
 	flip_recoil++;
       }
       if(_debug) std::cout<<"After Flipping: Recoil Proton 4 Vector: ("<<rec[0]<<","<<rec[1]<<","<<rec[2]<<","<<rec[3]<<")"<<std::endl;
     } //end of good reco event
 
-    //We had to add another cut: The muon and protons must have reconstructed momentum within the thresholdss defined                                                                                                                
-    // this is the only way to get the closure test to work                                                                                                                                                                         
-    /////////////////////////////////////////////////////                                                                                                                                                                            
+    //We had to add another cut: The muon and protons must have reconstructed momentum within the thresholdss defined                                                                                                                  // this is the only way to get the closure test to work                                                                                                                                                                            /////////////////////////////////////////////////////                                                                                                                                                                          
     bool good_muon_mom;
     if(vMuon.Mag() > MUON_MOM_CUT_LOW && vMuon.Mag() < MUON_MOM_CUT_HIGH){
       good_muon_mom = true;
@@ -323,7 +320,22 @@ void efficiency::Loop()
       good_muon_mom = false;
     }
 
-    //Make sure to fill the counters                                                                                                                                                                                                      /////////////////////////////////                                                                                                                                                                                                 
+    bool good_lead_mom;
+    if(vLead.Mag() > PROTON_MOM_CUT_LOW && vLead.Mag() < PROTON_MOM_CUT_HIGH){
+      good_lead_mom = true;
+    }else{
+      good_lead_mom = false;
+    }
+
+    bool good_recoil_mom;
+    if(vRec.Mag() > PROTON_MOM_CUT_LOW && vRec.Mag() < PROTON_MOM_CUT_HIGH){
+      good_recoil_mom = true;
+    }else{
+      good_recoil_mom = false;
+    }
+
+    //Make sure to fill the counters                                                                                                                                                                                               
+    /////////////////////////////////                                                                                                                                                                                              
 
     //fv
     if(reco_in_FV == true){
@@ -335,10 +347,10 @@ void efficiency::Loop()
 
     //three pfps
     if(reco_in_FV && three_pfps == true){
-    threepfps++;
-    if(true_cc2p == true){
-      cc2p0pi[2]++;
-    }
+      threepfps++;
+      if(true_cc2p == true){
+	cc2p0pi[2]++;
+      }
     }
 
     //three tracks
@@ -375,6 +387,26 @@ void efficiency::Loop()
       } 
     }
 
+    /*    //lead_mom_cut                                                                                                                                                                                                                
+    if(reconstructed_event == true && good_muon_mom == true){
+      reco_muon_mom_cut++;
+      cc2p_reco << run << " " << sub << " " << evt << " " ;
+      cc2p_reco << endl;
+      if(true_cc2p == true){
+        cc2p0pi[6]++;
+      }
+    }
+
+    //recoil_mom_cut                                                                                                                                                                                                                
+    if(reconstructed_event == true && good_muon_mom == true){
+      reco_muon_mom_cut++;
+      cc2p_reco << run << " " << sub << " " << evt << " " ;
+      cc2p_reco << endl;
+      if(true_cc2p == true){
+        cc2p0pi[6]++;
+      }
+    }
+    */
     //Filling the Denominator of the Efficiency
     ////////////////////////////////////////////
     TVector3 vmuon_denom;
@@ -390,28 +422,39 @@ void efficiency::Loop()
       denom++;
       
       //if it is a reco event, then we can used the ids we have
-      if(reconstructed_event == true){
+      if(reconstructed_event == true && good_muon_mom == true){
 	true_contained_start = cuts.In_FV(10,10,10,10,10,10,backtracked_start_x->at(muon_id),backtracked_start_y->at(muon_id),backtracked_start_z->at(muon_id));
 	//i have to do this to fill the true_contained_end because of course the backtracked_end is not saved >:-(
 	for(int j=0u; j < mc_pdg->size(); j++){
-          int pdg = mc_pdg->at(j);
+	  TVector3 true_mom_vector(mc_px->at(j),mc_py->at(j),mc_pz->at(j));
+	  int pdg = mc_pdg->at(j);
           if(std::abs(pdg) == 13){
-	    true_contained_end =  cuts.In_FV(0,0,0,0,0,0,mc_endx->at(j),mc_endy->at(j),mc_endz->at(j));
+	    if(true_mom_vector.Mag() > MUON_MOM_CUT_LOW && true_mom_vector.Mag() < MUON_MOM_CUT_HIGH){
+	      true_contained_end =  cuts.In_FV(0,0,0,0,0,0,mc_endx->at(j),mc_endy->at(j),mc_endz->at(j));
+	    }
 	  }
 	}
 	vmuon_denom.SetXYZ(backtracked_px->at(muon_id),backtracked_py->at(muon_id),backtracked_pz->at(muon_id));
 	vleading_denom.SetXYZ(backtracked_px->at(leading_proton_id),backtracked_py->at(leading_proton_id),backtracked_pz->at(leading_proton_id));
 	vrecoil_denom.SetXYZ(backtracked_px->at(recoil_proton_id),backtracked_py->at(recoil_proton_id),backtracked_pz->at(recoil_proton_id));
-	
+
+	if(vleading_denom.Mag() < PROTON_MOM_CUT_LOW || vleading_denom.Mag() > PROTON_MOM_CUT_HIGH){
+	  std::cout<<"Value of Muon Momentum: "<<vmuon_denom.Mag()<<std::endl;
+	  std::cout<<"Value of Leading Momentum: "<<vleading_denom.Mag()<<std::endl;
+	  std::cout<<"Value of Recoil Momentum: "<<vrecoil_denom.Mag()<<std::endl;
+	}
+
 	//if it is not a reco event, we have to find the ids ourselves
       } else{
 	for(int j=0u; j < mc_pdg->size(); j++){
 	  int pdg = mc_pdg->at(j);
 	  TVector3 true_mom_vector(mc_px->at(j),mc_py->at(j),mc_pz->at(j));
 	  if(std::abs(pdg) == 13){
-	    true_contained_start = cuts.In_FV(10,10,10,10,10,10,mc_vx->at(j),mc_vy->at(j),mc_vz->at(j));                                                                                                         
-	    true_contained_end =  cuts.In_FV(0,0,0,0,0,0,mc_endx->at(j),mc_endy->at(j),mc_endz->at(j));   
-	    vmuon_denom.SetXYZ(mc_px->at(j),mc_py->at(j),mc_pz->at(j));
+	    if(true_mom_vector.Mag() > MUON_MOM_CUT_LOW && true_mom_vector.Mag() < MUON_MOM_CUT_HIGH){
+	      true_contained_start = cuts.In_FV(10,10,10,10,10,10,mc_vx->at(j),mc_vy->at(j),mc_vz->at(j));                                                                                                         
+	      true_contained_end =  cuts.In_FV(0,0,0,0,0,0,mc_endx->at(j),mc_endy->at(j),mc_endz->at(j));   
+	      vmuon_denom.SetXYZ(mc_px->at(j),mc_py->at(j),mc_pz->at(j));
+	    }
 	  }
 	  
 	  if(std::abs(pdg) == 2212){
@@ -428,19 +471,18 @@ void efficiency::Loop()
 	  god_dammit++;
 	}
 
-	//casse we actually want                                                                                                                                                                                                    
+	//casse we actually want                                                                                                                                                                                                  
 	if (mc_proton_mom.size() == 2){
 	  std::sort(zipped.begin(), zipped.end(), greater());
 	  for(int j=0; j < mc_protons_id.size(); j++){
 	    mc_proton_mom[j] = zipped[j].first;
 	    mc_protons_id[j] = zipped[j].second;
 	  }
-	  int leading_id_denom = mc_protons_id[0]; //leading proton id                                                                                                                                                               
-	  int recoil_id_denom = mc_protons_id[1]; //recoil proton id                                                                                                                                                                 
+	  int leading_id_denom = mc_protons_id[0]; //leading proton id                                                                                                                                                            
+	  int recoil_id_denom = mc_protons_id[1]; //recoil proton id                                                                                                                                                             
 	  vleading_denom.SetXYZ(mc_px->at(leading_id_denom),mc_py->at(leading_id_denom),mc_pz->at(leading_id_denom));
 	  vrecoil_denom.SetXYZ(mc_px->at(recoil_id_denom),mc_py->at(recoil_id_denom),mc_pz->at(recoil_id_denom));
 	} //if mc_proton_mom_size == 2
-
       } //if not a reco event
 
       for(size_t j=0u; j < mc_pdg->size(); j++){
@@ -463,22 +505,25 @@ void efficiency::Loop()
     if(reconstructed_event == true && good_muon_mom == true && true_cc2p == true){
       num++;
       true_contained_start_num = cuts.In_FV(10,10,10,10,10,10,backtracked_start_x->at(muon_id),backtracked_start_y->at(muon_id),backtracked_start_z->at(muon_id));
-      //i have to do this to fill the true_contained_end because of course the backtracked_end is not saved >:-(                                                                                                                     
+      //i have to do this to fill the true_contained_end because of course the backtracked_end is not saved >:-(                                                                                                                 
       for(int j=0u; j < mc_pdg->size(); j++){
+	TVector3 true_mom_vector(mc_px->at(j),mc_py->at(j),mc_pz->at(j));
 	int pdg = mc_pdg->at(j);
 	if(std::abs(pdg) == 13){
-	  true_contained_end_num =  cuts.In_FV(0,0,0,0,0,0,mc_endx->at(j),mc_endy->at(j),mc_endz->at(j));
+	  if(true_mom_vector.Mag() > MUON_MOM_CUT_LOW && true_mom_vector.Mag() < MUON_MOM_CUT_HIGH){
+	    true_contained_end_num =  cuts.In_FV(0,0,0,0,0,0,mc_endx->at(j),mc_endy->at(j),mc_endz->at(j));
+	  }
 	}
       }
       vmuon_num.SetXYZ(backtracked_px->at(muon_id),backtracked_py->at(muon_id),backtracked_pz->at(muon_id));
       vleading_num.SetXYZ(backtracked_px->at(leading_proton_id),backtracked_py->at(leading_proton_id),backtracked_pz->at(leading_proton_id));
       vrecoil_num.SetXYZ(backtracked_px->at(recoil_proton_id),backtracked_py->at(recoil_proton_id),backtracked_pz->at(recoil_proton_id));
-
+      
       for(size_t j=0u; j < mc_pdg->size(); j++){
         TVector3 backtracker_mom_vector(mc_px->at(j),mc_py->at(j),mc_pz->at(j)); //mc momentum of particular mc particle                                                                                  
 	bool contained_start = cuts.In_FV(10,10,10,10,10,10,mc_vx->at(j),mc_vy->at(j),mc_vz->at(j)); //is the particle start contained in FV    
 	bool contained_end = cuts.In_FV(0,0,0,0,0,0,mc_endx->at(j),mc_endy->at(j),mc_endz->at(j)); //is the particle end contained in the detector                                                                                 
-	Fill_Efficiency_Thresholds(true, mc_pdg->at(j), contained_start, contained_end, vleading_num, vrecoil_num, backtracker_mom_vector,mc_wgt*pot_wgt); //filling the efficiency to test the thresholds                                                             
+	Fill_Efficiency_Thresholds(true, mc_pdg->at(j), contained_start, contained_end, vleading_num, vrecoil_num, backtracker_mom_vector,mc_wgt*pot_wgt); //filling the efficiency to test the thresholds                        
       } //end of for loop over the mc particles
       Fill_Matrices(vMuon,vmuon_num,vLead,vleading_num,vRec,vrecoil_num,muon_start_contained,true_contained_start_num,muon_end_contained,true_contained_end_num, mc_wgt*pot_wgt);
       Fill_Efficiency_XSec(false,true_contained_start,true_contained_end,vmuon_num,vleading_num,vrecoil_num,mc_wgt*pot_wgt);                                       
@@ -537,7 +582,6 @@ void efficiency::Loop()
   std::cout<<"Flip Lead: "<<flip_lead<<std::endl;
   std::cout<<"Total Number of Recoil Protons: "<<total_recoil<<std::endl;
   std::cout<<"Flip Recoil: "<<flip_recoil<<std::endl;
-
 
   //Don't forget to write all of your histograms before you leave!                                                                       
   ///////////////////////////////////////////////////////////////                                                                 
