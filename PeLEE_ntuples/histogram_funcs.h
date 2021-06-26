@@ -179,7 +179,7 @@ void histogram_funcs::Define_Histograms(const char* sample){
     h_delta_phiT = new TH1D(Form("h_delta_phiT_%s",sample),Form("h_delta_phiT_%s; #delta #phi_{T} [Deg.];Counts",sample),bins_stv_angles,edges_stv_angles);
   
     const Int_t bins_nuE = 6;
-    Double_t edges_nuE[bins_nuE+1] = {0,0.3,0.5,0.7,0.9,1.2,2.5};
+    Double_t edges_nuE[bins_nuE+1] = {0,0.3,0.5,0.7,0.9,1.2,4.0};
     h_nu_E = new TH1D(Form("h_nu_E_%s",sample),Form("h_nu_E_%s; Total Energy; Counts;",sample),bins_nuE,edges_nuE);
 
     //basic bitches

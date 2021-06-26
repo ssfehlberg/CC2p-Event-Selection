@@ -244,6 +244,12 @@ void twoproton_pelee_bnb::Loop()
     if(vMuon.Mag() < MUON_MOM_CUT_LOW || vMuon.Mag() > MUON_MOM_CUT_HIGH) continue;
     reco_muon_mom_cut++;
 
+    if(vLead.Mag() < PROTON_MOM_CUT_LOW || vLead.Mag() > PROTON_MOM_CUT_HIGH) continue;
+    reco_lead_mom_cut++;
+
+    if(vRec.Mag() < PROTON_MOM_CUT_LOW || vRec.Mag() > PROTON_MOM_CUT_HIGH) continue;
+    reco_recoil_mom_cut++;
+
     hist.Fill_Particles(vMuon,muon,vLead,lead,vRec,rec,pot_wgt);
 
     //One last thing: Make sure to ssave the RSE for the good events before you end your loop                            
@@ -264,6 +270,8 @@ void twoproton_pelee_bnb::Loop()
   std::cout << "[ANALYZER] Number of Events with 3 Tracks Connected to Vertex: "<<threetrk_connected<<" Fraction of Total: "<<float(100.*float(threetrk_connected)/float(nentries))<<"%"<<std::endl; 
   std::cout << "[ANALYZER] Number of Events with 1 Muon and 2 Protons: "<<pid<<" Fraction of Total: "<<float(100.*float(pid)/float(nentries))<<"%"<<std::endl;
   std::cout << "[ANALYZER] Number of Events with Reco. Muon Momentum above 0.1 GeV and below 2.5 GeV: "<<reco_muon_mom_cut<<" Fraction of Total: "<<float(100.*float(reco_muon_mom_cut)/float(nentries))<<"%"<<std::endl;
+  std::cout << "[ANALYZER] Number of Events with Reco. Lead Momentum above 0.1 GeV and below 2.5 GeV: "<<reco_lead_mom_cut<<" Fraction of Total: "<<float(100.*float(reco_lead_mom_cut)/float(nentries))<<"%"<<std::endl;
+  std::cout << "[ANALYZER] Number of Events with Reco. Recoil Momentum above 0.1 GeV and below 2.5 GeV: "<<reco_recoil_mom_cut<<" Fraction of Total: "<<float(100.*float(reco_recoil_mom_cut)/float(nentries))<<"%"<<std::endl;
   std::cout << "[ANALYZER] Sanity Check of the Total Number of Events Remaining: "<<events_remaining<<std::endl;
   std::cout <<"-----CLOSING TIME. YOU DON'T HAVE TO GO HOME, BUT YOU CAN'T STAY HERE-----"<<std::endl;
   
