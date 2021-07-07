@@ -24,7 +24,17 @@ namespace Constants{
   double CHARGED_PI_MOM_CUT = 0.065;
   double PION0_MOM_CUT = 0.065;
 
-  //Useful masses
+  //Argon 40 properties
+  double MASS_TARGET = 37.215526; //GeV
+  // This binding energy value is used in GENIE v3.0.6
+  // double BINDING_ENERGY = 0.0295; // 40Ar, GeV
+  // This value is the shell-occupancy-weighted mean of the $E_{\alpha}$ values
+  // listed for 40Ar in Table II of arXiv:1609.03530. MINERvA uses an identical
+  // procedure for 12C to obtain the binding energy value of 27.13 MeV, which is
+  // adopted in their STV analysis described in arXiv:1910.08658.
+  double BINDING_ENERGY = 0.02478; // 40Ar, GeV
+
+  //useful masses
   double MASS_PROTON = 0.93827208; //GeV
   double MASS_MUON = 0.10565837; //GeV
   double MASS_PION0 = 0.13497666; //GeV

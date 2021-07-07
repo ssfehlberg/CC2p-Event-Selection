@@ -14,8 +14,6 @@ class histogram_funcs
  public:
   virtual void Define_Histograms(const char* sample); //defines histograms. works for all samples
   virtual void Fill_Histograms(int i, TVector3 reco_nu_vertex, double CosmicIP, double topological_score,double wgt); //only fills the bnb, ext, & dirt. i indicates cut
-  //virtual void Fill_Particles(TVector4 muon, TVector4 p1, TVector4 p2, double wgt); //only fills the bnb, ext, & dirt. Muon ID, Leding ID, Recoil ID
-  //virtual void Fill_Particles(TVector3 vMuon, TVector3 vLead, TVector3 vRec, double wgt);
   virtual void Fill_Particles(TVector3 vMuon, TLorentzVector muon, TVector3 vLead, TLorentzVector lead, TVector3 vRec, TLorentzVector rec, double wgt);
   virtual void Write_Histograms(); //writes histograms. works for all samples
 
@@ -58,23 +56,25 @@ class histogram_funcs
   TH1D* h_muon[num_var]; //bnb,ext,dirt
   TH1D* h_recoil[num_var];
   TH1D* h_leading[num_var];
-  TH1D* h_opening_angle_protons_lab;
-  TH1D* h_opening_angle_protons_com;
-  TH1D* h_opening_angle_mu_leading;
-  TH1D* h_opening_angle_mu_both;
-  TH1D* h_delta_PT;
-  TH1D* h_delta_alphaT;
-  TH1D* h_delta_phiT;
-  TH1D* h_nu_E;
-  TH1D* h_mom_struck_nuc;
-  TH1D* h_tot_pz;
-  TH1D* h_tot_E;
-  TH1D* h_tot_E_minus_beam;
-  TH1D* h_PT_squared;
+  TH1D* h_opening_angle_protons_lab; //opening angle between the protons in lab frame
+  TH1D* h_opening_angle_protons_com; //opening angle between the protons in com frame
+  TH1D* h_opening_angle_mu_leading; //opening angle between the muon and lead proton
+  TH1D* h_opening_angle_mu_both; //opening angle between both protons and the muon
+  TH1D* h_delta_PT; //stvs delta PT
+  TH1D* h_delta_alphaT; //stvs delta alphaT
+  TH1D* h_delta_phiT; //stvs delta phiT
+  TH1D* h_pn; //neutron momentum estimate
+  TH1D* h_nu_E; //neutrino energy estimate
+  TH1D* h_mom_struck_nuc; //estimate for neutron momentum: NOT GOOD
+  TH1D* h_tot_pz; //total pz of the system
+  TH1D* h_tot_E; //total energy of the system
+  TH1D* h_tot_E_minus_beam; //the total energy minus the beam
+  TH1D* h_PT_squared; //the PT squared quantitiy in Raquel's note
 
   vector<TH1*> h_list; //list of all the 1D histograms
 
   variables variables; //variables class
+
   //Other parameters:                                                                                                                                                      
   double open_angle; //note this is the cos(opening angle)                                                                                                                 
   double open_angle_mu; //note this is the cos(opening angle)                                                                                                              
@@ -177,6 +177,10 @@ void histogram_funcs::Define_Histograms(const char* sample){
     Double_t edges_stv_angles[bins_stv_angles+1] = {0,30,60,90,120,150,180};
     h_delta_alphaT = new TH1D(Form("h_delta_alphaT_%s",sample),Form("h_delta_alphaT_%s; #delta #alpha_{T} [Deg.];Counts",sample),bins_stv_angles,edges_stv_angles); 
     h_delta_phiT = new TH1D(Form("h_delta_phiT_%s",sample),Form("h_delta_phiT_%s; #delta #phi_{T} [Deg.];Counts",sample),bins_stv_angles,edges_stv_angles);
+
+    const Int_t bins_neutron = 20;
+    Double_t edges_neutron[bins_neutron+1] = {0.0,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0};
+    h_pn = new TH1D(Form("h_pn_%s",sample),Form("h_pn_%s; p_{n} [GeV/c];Counts",sample),bins_neutron,edges_neutron);
   
     const Int_t bins_nuE = 6;
     Double_t edges_nuE[bins_nuE+1] = {0,0.3,0.5,0.7,0.9,1.2,4.0};
@@ -190,13 +194,14 @@ void histogram_funcs::Define_Histograms(const char* sample){
     h_PT_squared = new TH1D(Form("h_PT_squared_%s",sample),Form("h_PT_squared_%s; P_{T}^{2}; Counts", sample),50,0,5);
     
   } else if (use_xsec_binning == false){
-    h_opening_angle_protons_lab = new TH1D(Form("h_opening_angle_protons_lab_%s",sample),Form("h_opening_angle_protons_lab_%s; Opening Angle btwn Two Protons; Counts",sample),30,-1.5,1.5); //50, 0, 1.5                                               
+    h_opening_angle_protons_lab = new TH1D(Form("h_opening_angle_protons_lab_%s",sample),Form("h_opening_angle_protons_lab_%s; Opening Angle btwn Two Protons; Counts",sample),30,-1.5,1.5); //50, 0, 1.5                       
     h_opening_angle_protons_com = new TH1D(Form("h_opening_angle_protons_com_%s",sample),Form("h_opening_angle_protons_com_%s;cos(#gamma_{COM});Counts",sample),30,-1.5,1.5);
     h_opening_angle_mu_leading = new TH1D(Form("h_opening_angle_mu_leading_%s",sample),Form("h_opening_angle_mu_leading_%s;Opening Angle btwn Muon and Leading Proton; Counts",sample),30,-1.5,1.5);
     h_opening_angle_mu_both = new TH1D(Form("h_opening_angle_mu_both_%s",sample),Form("h_opening_angle_mu_both_%s; Opening Angle btwn Muon and Total Proton Momentum; Counts",sample),30,-1.5,1.5);
-    h_delta_PT = new TH1D(Form("h_delta_PT_%s",sample),Form("h_deltaPT_%s;#delta P_{T} [GeV/c];Counts",sample),15,0,1); //normally 10 bins                                                                                                        
-    h_delta_alphaT = new TH1D(Form("h_delta_alphaT_%s",sample),Form("h_delta_alphaT_%s; #delta #alpha_{T} [Deg.];Counts",sample),10,0,180); //0,180                                                                                               
-    h_delta_phiT = new TH1D(Form("h_delta_phiT_%s",sample),Form("h_delta_phiT_%s; #delta #phi_{T} [Deg.];Counts",sample),10,0,180); //0,180                                                                                                       
+    h_delta_PT = new TH1D(Form("h_delta_PT_%s",sample),Form("h_deltaPT_%s;#delta P_{T} [GeV/c];Counts",sample),15,0,1); //normally 10 bins                                                                                      
+    h_delta_alphaT = new TH1D(Form("h_delta_alphaT_%s",sample),Form("h_delta_alphaT_%s; #delta #alpha_{T} [Deg.];Counts",sample),10,0,180); //0,180                                                                            
+    h_delta_phiT = new TH1D(Form("h_delta_phiT_%s",sample),Form("h_delta_phiT_%s; #delta #phi_{T} [Deg.];Counts",sample),10,0,180); //0,180                                                                                     
+    h_pn = new TH1D(Form("h_pn_%s",sample),Form("h_pn_%s; p_{n} [GeV/c];Counts",sample),50,0,1.0);
     h_nu_E = new TH1D(Form("h_nu_E_%s",sample),Form("h_nu_E_%s; Total Energy; Counts;",sample),50,0,2.5);
     h_mom_struck_nuc = new TH1D(Form("h_mom_struck_nuc_%s",sample),Form("h_mom_struck_nuc_%s; P_{Init}; Counts", sample),30, 0, 1);
     h_tot_pz = new TH1D(Form("h_tot_pz_%s",sample),Form("h_tot_pz_%s; P_{Z}^{Total}; Counts",sample), 20, 0, 2);
@@ -216,6 +221,7 @@ void histogram_funcs::Define_Histograms(const char* sample){
   h_list.push_back(h_delta_PT);
   h_list.push_back(h_delta_alphaT);
   h_list.push_back(h_delta_phiT);
+  h_list.push_back(h_pn);
   h_list.push_back(h_mom_struck_nuc);
   h_list.push_back(h_tot_pz);
 
@@ -278,6 +284,7 @@ void histogram_funcs::Fill_Particles(TVector3 vMuon, TLorentzVector muon, TVecto
   double delta_PT = variables.stvs[0];
   double delta_alphaT = variables.stvs[1]; //degrees
   double delta_phiT = variables.stvs[2]; //degrees
+  double pn = variables.stvs[3]; //GeV/c
 
   //neutrino energy & PT Miss
   TVector3 PT_miss(vMuon[0]+vLead[0]+vRec[0],vMuon[1]+vRec[1]+vLead[1],0);
@@ -330,10 +337,11 @@ void histogram_funcs::Fill_Particles(TVector3 vMuon, TLorentzVector muon, TVecto
   h_opening_angle_protons_com->Fill(opening_angle_protons_COM,wgt);
   h_opening_angle_mu_leading->Fill(opening_angle_protons_mu_leading,wgt);
   h_opening_angle_mu_both->Fill(opening_angle_protons_mu_both,wgt);
-  h_delta_PT->Fill(delta_PT,wgt);
 
+  h_delta_PT->Fill(delta_PT,wgt);
   h_delta_alphaT->Fill(delta_alphaT,wgt);
   h_delta_phiT->Fill(delta_phiT,wgt);
+  h_pn->Fill(pn,wgt);
 
   h_nu_E->Fill(Eneutrino,wgt);
   h_mom_struck_nuc->Fill(p_struck_nuc,wgt);

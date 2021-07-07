@@ -29,6 +29,8 @@ void twoproton_pelee_ext::Loop()
 
   //Random counters
   /////////////////
+  int total_muon = 0;
+  int flip_muon = 0;
   int total_lead = 0;
   int flip_lead = 0;
   int total_recoil = 0;
@@ -167,7 +169,15 @@ void twoproton_pelee_ext::Loop()
     //Finally. Let's define some stuff then fill some variables!
     ////////////////////////////////////////////////////////////    
     
+    //We will need these to flip the protons                                                                                                                                                                  
+    TVector3 nu_vtx_reco(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z);
+    std::cout<<"Location of Reco Neutrino Vertex: ("<<nu_vtx_reco[0]<<","<<nu_vtx_reco[2]<<","<<nu_vtx_reco[2]<<")"<<std::endl;
+
     //Muon
+    float  muon_track_start_distance_reco = trk_distance_v->at(muon_id); //distance from start to vertex: reconstructed                                                                                       
+    TVector3 muon_track_end_reco(trk_sce_end_x_v->at(muon_id),trk_sce_end_y_v->at(muon_id),trk_sce_end_z_v->at(muon_id)); //leading track end reco                                                            
+    muon_track_end_reco -= nu_vtx_reco;
+    double muon_track_end_distance_reco = muon_track_end_reco.Mag(); //distance from end to vertex: reconstructed  
     TVector3 vMuon(1,1,1);
     bool muon_start_contained = cuts.In_FV(10,10,10,10,10,10,trk_sce_start_x_v->at(muon_id),trk_sce_start_y_v->at(muon_id),trk_sce_start_z_v->at(muon_id));
     bool muon_end_contained = cuts.In_FV(0,0,0,0,0,0,trk_sce_end_x_v->at(muon_id),trk_sce_end_y_v->at(muon_id),trk_sce_end_z_v->at(muon_id));
@@ -182,10 +192,18 @@ void twoproton_pelee_ext::Loop()
     vMuon.SetTheta(trk_theta_v->at(muon_id));
     vMuon.SetPhi(trk_phi_v->at(muon_id));
     TLorentzVector muon(vMuon[0],vMuon[1],vMuon[2],EMuon);
+    total_muon++;
 
-    //We will need these to flip the protons
-    TVector3 nu_vtx_reco(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z);
-    std::cout<<"Location of Reco Neutrino Vertex: ("<<nu_vtx_reco[0]<<","<<nu_vtx_reco[2]<<","<<nu_vtx_reco[2]<<")"<<std::endl;
+    if(_debug) std::cout<<"Muon 4 Vector: ("<<muon[0]<<","<<muon[1]<<","<<muon[2]<<","<<muon[3]<<")"<<std::endl;
+    if(_debug) std::cout<<"[Reconstructed] Muon Start Distance: "<<muon_track_start_distance_reco<<" Muon End Distance: "<<muon_track_end_distance_reco<<std::endl;
+    if(_debug) std::cout<<"Muon PID Value: "<<trk_llr_pid_score_v->at(muon_id)<<std::endl;
+    //flip momentum if this occurs                                                                                                                                                                              
+    if(muon_track_start_distance_reco > muon_track_end_distance_reco){
+      vMuon *= (-1.0); //three vector                                                                                                                                                                         
+      muon.SetPxPyPzE(vMuon[0],vMuon[1],vMuon[2],EMuon); //four vector                                                                                                                                       
+      flip_muon++;
+    }
+    if(_debug) std::cout<<"After Flipping: Muon 4 Vector: ("<<muon[0]<<","<<muon[1]<<","<<muon[2]<<","<<muon[3]<<")"<<std::endl;
 
     //Leading Proton
     float lead_track_start_distance_reco = trk_distance_v->at(leading_proton_id); //distance from start to vertex: reconstructed 
@@ -276,6 +294,8 @@ void twoproton_pelee_ext::Loop()
   std::cout<<"Neutrinos 1: "<<neutrinos_1<<std::endl;
   std::cout<<"Neutrinos Else: "<<neutrinos_else<<std::endl;
 
+  std::cout<<"Total Number of Muons: "<<total_muon<<std::endl;
+  std::cout<<"Flip Muon: "<<flip_muon<<std::endl;
   std::cout<<"Total Number of Lead Protons: "<<total_lead<<std::endl;
   std::cout<<"Flip Lead: "<<flip_lead<<std::endl;
   std::cout<<"Total Number of Recoil Protons: "<<total_recoil<<std::endl;

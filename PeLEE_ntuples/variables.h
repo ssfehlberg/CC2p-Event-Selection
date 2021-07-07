@@ -140,7 +140,8 @@ vector<double> variables::Calculate_Detector_Angles(TVector3 vmuon, TVector3 vle
 
   //recoil proton   
   double recoil_phi;
-  double recoil_theta;                                                                                                                                                                                                                                                                 if(vrec[0] == -9999. && vrec[1] == -9999. && vrec[2] == -9999.){
+  double recoil_theta;                                                                                                                                                                                                          
+  if(vrec[0] == -9999. && vrec[1] == -9999. && vrec[2] == -9999.){
     recoil_phi = -9999.0;
     recoil_theta = -9999.0;
   } else {
@@ -159,8 +160,7 @@ vector<double> variables::Calculate_Detector_Angles(TVector3 vmuon, TVector3 vle
 
 }
 
-//Calculates the opening angles between protons, muon and lead proton, and muon and both protons all in lab frame given input TVector3. Returns opening angle protons, opening angle muonb+lead, opening angle muon_both                            
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+//Calculates the opening angles between protons, muon and lead proton, and muon and both protons all in lab frame given input TVector3. Returns opening angle protons, opening angle muonb+lead, opening angle muon_both         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 vector<double> variables::Calculate_Opening_Angles(TVector3 vmuon, TVector3 vlead, TVector3 vrec){
 
   //opening angle between the protons in the lab frame
@@ -252,7 +252,7 @@ vector<double> variables::Calculate_STVS(bool add_protons, TVector3 vMuon, TVect
     delta_pT = -9999.0;
     delta_phiT = -9999.0;
   }else {
-    delta_pT = double((vMuon + vProton).Perp()); //perp takes the magnitude as well. stv delta pt                                                                                                                                                                            
+    delta_pT = double((vMuon + vProton).Perp()); //perp takes the magnitude as well. stv delta pt                                                                                                                              
     delta_phiT = double(180.0/3.14)*double(std::acos( (-vMuon.X()*vProton.X() - vMuon.Y()*vProton.Y()) / (vMuon.XYvector().Mod() * vProton.XYvector().Mod()))); //stv delta phi t  
   }
 
@@ -267,10 +267,25 @@ vector<double> variables::Calculate_STVS(bool add_protons, TVector3 vMuon, TVect
     delta_alphaT = double(180.0/3.14)*double(std::acos( (-vMuon.X()*delta_pT_vec.X()- vMuon.Y()*delta_pT_vec.Y()) / (vMuon.XYvector().Mod() * delta_pT_vec.XYvector().Mod()) )); //stv delta alpha T    
   }
 
+  //pn
+  double delta_pL;
+  double pn;
+  float Emu = std::sqrt(std::pow(MASS_MUON, 2) + vMuon.Mag2());
+  float Ep_lead = std::sqrt(std::pow(MASS_PROTON, 2) + vLead.Mag2());
+  float Ep_rec = std::sqrt(std::pow(MASS_PROTON, 2) + vRec.Mag2());
+  float Ep = Ep_lead + Ep_rec;
+  float R = MASS_TARGET + vMuon.Z() + vProton.Z() - Emu - Ep;
+
+  // Estimated mass of the final remnant nucleus (CCQE assumption)
+  float mf = MASS_TARGET - (MASS_NEUTRON + MASS_PROTON) + 2*BINDING_ENERGY;
+  delta_pL = 0.5*R - (std::pow(mf, 2) + std::pow(delta_pT, 2)) / (2.*R);
+  pn = std::sqrt( std::pow(delta_pL, 2) + std::pow(delta_pT, 2) );
+
   //vector<double> stvs{delta_pT,delta_alphaT,delta_phiT};
   stvs.push_back(delta_pT);
   stvs.push_back(delta_alphaT);
   stvs.push_back(delta_phiT);
+  stvs.push_back(pn);
   return stvs;
 
 }
