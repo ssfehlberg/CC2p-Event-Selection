@@ -5,8 +5,8 @@
 // found on file: /pnfs/uboone/persistent/users/davidc/searchingfornues/v08_00_00_43/0928/prodgenie_bnb_nu_uboone_overlay_mcc9.1_v08_00_00_26_filter_run1_reco2_reco2.root
 //////////////////////////////////////////////////////////
 
-#ifndef mc_efficiency_h
-#define mc_efficiency_h
+#ifndef twoproton_nuwro_overlay_h
+#define twoproton_nuwro_overlay_h
 
 #include <TROOT.h>
 #include <TChain.h>
@@ -17,7 +17,7 @@
 #include "variables.h"
 using namespace Constants;
 
-class mc_efficiency {
+class twoproton_nuwro_overlay {
 public :
    TTree          *fChain;   //!pointer to the analyzed TTree or TChain
    Int_t           fCurrent; //!current Tree number in a TChain
@@ -1446,8 +1446,8 @@ public :
    TBranch        *b_anglediff_U;   //!
    TBranch        *b_trkpid;   //!
 
-   mc_efficiency(TTree *tree=0);
-   virtual ~mc_efficiency();
+   twoproton_nuwro_overlay(TTree *tree=0);
+   virtual ~twoproton_nuwro_overlay();
    virtual Int_t    Cut(Long64_t entry);
    virtual Int_t    GetEntry(Long64_t entry);
    virtual Long64_t LoadTree(Long64_t entry);
@@ -1457,9 +1457,15 @@ public :
    virtual void     Show(Long64_t entry = -1);
    virtual void     Which_Run();
    virtual void     Define_Histograms(); //defines histograms. works for all samples
-   virtual void     Fill_Efficiency_Thresholds(bool denom, int backtracked_pdg, bool contained_start, bool contained_end, TVector3 leading, TVector3 recoil,TVector3 backtracker_mom_vector,double mc_wgt = 1.0);
-   virtual void     Fill_Efficiency_XSec(bool denom, bool contained_start, bool contained_end, TVector3 vMuon,TVector3 vLead, TVector3 vRec,double mc_wgt = 1.0);
-   virtual void     Fill_Matrices(TVector3 vMuon, TVector3 muon,TVector3 vLead, TVector3 lead,TVector3 vRec, TVector3 rec, bool contained_start, bool true_contained_start,bool contained_end, bool true_contained_end,double mc_wgt = 1.0);
+   virtual void     Fill_Histograms_Mine(int i, double wgt, int mc_n_threshold_muon, int mc_n_threshold_proton, int mc_n_threshold_pion0, int mc_n_threshold_pionpm, bool fv);
+   virtual void     Fill_Histograms_Raquel(int i, double wgt, bool fv);
+   virtual void     Fill_Track_Plots(int which_cut,float value, int pdg, bool contained_start,bool contained_end, double wgt); //fills the track variables 
+   virtual void     Fill_Histograms_Particles(int mc_n_threshold_muon, int mc_n_threshold_proton, int mc_n_threshold_pion0, double mc_n_threshold_pionpm, bool fv,TVector3 vMuon, TLorentzVector muon, TVector3 vLead, TLorentzVector lead, TVector3 vRec, TLorentzVector rec, double wgt);
+   virtual void     Fill_Histograms_Particles_Raquel(TVector3 vMuon, TLorentzVector muon, TVector3 vLead, TLorentzVector lead, TVector3 vRec, TLorentzVector rec, double wgt, bool fv);
+   virtual void     Fill_Mine(int i, int j, double wgt);
+   virtual void     Fill_Raquel(int i, int j, double wgt);
+   virtual void     Fill_Particles(int j, TVector3 vMuon, TLorentzVector muon, TVector3 vLead, TLorentzVector lead, TVector3 vRec, TLorentzVector rec, double wgt);
+   virtual void     Fill_Particles_Raquel(int j, TVector3 vMuon, TLorentzVector muon, TVector3 vLead, TLorentzVector lead, TVector3 vRec, TLorentzVector rec, double wgt);
    virtual void     Write_Histograms();
 
  private:
@@ -1471,45 +1477,141 @@ public :
    const char* file;
    double pot_wgt;
 
-   static const int number = 10;
-   int cc2p0pi[number] = {0};
+   //Defining all the histograms becaues I wrote the classes stupidly
+   //////////////////////////////////////////////////////////////////
  
-  //Efficinecy As Function of Cuts
-  /////////////////////////////////////////////
-  TGraph* eff_graph = new TGraph(number); //efficiency as function of cuts
-  TGraph* pur_graph = new TGraph(number); //efficiency as function of purity
+   //PFP Specific Histograms                                                                                              
+   static const int num = 4;
+   const char * total[num] = {"npfp","vtx_npfp","ntrack","nshower"};
+   TH1D * h_pfp_overlay[num]; //overlay
+   TH1D* h_pfp[num]; //bnb, ext, dirt
 
-  //Efficiency to Determine the Momentum Thresholds of Various Particles
-  /////////////////////////////////////////////////////////////////////
-  static const int num_threshold = 9;
-  const char* threshold[num_threshold] = {"_muon_all","_muon_contained","_muon_uncontained","_proton_all","_proton_leading","_proton_recoil","_pion_plus","_pion_minus","_pion0"}; //determining the particle thresholds
-  TH1D* h_mom_threshold_num[num_threshold]; //these are for the threshold determination plots: numerator of the the efficiency
-  TH1D* h_mom_threshold_denom[num_threshold]; //same as above but the denominator of the efficinecy
-  int num_bins_eff[num_threshold] = {50,50,50,50,50,50,50,50,50};
-  float x_high_eff[num_threshold] = {5.0,5.0,5.0,2.0,2.0,2.0,0.5,0.5,0.5};
+  //Correlation Histograms for Vertex                                                                                       
+  static const int num2d = 3;
+  const char * total2d[num2d] = {"reco","truth","truth_sce"};
+  const char * labelx[num2d] = {"reco x","true x","true x + sce"};
+  const char * labely[num2d] = {"reco y","true y","true y + sce"};
+  TH2D *h_correlation_overlay[num2d];
+      
+  //Varaibles I wanted to check after each cut
+  static const int  number = 7; //number cuts                                                                        
+  static const int  number2 = 11; //categories I defined                                                            
+  static const int  number3 = 10; //categories raquel defined
+  const char * point[number] ={"_before_selection","_after_fv","_after_three_pfps","_after_track_cut","_after_connection_cut","_after_pid","_after_reco_mom"}; //this defines histograms after each cut    
+  const char * channel[number2]={"_total","_cc0p0pi","_cc1p0pi","_cc2p0pi","_ccNp0pi",
+				 "_ccNp1pi","_ccNpNpi","_ccnue","_outfv","_nc","_other"}; //these are the channels I defined        
+  const char * channel2[number3] = {"_total","_ccQE","_ccCOH","_ccMEC","_ccRES","_ccDIS",
+				     "_ccNue","_nc","_outfv","_other"};//these are the channels that raquel defined
+  
+  TH1D* h_vtx_x_overlay[number][number2]; //reco x: overlay
+  TH1D* h_vtx_y_overlay[number][number2]; //reco y: overlay
+  TH1D* h_vtx_z_overlay[number][number2]; //reco z: overlay
+  TH1D* h_vtx_x_raquel[number][number3]; //reco x: overlay                                                                          
+  TH1D* h_vtx_y_raquel[number][number3]; //reco y: overlay                                                                        
+  TH1D* h_vtx_z_raquel[number][number3]; //reco z: overlay                                                                       
+  TH1D* h_topological_score_overlay[number][number2]; //overlay
+  TH1D* h_topological_score_raquel[number][number3]; //raquel
+  TH1D* h_cosmic_impact_parameter_overlay[number][number2]; //overlay
+  TH1D* h_cosmic_impact_parameter_raquel[number][number3]; //raquel
 
+  TH1D* h_vtx_x_mc[number][number2]; //mc x
+  TH1D* h_vtx_y_mc[number][number2]; //mc y 
+  TH1D* h_vtx_z_mc[number][number2]; //mc z
+  TH1D* h_vtx_x_mc_sce[number][number2]; //mc+sce x
+  TH1D* h_vtx_y_mc_sce[number][number2]; //mc+sce y
+  TH1D* h_vtx_z_mc_sce[number][number2]; //mc+sce z
+  TH1D* h_q2[number][number2]; //mc q2
+  TH1D* h_X[number][number2]; //mc x
+  TH1D* h_Y[number][number2]; //mc y
+  TH1D* h_Pt[number][number2]; //mc Pt
+ 
+  TH1D* h_vtx_x_mc_raquel[number][number3]; //mc x raquel                                                                                   
+  TH1D* h_vtx_y_mc_raquel[number][number3]; //mc y                                                                                   
+  TH1D* h_vtx_z_mc_raquel[number][number3]; //mc z                                                                                   
+  TH1D* h_vtx_x_mc_sce_raquel[number][number3]; //mc+sce x                                                                          
+  TH1D* h_vtx_y_mc_sce_raquel[number][number3]; //mc+sce y                                                                           
+  TH1D* h_vtx_z_mc_sce_raquel[number][number3]; //mc+sce z                                                                           
+  TH1D* h_q2_raquel[number][number3]; //mc q2                                                                                        
+  TH1D* h_X_raquel[number][number3]; //mc x                                                                                          
+  TH1D* h_Y_raquel[number][number3]; //mc y                                                                                          
+  TH1D* h_Pt_raquel[number][number3]; //mc Pt   
+  
+  //Check of MEC weight
+  TH1D* h_mec_wgt[number];
+ 
+  //Track related variables after certain cuts
+  static const int num_track = 4;
+  const char* variable[num_track] = {"_track_score","_track_vertex_distance","_track_length","_track_pid"};
+  static const int track_cut = 3;
+  const char* which_track_cut[track_cut] = {"_after_3_pfps","_after_track_score","_after_distance_cut"};
+  static const int num_part = 10;
+  const char* particle[num_part] = {"_total","_proton_contained","_proton_uncontained","_muon","_pionpm","_pion0","_electron","_gamma","_kaon","_other"};
+  TH1D* h_track_overlay[num_track][track_cut][num_part]; //overlay
+  int num_bins_track[num_track] = {30,10,50,50};
+  double xlim_low_track[num_track] = {0.0,0.0,0.0,-1.0};
+  double xlim_high_track[num_track] = {1.0,10.0,50.0,1.0};
+ 
   //Effieincy Plots and Migration Matrices of XSec Variables
   ////////////////////////////////////////////////////////////
+  TGraph* eff_graph = new TGraph(number); //efficiency as function of cuts                                                                                                                                                           
+  TGraph* pur_graph = new TGraph(number); //efficiency as function of purity 
   TH2D* h_test_recoil;
   TH2D* h_test_leading;
   int recoil_theta = 0;
   int leading_theta = 0;
 
-  //particles
-  static const int num_particles_eff_plots = 3;
-  const char* particles_eff_variables[num_particles_eff_plots] = {"_mom","_costheta","_phi"};
-  static const int num_particles_eff = 5;
-  const char* particles_eff[num_particles_eff] = {"_muon_all","_muon_contained","_muon_uncontainied","_lead_proton","_recoil_proton"};
-  TH1D* h_particle_num[num_particles_eff][num_particles_eff_plots];
-  TH1D* h_particle_denom[num_particles_eff][num_particles_eff_plots];
-  TH2D* h_particle_matrices[num_particles_eff][num_particles_eff_plots]; //migration matrix
+  //All the single particle plots
+  static const int num_var = 4;
+  const char* var[num_var] = {"_mom","_E","_theta","_phi"};
+  int num_bins[num_var] = {50,50,30,10};
+  double xlim_low[num_var] = {0,0,-1.5,-3.15}; //0.2 normally first -1.5                                                        
+  double xlim_high_recoil[num_var] = {0.8,0.35,1.5,3.15};
+  double xlim_high_leading[num_var] = {1.2,0.6,1.5,3.15}; //1.5 normally in first, 1.2                                          
+  double xlim_high_muon[num_var]={2.5,1,1.5,3.15}; //2.5 first, 1.5 third     
+  const char* xlabel[num_var] ={"P [GeV/c]","E [GeV]","cos(#theta)","#phi [Rad]"};
+  TH1D* h_muon_overlay[num_var][number2]; //overlay
+  TH1D* h_recoil_overlay[num_var][number2];
+  TH1D* h_leading_overlay[num_var][number2];
+  TH1D* h_muon_raquel[num_var][number3];
+  TH1D* h_recoil_raquel[num_var][number3];
+  TH1D* h_leading_raquel[num_var][number3];
+    
+  //Interesting Physics plots
+  ////////////////////////////
 
-  //other variables
-  static const int num_other_eff = 9;
-  const char* other_eff[num_other_eff] = {"_opening_angle_protons_lab","_opening_angle_protons_com","_opening_angle_mu_leading","_opening_angle_mu_both","_delta_PT","_delta_alphaT","_delta_phiT","_pn","_nu_E"};
-  TH1D* h_other_eff_num[num_other_eff];
-  TH1D* h_other_eff_denom[num_other_eff];
-  TH2D* h_other_matrices[num_other_eff]; //migration matrix
+  //mine
+  TH1D* h_opening_angle_protons_lab_overlay[number2];
+  TH1D* h_opening_angle_protons_com_overlay[number2];
+  TH1D* h_opening_angle_mu_leading_overlay[number2];
+  TH1D* h_opening_angle_mu_both_overlay[number2];
+  TH1D* h_delta_PT_overlay[number2];
+  TH1D* h_delta_alphaT_overlay[number2];
+  TH1D* h_delta_phiT_overlay[number2];
+  TH1D* h_pn_overlay[number2];
+  TH1D* h_nu_E_overlay[number2];
+  TH1D* h_mom_struck_nuc_overlay[number2];
+  TH1D* h_tot_pz_overlay[number2];
+  TH1D* h_tot_E_overlay[number2];
+  TH1D* h_tot_E_minus_beam_overlay[number2];
+  TH1D* h_E_resolution_overlay[number2];
+  TH1D* h_PT_squared_overlay[number2];
+
+  //raquel
+  TH1D* h_opening_angle_protons_lab_raquel[number3];
+  TH1D* h_opening_angle_protons_com_raquel[number3];
+  TH1D* h_opening_angle_mu_leading_raquel[number3];
+  TH1D* h_opening_angle_mu_both_raquel[number3];
+  TH1D* h_delta_PT_raquel[number3];
+  TH1D* h_delta_alphaT_raquel[number3];
+  TH1D* h_delta_phiT_raquel[number3];
+  TH1D* h_pn_raquel[number3];
+  TH1D* h_nu_E_raquel[number3];
+  TH1D* h_mom_struck_nuc_raquel[number3];
+  TH1D* h_tot_pz_raquel[number3];
+  TH1D* h_tot_E_raquel[number3];
+  TH1D* h_tot_E_minus_beam_raquel[number3];
+  TH1D* h_E_resolution_raquel[number3];
+  TH1D* h_PT_squared_raquel[number3];
 
   vector<TH1*> h_list; //vector of all the 1D histograms
   vector<TH2*> h_list_2D; //vector of all the 2D histograms
@@ -1518,6 +1620,44 @@ public :
   helper_funcs cuts; //helper_funcs.h
   variables variables; //variables_funcs.h
 
+  //Other parameters:                                                                                                                                                                                  
+  double open_angle; //note this is the cos(opening angle)                                                                                                                                             
+  double open_angle_mu; //note this is the cos(opening angle)                                                         
+  double open_angle_mu_proton;
+  double delta_pT; //stv delta_pT                                                                                                                                                                      
+  double delta_alphaT; //stv delta_alphaT                                                                                                                                                              
+  double delta_phiT; //stv delta_phiT                                                                                                                                                                  
+  double cos_gamma_lab; //cos(opening angle) in lab                                                                                                                                                    
+  double cos_gamma_cm; //cos(opening angle) in cm                                                                                                                                                      
+  double En; //energy of struck nucleon                                                                                                                                                                
+  double p_struck_nuc; //momentum of the struck nucleon                                                                                                                                                
+  double pz_tot;
+  double mec_wgt;
+
+  //number of generated event/channel                                                                             
+  int cc0p0pi[number+1] = {0}; //number-1 is after pid. number then would be particle specifics...should be same as number-1
+  int cc1p0pi[number+1] = {0};
+  int cc2p0pi[number+1] = {0};
+  int ccNp0pi[number+1] = {0};
+  int ccNp1pi[number+1] = {0};
+  int ccNpNpi[number+1] = {0};
+  int ccnue[number+1] = {0};
+  int outfv[number+1] = {0};
+  int nc[number+1] = {0};
+  int other[number+1] = {0};
+   
+  //number of generated event/channel                                                                             
+  int qel[number+1] = {0};
+  int res[number+1] = {0};
+  int mec[number+1] = {0};
+  int coh[number+1] = {0};
+  int dis[number+1] = {0};
+  int ccnue_raquel[number+1] = {0};
+  int outfv_raquel[number+1] = {0};
+  int nc_raquel[number+1] = {0};
+  int other_raquel[number+1] = {0};
+  int res_count[4] = {0};
+  
   int other_else = 0;
   int neutron = 0;
   int neutrino = 0;
@@ -1538,8 +1678,8 @@ public :
 
 #endif
 
-#ifdef mc_efficiency_cxx
-mc_efficiency::mc_efficiency(TTree *tree) : fChain(0) 
+#ifdef twoproton_nuwro_overlay_cxx
+twoproton_nuwro_overlay::twoproton_nuwro_overlay(TTree *tree) : fChain(0) 
 {
   // if parameter tree is not specified (or zero), connect the file
   // used to generate this class and read the Tree.
@@ -1548,11 +1688,11 @@ mc_efficiency::mc_efficiency(TTree *tree) : fChain(0)
   std::cin>>response;
   
   if(response =='1'){
-    file = "/pnfs/uboone/persistent/users/davidc/searchingfornues/v08_00_00_43/0928/prodgenie_bnb_nu_uboone_overlay_mcc9.1_v08_00_00_26_filter_run1_reco2_reco2.root";
+    file = "/uboone/data/users/apapadop/searchingfornues/high_stat_prodgenie_bnb_nu_overlay_DetVar_Run1_NuWro_reco2_reco2.root";
   } else if(response == '2'){
-    file = "/pnfs/uboone/persistent/users/davidc/searchingfornues/v08_00_00_43/0928/prodgenie_bnb_nu_uboone_overlay_mcc9.1_v08_00_00_26_filter_run2_reco2_D1D2_reco2.root";
+    file = "/uboone/data/users/apapadop/searchingfornues/high_stat_prodgenie_bnb_nu_overlay_DetVar_Run2_NuWro_reco2_reco2.root";
   } else if(response == '3'){
-    file = "/pnfs/uboone/persistent/users/davidc/searchingfornues/v08_00_00_43/0928/prodgenie_bnb_nu_uboone_overlay_mcc9.1_v08_00_00_26_filter_run3_reco2_G_reco2.root";
+    file = "/uboone/data/users/apapadop/searchingfornues/high_stat_prodgenie_bnb_nu_overlay_DetVar_Run3_NuWro_reco2_reco2.root";
   } else{
     std::cout<<"Invalid Response. Please Type 1, 2, or 3 for Run 1,Run 2, and Run 3 samples respectively."<<std::endl;
   }
@@ -1571,13 +1711,13 @@ mc_efficiency::mc_efficiency(TTree *tree) : fChain(0)
   Loop();
 }
 
-mc_efficiency::~mc_efficiency()
+twoproton_nuwro_overlay::~twoproton_nuwro_overlay()
 {
    if (!fChain) return;
    delete fChain->GetCurrentFile();
 }
 
-void mc_efficiency::Which_Run(){
+void twoproton_nuwro_overlay::Which_Run(){
   if(response =='1'){
     directory = "Run1";
     pot_wgt = 0.124;
@@ -1590,216 +1730,340 @@ void mc_efficiency::Which_Run(){
   }  
 } //end of which_run
 
-void mc_efficiency::Define_Histograms(){
+void twoproton_nuwro_overlay::Define_Histograms(){
 
-  //Mc_Efficiency plots
-  ///////////////////////////////////////
-  for(int i =0; i < num_threshold; i++){
-    h_mom_threshold_num[i] = new TH1D(Form("h_mom_threshold_num%s",threshold[i]),Form("h_mom_threshold_num%s",threshold[i]),num_bins_eff[i],0,x_high_eff[i]);
-    h_mom_threshold_denom[i] = new TH1D(Form("h_mom_threshold_denom%s",threshold[i]),Form("h_mom_threshold_denom%s",threshold[i]),num_bins_eff[i],0,x_high_eff[i]);
-    h_list.push_back(h_mom_threshold_num[i]);
-    h_list.push_back(h_mom_threshold_denom[i]);
-  }
+    //Total Histograms                                                                                                       
+    for(int i=0; i < num; i++){
+      h_pfp_overlay[i] = new TH1D(Form("h_%s_overlay",total[i]),Form("h_%s_overlay",total[i]),10,0,10);
+      h_list.push_back(h_pfp_overlay[i]);
+    }
 
-  for(int i=0; i < num_particles_eff; i++){
-    for(int j=0; j < num_particles_eff_plots; j++){
-      
-      if(j == 2){ //phi for all particles
-	const Int_t bins = 10;
-	Double_t edges[bins+1] = {-3.15,-2.52,-1.89,-1.26,-0.63,0.,0.63,1.26,1.89,2.52,3.15};
-	h_particle_num[i][j] = new TH1D(Form("h_particle_num%s%s",particles_eff[i],particles_eff_variables[j]),Form("h_particle_num%s%s",particles_eff[i],particles_eff_variables[j]),bins,edges);
-	h_particle_denom[i][j] = new TH1D(Form("h_particle_denom%s%s",particles_eff[i],particles_eff_variables[j]),Form("h_particle_denom%s%s",particles_eff[i],particles_eff_variables[j]),bins,edges);
-	h_list.push_back(h_particle_num[i][j]);
-	h_list.push_back(h_particle_denom[i][j]);
-	h_particle_matrices[i][j] = new TH2D(Form("h_particle_matrices%s%s",particles_eff[i],particles_eff_variables[j]),Form("h_particle_matrices%s%s",particles_eff[i],particles_eff_variables[j]),bins,edges,bins,edges);
-	h_list_2D.push_back(h_particle_matrices[i][j]);
-	
-      } else if( (i==0 && j==0) || (i==1 && j==0) || (i==2 && j==0) ){ //muon momentum
-	const Int_t bins = 6;
-	Double_t edges[bins+1] = {0.1,0.2,0.3,0.5,0.7,1.3,2.5}; //0.1, 2.5
-	//const Int_t bins = 30;
-	//Double_t edges[bins+1] = {0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,2.9,3.0};
-	h_particle_num[i][j] = new TH1D(Form("h_particle_num%s%s",particles_eff[i],particles_eff_variables[j]),Form("h_particle_num%s%s",particles_eff[i],particles_eff_variables[j]),bins,edges);
-	h_particle_denom[i][j] = new TH1D(Form("h_particle_denom%s%s",particles_eff[i],particles_eff_variables[j]),Form("h_particle_denom%s%s",particles_eff[i],particles_eff_variables[j]),bins,edges);
-	h_list.push_back(h_particle_num[i][j]);
-	h_list.push_back(h_particle_denom[i][j]);
-	h_particle_matrices[i][j] = new TH2D(Form("h_particle_matrices%s%s",particles_eff[i],particles_eff_variables[j]),Form("h_particle_matrices%s%s",particles_eff[i],particles_eff_variables[j]),bins,edges,bins,edges);
-	h_list_2D.push_back(h_particle_matrices[i][j]);
-	
-      } else if ((i==0 && j==1) || (i==1 && j==1) || (i==2 && j==1)){//muon theta
-	const Int_t bins = 10;
-	Double_t edges[bins+1] = {-1.0,-0.8,-0.6,-0.4,-0.2,0.0,0.2,0.4,0.6,0.8,1.0};
-	//const Int_t bins = 20;
-	//Double_t edges[bins+1] = {-1.0,-0.9,-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0};
-	h_particle_num[i][j] = new TH1D(Form("h_particle_num%s%s",particles_eff[i],particles_eff_variables[j]),Form("h_particle_num%s%s",particles_eff[i],particles_eff_variables[j]),bins,edges);
-	h_particle_denom[i][j] = new TH1D(Form("h_particle_denom%s%s",particles_eff[i],particles_eff_variables[j]),Form("h_particle_denom%s%s",particles_eff[i],particles_eff_variables[j]),bins,edges);
-	h_list.push_back(h_particle_num[i][j]);
-	h_list.push_back(h_particle_denom[i][j]);
-	h_particle_matrices[i][j] = new TH2D(Form("h_particle_matrices%s%s",particles_eff[i],particles_eff_variables[j]),Form("h_particle_matrices%s%s",particles_eff[i],particles_eff_variables[j]),bins,edges,bins,edges);
-	h_list_2D.push_back(h_particle_matrices[i][j]);
-	
-      } else if(i == 3 && j == 0){ //lead proton mom
-	const Int_t bins = 6;
-	Double_t edges[bins+1] = {0.25,0.35,0.45,0.55,0.65,0.75,1.2};
-	//const Int_t bins = 10;
-	//Double_t edges[bins+1] = {0.25,0.35,0.45,0.55,0.65,0.75,0.85,0.95,1.05,1.15,1.25};
-	h_particle_num[i][j] = new TH1D(Form("h_particle_num%s%s",particles_eff[i],particles_eff_variables[j]),Form("h_particle_num%s%s",particles_eff[i],particles_eff_variables[j]),bins,edges);
-	h_particle_denom[i][j] = new TH1D(Form("h_particle_denom%s%s",particles_eff[i],particles_eff_variables[j]),Form("h_particle_denom%s%s",particles_eff[i],particles_eff_variables[j]),bins,edges);
-	h_list.push_back(h_particle_num[i][j]);
-	h_list.push_back(h_particle_denom[i][j]);
-	h_particle_matrices[i][j] = new TH2D(Form("h_particle_matrices%s%s",particles_eff[i],particles_eff_variables[j]),Form("h_particle_matrices%s%s",particles_eff[i],particles_eff_variables[j]),bins,edges,bins,edges);
-	h_list_2D.push_back(h_particle_matrices[i][j]);
-	
-      } else if(i == 3 && j == 1){ //lead proton theta
-	const Int_t bins = 10;
-	Double_t edges[bins+1] = {-1.0,-0.8,-0.6,-0.4,-0.2,0.0,0.2,0.4,0.6,0.8,1.0};
-	//const Int_t bins = 20;
-	//Double_t edges[bins+1] = {-1.0,-0.9,-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0};
-	h_particle_num[i][j] = new TH1D(Form("h_particle_num%s%s",particles_eff[i],particles_eff_variables[j]),Form("h_particle_num%s%s",particles_eff[i],particles_eff_variables[j]),bins,edges);
-	h_particle_denom[i][j] = new TH1D(Form("h_particle_denom%s%s",particles_eff[i],particles_eff_variables[j]),Form("h_particle_denom%s%s",particles_eff[i],particles_eff_variables[j]),bins,edges);
-	h_list.push_back(h_particle_num[i][j]);
-	h_list.push_back(h_particle_denom[i][j]);
-	h_particle_matrices[i][j] = new TH2D(Form("h_particle_matrices%s%s",particles_eff[i],particles_eff_variables[j]),Form("h_particle_matrices%s%s",particles_eff[i],particles_eff_variables[j]),bins,edges,bins,edges);
-	h_list_2D.push_back(h_particle_matrices[i][j]);
+    //Correlation Histograms                                                                                                           
+    for(int i=0; i < num2d; i++){
+      h_correlation_overlay[i] = new TH2D(Form("h_correlation_overlay_%s",total2d[i]),Form(";%s ;%s",labelx[i],labely[i]),40,0,275,40,-125,-125);
+      h_list_2D.push_back(h_correlation_overlay[i]);
+    }
+  
+    //Now to do the channel seperated histograms
+    for(int i=0; i< number; i++){
+      h_mec_wgt[i] = new TH1D(Form("h_mec_wgt%s",point[i]),Form("h_mec_wgt%s; Weight; Events",point[i]),50,-1,1);
+      h_list.push_back(h_mec_wgt[i]);
 
-      } else if(i == 4 && j == 0){//recoil proton mom
-	///const Int_t bins = 5;
-	//Double_t edges[bins+1] = {0.25,0.35,0.45,0.55,0.65,0.8};
-	const Int_t bins = 5;
-	Double_t edges[bins+1] = {0.25,0.35,0.45,0.55,0.65,1.2};
-	h_particle_num[i][j] = new TH1D(Form("h_particle_num%s%s",particles_eff[i],particles_eff_variables[j]),Form("h_particle_num%s%s",particles_eff[i],particles_eff_variables[j]),bins,edges);
-	h_particle_denom[i][j] = new TH1D(Form("h_particle_denom%s%s",particles_eff[i],particles_eff_variables[j]),Form("h_particle_denom%s%s",particles_eff[i],particles_eff_variables[j]),bins,edges);
-	h_list.push_back(h_particle_num[i][j]);
-	h_list.push_back(h_particle_denom[i][j]);
-	h_particle_matrices[i][j] = new TH2D(Form("h_particle_matrices%s%s",particles_eff[i],particles_eff_variables[j]),Form("h_particle_matrices%s%s",particles_eff[i],particles_eff_variables[j]),bins,edges,bins,edges);
-	h_list_2D.push_back(h_particle_matrices[i][j]);
+      for(int j=0; j < number2; j++){ //my stuff                                                                                        
+	h_vtx_x_overlay[i][j]=new TH1D(Form("h_vtx_x%s%s",point[i],channel[j]),Form("h_vtx_x%s%s",point[i],channel[j]),50,0,250);
+	h_vtx_y_overlay[i][j]=new TH1D(Form("h_vtx_y%s%s",point[i],channel[j]),Form("h_vtx_y%s%s",point[i],channel[j]),50,-125,125);
+	h_vtx_z_overlay[i][j]=new TH1D(Form("h_vtx_z%s%s",point[i],channel[j]),Form("h_vtx_z%s%s",point[i],channel[j]),50,0,1050);
+	h_vtx_x_mc[i][j]=new TH1D(Form("h_vtx_x_mc%s%s",point[i],channel[j]),Form("h_vtx_x_mc%s%s",point[i],channel[j]),40,0,275);
+	h_vtx_y_mc[i][j]=new TH1D(Form("h_vtx_y_mc%s%s",point[i],channel[j]),Form("h_vtx_y_mc%s%s",point[i],channel[j]),40,-125,125);
+	h_vtx_z_mc[i][j]=new TH1D(Form("h_vtx_z_mc%s%s",point[i],channel[j]),Form("h_vtx_z_mc%s%s",point[i],channel[j]),50,0,1050);
+	h_vtx_x_mc_sce[i][j]=new TH1D(Form("h_vtx_x_mc_sce%s%s",point[i],channel[j]),Form("h_vtx_x_mc_sce%s%s",point[i],channel[j]),40,0,275);
+	h_vtx_y_mc_sce[i][j]=new TH1D(Form("h_vtx_y_mc_sce%s%s",point[i],channel[j]),Form("h_vtx_y_mc_sce%s%s",point[i],channel[j]),40,-125,125);
+	h_vtx_z_mc_sce[i][j]=new TH1D(Form("h_vtx_z_mc_sce%s%s",point[i],channel[j]),Form("h_vtx_z_mc_sce%s%s",point[i],channel[j]),50,0,1050);
+	h_q2[i][j] = new TH1D(Form("h_q2%s%s",point[i],channel[j]),Form("h_q2_x%s%s",point[i],channel[j]),20,0,2);
+	h_X[i][j] = new TH1D(Form("h_X%s%s",point[i],channel[j]),Form("h_X_x%s%s",point[i],channel[j]),20,0,2);
+	h_Y[i][j] = new TH1D(Form("h_Y%s%s",point[i],channel[j]),Form("h_Y_x%s%s",point[i],channel[j]),10,0,1);
+	h_Pt[i][j] = new TH1D(Form("h_Pt%s%s",point[i],channel[j]),Form("h_Pt_x%s%s",point[i],channel[j]),20,0,2);
+	h_cosmic_impact_parameter_overlay[i][j] = new TH1D(Form("h_cosmic_impact_parameter%s%s",point[i],channel[j]),Form("h_cosmic_impact_parameter%s%s; Cosmic Impact Distance (cm); No. Events",point[i],channel[j]),20,0,200);
+	h_topological_score_overlay[i][j] = new TH1D(Form("h_topological_score%s%s",point[i],channel[j]),Form("h_topological_score%s%s; Topological Score; No. Events",point[i],channel[j]),50,0.0,1.0); //30 for wouter, 50 for steven
 
-      } else if(i == 4 && j == 1){//recoil proton theta
-	const Int_t bins = 10;
-	Double_t edges[bins+1] = {-1.0,-0.8,-0.6,-0.4,-0.2,0.0,0.2,0.4,0.6,0.8,1.0};
-	//const Int_t bins = 20;
-	//Double_t edges[bins+1] = {-1.0,-0.9,-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0};
-	h_particle_num[i][j] = new TH1D(Form("h_particle_num%s%s",particles_eff[i],particles_eff_variables[j]),Form("h_particle_num%s%s",particles_eff[i],particles_eff_variables[j]),bins,edges);
-	h_particle_denom[i][j] = new TH1D(Form("h_particle_denom%s%s",particles_eff[i],particles_eff_variables[j]),Form("h_particle_denom%s%s",particles_eff[i],particles_eff_variables[j]),bins,edges);
-	h_list.push_back(h_particle_num[i][j]);
-	h_list.push_back(h_particle_denom[i][j]);
-	h_particle_matrices[i][j] = new TH2D(Form("h_particle_matrices%s%s",particles_eff[i],particles_eff_variables[j]),Form("h_particle_matrices%s%s",particles_eff[i],particles_eff_variables[j]),bins,edges,bins,edges);
-	h_list_2D.push_back(h_particle_matrices[i][j]);
+	h_list.push_back(h_topological_score_overlay[i][j]);
+	h_list.push_back(h_cosmic_impact_parameter_overlay[i][j]);
+	h_list.push_back(h_vtx_x_overlay[i][j]);
+	h_list.push_back(h_vtx_y_overlay[i][j]);
+	h_list.push_back(h_vtx_z_overlay[i][j]);
+	h_list.push_back(h_vtx_x_mc[i][j]);
+	h_list.push_back(h_vtx_y_mc[i][j]);
+	h_list.push_back(h_vtx_z_mc[i][j]);
+	h_list.push_back(h_vtx_x_mc_sce[i][j]);
+	h_list.push_back(h_vtx_y_mc_sce[i][j]);
+	h_list.push_back(h_vtx_z_mc_sce[i][j]);
+	h_list.push_back(h_q2[i][j]);
+	h_list.push_back(h_X[i][j]);
+	h_list.push_back(h_Y[i][j]);
+	h_list.push_back(h_Pt[i][j]);
+
+      }
+
+      for(int j=0; j < number3; j++){//raquel's stuff
+	h_vtx_x_raquel[i][j]=new TH1D(Form("h_vtx_x_raquel%s%s",point[i],channel2[j]),Form("h_vtx_x_raquel%s%s",point[i],channel2[j]),50,0,250);
+	h_vtx_y_raquel[i][j]=new TH1D(Form("h_vtx_y_raquel%s%s",point[i],channel2[j]),Form("h_vtx_y_raquel%s%s",point[i],channel2[j]),50,-125,125);
+	h_vtx_z_raquel[i][j]=new TH1D(Form("h_vtx_z_raquel%s%s",point[i],channel2[j]),Form("h_vtx_z_raquel%s%s",point[i],channel2[j]),50,0,1050);
+	h_vtx_x_mc_raquel[i][j]=new TH1D(Form("h_vtx_x_m_raquel%s%s",point[i],channel2[j]),Form("h_vtx_x_mc_raquel%s%s",point[i],channel2[j]),40,0,275);
+	h_vtx_y_mc_raquel[i][j]=new TH1D(Form("h_vtx_y_mc_raquel%s%s",point[i],channel2[j]),Form("h_vtx_y_mc_raquel%s%s",point[i],channel2[j]),40,-125,125);
+	h_vtx_z_mc_raquel[i][j]=new TH1D(Form("h_vtx_z_mc_raquel%s%s",point[i],channel2[j]),Form("h_vtx_z_mc_raquel%s%s",point[i],channel2[j]),50,0,1050);
+	h_vtx_x_mc_sce_raquel[i][j]=new TH1D(Form("h_vtx_x_mc_sce_raquel%s%s",point[i],channel2[j]),Form("h_vtx_x_mc_sce_raquel%s%s",point[i],channel2[j]),40,0,275);
+	h_vtx_y_mc_sce_raquel[i][j]=new TH1D(Form("h_vtx_y_mc_sce-raquel%s%s",point[i],channel2[j]),Form("h_vtx_y_mc_sce_raquel%s%s",point[i],channel2[j]),40,-125,125);
+	h_vtx_z_mc_sce_raquel[i][j]=new TH1D(Form("h_vtx_z_mc_sce_raquel%s%s",point[i],channel2[j]),Form("h_vtx_z_mc_sce_raquel%s%s",point[i],channel2[j]),50,0,1050);
+	h_q2_raquel[i][j] = new TH1D(Form("h_q2_raquel%s%s",point[i],channel2[j]),Form("h_q2_raquel%s%s",point[i],channel2[j]),20,0,2);
+	h_X_raquel[i][j] = new TH1D(Form("h_X_raquel%s%s",point[i],channel2[j]),Form("h_X_raquel%s%s",point[i],channel2[j]),20,0,2);
+	h_Y_raquel[i][j] = new TH1D(Form("h_Y_raquel%s%s",point[i],channel2[j]),Form("h_Y_raquel%s%s",point[i],channel2[j]),10,0,1);
+	h_Pt_raquel[i][j] = new TH1D(Form("h_Pt_raquel%s%s",point[i],channel2[j]),Form("h_Pt_raquel%s%s",point[i],channel2[j]),20,0,2);
+	h_cosmic_impact_parameter_raquel[i][j] = new TH1D(Form("h_cosmic_impact_parameter_raquel%s%s",point[i],channel2[j]),Form("h_cosmic_impact_parameter_raquel%s%s; Cosmic Impact Distance (cm); No. Events",point[i],channel2[j]),20,0,200);
+	h_topological_score_raquel[i][j] = new TH1D(Form("h_topological_score_raquel%s%s",point[i],channel2[j]),Form("h_topological_score_raquel%s%s; Topological Score; No. Events",point[i],channel2[j]),50,0.0,1.0); //30 wouter/50 steven
+
+	h_list.push_back(h_topological_score_raquel[i][j]);
+	h_list.push_back(h_cosmic_impact_parameter_raquel[i][j]);
+	h_list.push_back(h_vtx_x_raquel[i][j]);
+	h_list.push_back(h_vtx_y_raquel[i][j]);
+	h_list.push_back(h_vtx_z_raquel[i][j]);
+	h_list.push_back(h_vtx_x_mc_raquel[i][j]);
+	h_list.push_back(h_vtx_y_mc_raquel[i][j]);
+	h_list.push_back(h_vtx_z_mc_raquel[i][j]);
+	h_list.push_back(h_vtx_x_mc_sce_raquel[i][j]);
+	h_list.push_back(h_vtx_y_mc_sce_raquel[i][j]);
+	h_list.push_back(h_vtx_z_mc_sce_raquel[i][j]);
+	h_list.push_back(h_q2_raquel[i][j]);
+	h_list.push_back(h_X_raquel[i][j]);
+	h_list.push_back(h_Y_raquel[i][j]);
+	h_list.push_back(h_Pt_raquel[i][j]);
+
       }
     }
-  }
-    
-  //Other Mc_Efficiency and Matrices
-  ////////////////////////////////
-  for(int i = 0; i < num_other_eff; i++){
-      
-    if(i == 0){ //opening angle protons lab frame
-      const Int_t bins = 10;
-      Double_t edges[bins+1] = {-1.0,-0.8,-0.6,-0.4,-0.2,0.0,0.2,0.4,0.6,0.8,1.0};
-      //const Int_t bins = 20;
-      //Double_t edges[bins+1] = {-1.0,-0.9,-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0};
-      h_other_eff_num[i] = new TH1D(Form("h_other_eff_num%s",other_eff[i]),Form("h_other_eff_num%s",other_eff[i]),bins,edges);
-      h_other_eff_denom[i] = new TH1D(Form("h_other_eff_denom%s",other_eff[i]),Form("h_other_eff_denom%s",other_eff[i]),bins,edges);
-      h_list.push_back(h_other_eff_num[i]);
-      h_list.push_back(h_other_eff_denom[i]);
-      h_other_matrices[i] = new TH2D(Form("h_other_matrices%s",other_eff[i]),Form("h_other_matrices%s",other_eff[i]),bins,edges,bins,edges);
-      h_list_2D.push_back(h_other_matrices[i]);
-      
-    } else if( i == 1){ //opening angle protons com frame
-      const Int_t bins = 10;
-      Double_t edges[bins+1] = {-1.0,-0.8,-0.6,-0.4,-0.2,0.0,0.2,0.4,0.6,0.8,1.0};
-      //const Int_t bins = 20;
-      //Double_t edges[bins+1] = {-1.0,-0.9,-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0};
-      h_other_eff_num[i] = new TH1D(Form("h_other_eff_num%s",other_eff[i]),Form("h_other_eff_num%s",other_eff[i]),bins,edges);
-      h_other_eff_denom[i] = new TH1D(Form("h_other_eff_denom%s",other_eff[i]),Form("h_other_eff_denom%s",other_eff[i]),bins,edges);
-      h_list.push_back(h_other_eff_num[i]);
-      h_list.push_back(h_other_eff_denom[i]);
-      h_other_matrices[i] = new TH2D(Form("h_other_matrices%s",other_eff[i]),Form("h_other_matrices%s",other_eff[i]),bins,edges,bins,edges);
-      h_list_2D.push_back(h_other_matrices[i]);
 
-    } else if (i == 2){ //opening angle mu leading
-      const Int_t bins = 10;
-      Double_t edges[bins+1] = {-1.0,-0.8,-0.6,-0.4,-0.2,0.0,0.2,0.4,0.6,0.8,1.0};
-      //const Int_t bins = 20;
-      //Double_t edges[bins+1] = {-1.0,-0.9,-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0};
-      h_other_eff_num[i] = new TH1D(Form("h_other_eff_num%s",other_eff[i]),Form("h_other_eff_num%s",other_eff[i]),bins,edges);
-      h_other_eff_denom[i] = new TH1D(Form("h_other_eff_denom%s",other_eff[i]),Form("h_other_eff_denom%s",other_eff[i]),bins,edges);
-      h_list.push_back(h_other_eff_num[i]);
-      h_list.push_back(h_other_eff_denom[i]);
-      h_other_matrices[i] = new TH2D(Form("h_other_matrices%s",other_eff[i]),Form("h_other_matrices%s",other_eff[i]),bins,edges,bins,edges);
-      h_list_2D.push_back(h_other_matrices[i]);
-
-    } else if (i == 3){ //opening angle mu both
-      const Int_t bins = 10;
-      Double_t edges[bins+1] = {-1.0,-0.8,-0.6,-0.4,-0.2,0.0,0.2,0.4,0.6,0.8,1.0};
-      //const Int_t bins = 20;
-      //Double_t edges[bins+1] = {-1.0,-0.9,-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0};
-      h_other_eff_num[i] = new TH1D(Form("h_other_eff_num%s",other_eff[i]),Form("h_other_eff_num%s",other_eff[i]),bins,edges);
-      h_other_eff_denom[i] = new TH1D(Form("h_other_eff_denom%s",other_eff[i]),Form("h_other_eff_denom%s",other_eff[i]),bins,edges);
-      h_list.push_back(h_other_eff_num[i]);
-      h_list.push_back(h_other_eff_denom[i]);
-      h_other_matrices[i] = new TH2D(Form("h_other_matrices%s",other_eff[i]),Form("h_other_matrices%s",other_eff[i]),bins,edges,bins,edges);
-      h_list_2D.push_back(h_other_matrices[i]);
-      
-    } else if (i == 4){ //delta pt
-      const Int_t bins = 4;
-      Double_t edges[bins+1] = {0,0.2,0.4,0.6,1.0};
-      //const Int_t bins = 10;
-      //Double_t edges[bins+1] = {0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0};
-      h_other_eff_num[i] = new TH1D(Form("h_other_eff_num%s",other_eff[i]),Form("h_other_eff_num%s",other_eff[i]),bins,edges);
-      h_other_eff_denom[i] = new TH1D(Form("h_other_eff_denom%s",other_eff[i]),Form("h_other_eff_denom%s",other_eff[i]),bins,edges);
-      h_list.push_back(h_other_eff_num[i]);
-      h_list.push_back(h_other_eff_denom[i]);
-      h_other_matrices[i] = new TH2D(Form("h_other_matrices%s",other_eff[i]),Form("h_other_matrices%s",other_eff[i]),bins,edges,bins,edges);
-      h_list_2D.push_back(h_other_matrices[i]);
-      
-    } else if (i == 5){ //delta alpha t
-      const Int_t bins = 6;
-      Double_t edges[bins+1] = {0,30,60,90,120,150,180};
-      //const Int_t bins = 18;
-      //Double_t edges[bins+1] = {0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180};
-      h_other_eff_num[i] = new TH1D(Form("h_other_eff_num%s",other_eff[i]),Form("h_other_eff_num%s",other_eff[i]),bins,edges);
-      h_other_eff_denom[i] = new TH1D(Form("h_other_eff_denom%s",other_eff[i]),Form("h_other_eff_denom%s",other_eff[i]),bins,edges);
-      h_list.push_back(h_other_eff_num[i]);
-      h_list.push_back(h_other_eff_denom[i]);
-      h_other_matrices[i] = new TH2D(Form("h_other_matrices%s",other_eff[i]),Form("h_other_matrices%s",other_eff[i]),bins,edges,bins,edges);
-      h_list_2D.push_back(h_other_matrices[i]);
-      
-    } else if (i == 6){ //delta phi t
-      const Int_t bins = 6;
-      Double_t edges[bins+1] = {0,30,60,90,120,150,180};
-      //const Int_t bins = 18;
-      //Double_t edges[bins+1] = {0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180};
-      h_other_eff_num[i] = new TH1D(Form("h_other_eff_num%s",other_eff[i]),Form("h_other_eff_num%s",other_eff[i]),bins,edges);
-      h_other_eff_denom[i] = new TH1D(Form("h_other_eff_denom%s",other_eff[i]),Form("h_other_eff_denom%s",other_eff[i]),bins,edges);
-      h_list.push_back(h_other_eff_num[i]);
-      h_list.push_back(h_other_eff_denom[i]);
-      h_other_matrices[i] = new TH2D(Form("h_other_matrices%s",other_eff[i]),Form("h_other_matrices%s",other_eff[i]),bins,edges,bins,edges);
-      h_list_2D.push_back(h_other_matrices[i]);
-
-    } else if (i == 7){ //pn
-      const Int_t bins = 20;
-      Double_t edges[bins+1] = {0.0,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0};
-      h_other_eff_num[i] = new TH1D(Form("h_other_eff_num%s",other_eff[i]),Form("h_other_eff_num%s",other_eff[i]),bins,edges);
-      h_other_eff_denom[i] = new TH1D(Form("h_other_eff_denom%s",other_eff[i]),Form("h_other_eff_denom%s",other_eff[i]),bins,edges);
-      h_list.push_back(h_other_eff_num[i]);
-      h_list.push_back(h_other_eff_denom[i]);
-      h_other_matrices[i] = new TH2D(Form("h_other_matrices%s",other_eff[i]),Form("h_other_matrices%s",other_eff[i]),bins,edges,bins,edges);
-      h_list_2D.push_back(h_other_matrices[i]);
-
-    } else if (i == 8){ //neutrino energy
-      const Int_t bins = 6;
-      Double_t edges[bins+1] = {0,0.3,0.5,0.7,0.9,1.2,4.0};
-      //const Int_t bins = 25;
-      //Double_t edges[bins+1] = {0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5};
-      h_other_eff_num[i] = new TH1D(Form("h_other_eff_num%s",other_eff[i]),Form("h_other_eff_num%s",other_eff[i]),bins,edges);
-      h_other_eff_denom[i] = new TH1D(Form("h_other_eff_denom%s",other_eff[i]),Form("h_other_eff_denom%s",other_eff[i]),bins,edges);
-      h_list.push_back(h_other_eff_num[i]);
-      h_list.push_back(h_other_eff_denom[i]);
-      h_other_matrices[i] = new TH2D(Form("h_other_matrices%s",other_eff[i]),Form("h_other_matrices%s",other_eff[i]),bins,edges,bins,edges);
-      h_list_2D.push_back(h_other_matrices[i]);
+    //track variables
+    for(int j=0; j < num_track; j++){
+      for(int k=0; k < track_cut; k++){
+	for(int i=0; i < num_part; i++){
+	  h_track_overlay[j][k][i] = new TH1D(Form("h_track%s%s%s",variable[j],which_track_cut[k],particle[i]),Form("h_track%s%s%s",variable[j],which_track_cut[k],particle[i]),num_bins_track[j],xlim_low_track[j],xlim_high_track[j]);
+	  h_list.push_back(h_track_overlay[j][k][i]);
+	}
+      }
     }
-  }
+    
+    //Efficiency plots
+    ///////////////////////////////////////
+    h_test_recoil = new TH2D("h_test_recoil","h_test_recoil",50,-10.0,10.0,50,0.25,0.85);
+    h_test_leading = new TH2D("h_test_leading","h_test_leading",50,-10.0,10.0,50,0.25,1.2);
+    h_list_2D.push_back(h_test_recoil);
+    h_list_2D.push_back(h_test_leading);
+
+    //Particle specific plots
+    /////////////////////////
+    for(int j = 0; j < num_var; j++){
+      for(int k = 0; k < number2; k++){
+	if(use_xsec_binning == true){
+	  if(j == 0){//momentum
+	    //muon
+	    const Int_t bins_muon = 6; 
+	    Double_t edges_muon[bins_muon+1] = {0.1,0.2,0.3,0.5,0.7,1.3,2.5};
+	    h_muon_overlay[j][k] = new TH1D(Form("h_muon%s%s",var[j],channel[k]),Form(" h_muon%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),bins_muon,edges_muon);
+	    //recoil
+	    const Int_t bins_recoil = 5;
+            Double_t edges_recoil[bins_recoil+1] = {0.25,0.35,0.45,0.55,0.65,1.2};
+	    h_recoil_overlay[j][k] = new TH1D(Form("h_recoil%s%s",var[j],channel[k]),Form("h_recoil%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),bins_recoil,edges_recoil);
+	    //leading
+	    const Int_t bins_leading = 6;
+            Double_t edges_leading[bins_leading+1] = {0.25,0.35,0.45,0.55,0.65,0.75,1.2};
+	    h_leading_overlay[j][k] = new TH1D(Form("h_leading%s%s",var[j],channel[k]),Form("h_leading%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),bins_leading,edges_leading);
+
+	  }else if (j == 2){//costheta
+	    const Int_t bins_theta = 10;
+	    Double_t edges_theta[bins_theta+1] = {-1.0,-0.8,-0.6,-0.4,-0.2,0.0,0.2,0.4,0.6,0.8,1.0};
+	    h_muon_overlay[j][k] = new TH1D(Form("h_muon%s%s",var[j],channel[k]),Form(" h_muon%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),bins_theta,edges_theta);
+	    h_recoil_overlay[j][k] = new TH1D(Form("h_recoil%s%s",var[j],channel[k]),Form("h_recoil%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),bins_theta,edges_theta);
+	    h_leading_overlay[j][k] = new TH1D(Form("h_leading%s%s",var[j],channel[k]),Form("h_leading%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),bins_theta,edges_theta);
+
+	  }else{//phi and energy
+	    h_muon_overlay[j][k] = new TH1D(Form("h_muon%s%s",var[j],channel[k]),Form(" h_muon%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_muon[j]);
+            h_recoil_overlay[j][k] = new TH1D(Form("h_recoil%s%s",var[j],channel[k]),Form("h_recoil%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_recoil[j]);
+            h_leading_overlay[j][k] = new TH1D(Form("h_leading%s%s",var[j],channel[k]),Form("h_leading%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_leading[j]);
+	  }
+	} else if (use_xsec_binning == false){
+	  h_muon_overlay[j][k] = new TH1D(Form("h_muon%s%s",var[j],channel[k]),Form(" h_muon%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_muon[j]);
+          h_recoil_overlay[j][k] = new TH1D(Form("h_recoil%s%s",var[j],channel[k]),Form("h_recoil%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_recoil[j]);
+          h_leading_overlay[j][k] = new TH1D(Form("h_leading%s%s",var[j],channel[k]),Form("h_leading%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_leading[j]);
+	} //end of false statement
+
+	h_list.push_back(h_muon_overlay[j][k]);
+	h_list.push_back(h_recoil_overlay[j][k]);
+	h_list.push_back(h_leading_overlay[j][k]);
+
+      } //end loop over channels
+    } //end loop over variables
+
+    for(int j = 0; j < num_var; j++){
+      for(int k = 0; k < number3; k++){
+	if(use_xsec_binning == true){
+	  if(j == 0){ //momentum
+	    //muon
+	    const Int_t bins_muon = 6;
+            Double_t edges_muon[bins_muon+1] = {0.1,0.2,0.3,0.5,0.7,1.3,2.5};
+	    h_muon_raquel[j][k] = new TH1D(Form("h_muon_raquel%s%s",var[j],channel2[k]),Form(" h_muon_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),bins_muon,edges_muon);
+	    //recoil
+	    const Int_t bins_recoil = 5;
+            Double_t edges_recoil[bins_recoil+1] = {0.25,0.35,0.45,0.55,0.65,1.2};
+	    h_recoil_raquel[j][k] = new TH1D(Form("h_recoil_raquel%s%s",var[j],channel2[k]),Form("h_recoil_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),bins_recoil,edges_recoil);
+	    //leading
+	    const Int_t bins_leading = 6;
+            Double_t edges_leading[bins_leading+1] = {0.25,0.35,0.45,0.55,0.65,0.75,1.2};
+	    h_leading_raquel[j][k] = new TH1D(Form("h_leading_raquel%s%s",var[j],channel2[k]),Form("h_leading_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),bins_leading,edges_leading);
+
+	  } else if (j == 2){ //theta
+	    const Int_t bins_theta = 10;
+            Double_t edges_theta[bins_theta+1] = {-1.0,-0.8,-0.6,-0.4,-0.2,0.0,0.2,0.4,0.6,0.8,1.0};
+	    h_muon_raquel[j][k] = new TH1D(Form("h_muon_raquel%s%s",var[j],channel2[k]),Form(" h_muon_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),bins_theta,edges_theta);
+	    h_recoil_raquel[j][k] = new TH1D(Form("h_recoil_raquel%s%s",var[j],channel2[k]),Form("h_recoil_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),bins_theta,edges_theta);
+	    h_leading_raquel[j][k] = new TH1D(Form("h_leading_raquel%s%s",var[j],channel2[k]),Form("h_leading_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),bins_theta,edges_theta);
+
+	  } else{ //phi and energy
+	    h_muon_raquel[j][k] = new TH1D(Form("h_muon_raquel%s%s",var[j],channel2[k]),Form(" h_muon_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_muon[j]);
+	    h_recoil_raquel[j][k] = new TH1D(Form("h_recoil_raquel%s%s",var[j],channel2[k]),Form("h_recoil_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_recoil[j]);
+	    h_leading_raquel[j][k] = new TH1D(Form("h_leading_raquel%s%s",var[j],channel2[k]),Form("h_leading_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_leading[j]);
+	  }
+	}else if(use_xsec_binning == false){
+	  h_muon_raquel[j][k] = new TH1D(Form("h_muon_raquel%s%s",var[j],channel2[k]),Form(" h_muon_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_muon[j]);
+	  h_recoil_raquel[j][k] = new TH1D(Form("h_recoil_raquel%s%s",var[j],channel2[k]),Form("h_recoil_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_recoil[j]);
+	  h_leading_raquel[j][k] = new TH1D(Form("h_leading_raquel%s%s",var[j],channel2[k]),Form("h_leading_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_leading[j]);
+	} //end of false statement
+
+	h_list.push_back(h_muon_raquel[j][k]);
+	h_list.push_back(h_recoil_raquel[j][k]);
+	h_list.push_back(h_leading_raquel[j][k]);
+
+      } //end of loop over channels
+    } //end loop over variables
+
+    //more particle specific plots
+    for(int i = 0; i < number2; i++){
+      if(use_xsec_binning == true){
+	const Int_t bins = 10;
+	Double_t edges[bins+1] = {-1.0,-0.8,-0.6,-0.4,-0.2,0.0,0.2,0.4,0.6,0.8,1.0};
+	h_opening_angle_protons_lab_overlay[i] = new TH1D(Form("h_opening_angle_protons_lab%s",channel[i]),Form("h_opening_angle_protons_lab%s; Opening Angle btwn Two Protons; Counts",channel[i]),bins,edges); //50, 0, 1.5                           
+	h_opening_angle_protons_com_overlay[i] = new TH1D(Form("h_opening_angle_protons_com%s",channel[i]),Form("h_opening_angle_protons_com%s; cos(#gamma_{COM}); Counts",channel[i]),bins,edges);
+	h_opening_angle_mu_leading_overlay[i] = new TH1D(Form("h_opening_angle_mu_leading%s",channel[i]),Form("h_opening_angle_mu_leading%s;Opening Angle btwn Muon and Leading Proton; Counts",channel[i]),bins,edges);
+	h_opening_angle_mu_both_overlay[i] = new TH1D(Form("h_opening_angle_mu_both%s",channel[i]),Form("h_opening_angle_mu_both%s; Opening Angle btwn Muon and Total Proton Momentum; Counts",channel[i]),bins,edges);
+
+	const Int_t bins_stv_mom = 4;
+        Double_t edges_stv_mom[bins_stv_mom+1] = {0,0.2,0.4,0.6,1.0};
+	h_delta_PT_overlay[i] = new TH1D(Form("h_delta_PT%s",channel[i]),Form("h_deltaPT%s;#delta P_{T} [GeV/c];Counts",channel[i]),bins_stv_mom,edges_stv_mom);  
+	
+	const Int_t bins_stv_angles = 6;
+        Double_t edges_stv_angles[bins_stv_angles+1] = {0,30,60,90,120,150,180};
+	h_delta_alphaT_overlay[i] = new TH1D(Form("h_delta_alphaT%s",channel[i]),Form("h_delta_alphaT%s; #delta #alpha_{T} [Deg.];Counts",channel[i]),bins_stv_angles,edges_stv_angles); //0,180                     
+	h_delta_phiT_overlay[i] = new TH1D(Form("h_delta_phiT%s",channel[i]),Form("h_delta_phiT%s; #delta #phi_{T} [Deg.];Counts",channel[i]),bins_stv_angles,edges_stv_angles);                                                               
+
+	const Int_t bins_neutron = 20;
+	Double_t edges_neutron[bins_neutron+1] = {0.0,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0};
+	h_pn_overlay[i] = new TH1D(Form("h_pn%s",channel[i]),Form("h_pn%s; p_{n} [GeV/c];Counts",channel[i]),bins_neutron,edges_neutron);
+  
+	const Int_t bins_nuE = 6;
+        Double_t edges_nuE[bins_nuE+1] = {0,0.3,0.5,0.7,0.9,1.2,4.0};
+	h_nu_E_overlay[i] =  new TH1D(Form("h_nu_E%s",channel[i]),Form("h_nu_E%s; Total Energy; Counts;",channel[i]),bins_nuE,edges_nuE);
+
+	//basic bitches
+	h_mom_struck_nuc_overlay[i] = new TH1D(Form("h_mom_struck_nuc%s",channel[i]),Form("h_mom_struck_nuc%s; P_{Init}; Counts", channel[i]),30, 0, 1);
+	h_tot_pz_overlay[i] = new TH1D(Form("h_tot_pz%s",channel[i]),Form("h_tot_pz%s; P_{Z}^{Total}; Counts",channel[i]), 20, 0, 2);
+	h_tot_E_overlay[i] = new TH1D(Form("h_tot_E%s",channel[i]),Form("h_tot_E%s; Total Energy; Counts;",channel[i]),50,0,2.5);
+	h_tot_E_minus_beam_overlay[i] = new TH1D(Form("h_tot_E_minus_beam%s",channel[i]),Form("h_tot_E_minus_beam%s; Total Energy Remaining (MeV/c); Counts;",channel[i]),100,-100,0);
+	h_E_resolution_overlay[i] = new TH1D(Form("h_E_resolution%s",channel[i]),Form("h_E_resolution%s; Energy Resolution (GeV/c); Counts",channel[i]),100,-1.0,1.0);
+	h_PT_squared_overlay[i] = new TH1D(Form("h_PT_squared%s",channel[i]),Form("h_PT_squared%s; P_{T}^{2}; Counts", channel[i]),50,0,5);
+
+      }else if( use_xsec_binning == false){
+	h_opening_angle_protons_lab_overlay[i] = new TH1D(Form("h_opening_angle_protons_lab%s",channel[i]),Form("h_opening_angle_protons_lab%s; Opening Angle btwn Two Protons; Counts",channel[i]),30,-1.5,1.5); //50, 0, 1.5        
+	h_opening_angle_protons_com_overlay[i] = new TH1D(Form("h_opening_angle_protons_com%s",channel[i]),Form("h_opening_angle_protons_com%s; cos(#gamma_{COM}); Counts",channel[i]),30,-1.5,1.5);
+	h_opening_angle_mu_leading_overlay[i] = new TH1D(Form("h_opening_angle_mu_leading%s",channel[i]),Form("h_opening_angle_mu_leading%s;Opening Angle btwn Muon and Leading Proton; Counts",channel[i]),30,-1.5,1.5);
+	h_opening_angle_mu_both_overlay[i] = new TH1D(Form("h_opening_angle_mu_both%s",channel[i]),Form("h_opening_angle_mu_both%s; Opening Angle btwn Muon and Total Proton Momentum; Counts",channel[i]),30,-1.5,1.5);
+	h_delta_PT_overlay[i] = new TH1D(Form("h_delta_PT%s",channel[i]),Form("h_deltaPT%s;#delta P_{T} [GeV/c];Counts",channel[i]),15,0,1); //normally 10 bins
+	h_delta_alphaT_overlay[i] = new TH1D(Form("h_delta_alphaT%s",channel[i]),Form("h_delta_alphaT%s; #delta #alpha_{T} [Deg.];Counts",channel[i]),10,0,180); //0,180                 
+	h_delta_phiT_overlay[i] = new TH1D(Form("h_delta_phiT%s",channel[i]),Form("h_delta_phiT%s; #delta #phi_{T} [Deg.];Counts",channel[i]),10,0,180); //0,180                   
+	h_pn_overlay[i] = new TH1D(Form("h_pn%s",channel[i]),Form("h_pn%s; p_{n} [GeV/c];Counts",channel[i]),50,0,1.0);
+	h_nu_E_overlay[i] =  new TH1D(Form("h_nu_E%s",channel[i]),Form("h_nu_E%s; Total Energy; Counts;",channel[i]),50,0,2.5);
+	h_mom_struck_nuc_overlay[i] = new TH1D(Form("h_mom_struck_nuc%s",channel[i]),Form("h_mom_struck_nuc%s; P_{Init}; Counts", channel[i]),30, 0, 1);
+	h_tot_pz_overlay[i] = new TH1D(Form("h_tot_pz%s",channel[i]),Form("h_tot_pz%s; P_{Z}^{Total}; Counts",channel[i]), 20, 0, 2);
+	h_tot_E_overlay[i] = new TH1D(Form("h_tot_E%s",channel[i]),Form("h_tot_E%s; Total Energy; Counts;",channel[i]),50,0,2.5);
+	h_tot_E_minus_beam_overlay[i] = new TH1D(Form("h_tot_E_minus_beam%s",channel[i]),Form("h_tot_E_minus_beam%s; Total Energy Remaining (MeV/c); Counts;",channel[i]),100,-100,0);
+	h_E_resolution_overlay[i] = new TH1D(Form("h_E_resolution%s",channel[i]),Form("h_E_resolution%s; Energy Resolution (GeV/c); Counts",channel[i]),100,-1.0,1.0);
+	h_PT_squared_overlay[i] = new TH1D(Form("h_PT_squared%s",channel[i]),Form("h_PT_squared%s; P_{T}^{2}; Counts", channel[i]),50,0,5);
+      } //end of false statement
+
+      h_list.push_back(h_PT_squared_overlay[i]);
+      h_list.push_back(h_E_resolution_overlay[i]);
+      h_list.push_back(h_opening_angle_mu_both_overlay[i]);
+      h_list.push_back(h_nu_E_overlay[i]);
+      h_list.push_back(h_tot_E_overlay[i]);
+      h_list.push_back(h_tot_E_minus_beam_overlay[i]);
+      h_list.push_back(h_mom_struck_nuc_overlay[i]);
+      h_list.push_back(h_tot_pz_overlay[i]);
+      h_list.push_back(h_opening_angle_protons_lab_overlay[i]);
+      h_list.push_back(h_opening_angle_protons_com_overlay[i]);
+      h_list.push_back(h_opening_angle_mu_leading_overlay[i]);
+      h_list.push_back(h_delta_PT_overlay[i]);
+      h_list.push_back(h_delta_alphaT_overlay[i]);
+      h_list.push_back(h_delta_phiT_overlay[i]);
+      h_list.push_back(h_pn_overlay[i]);
+
+    }
+
+    for(int i = 0; i < number3; i++){
+      if(use_xsec_binning == true){
+
+	const Int_t bins = 10;
+        Double_t edges[bins+1] = {-1.0,-0.8,-0.6,-0.4,-0.2,0.0,0.2,0.4,0.6,0.8,1.0};
+	h_opening_angle_protons_lab_raquel[i] = new TH1D(Form("h_opening_angle_protons_lab_raquel%s",channel2[i]),Form("h_opening_angle_protons_lab_raquel%s; Opening Angle btwn Two Protons; Counts",channel2[i]),bins,edges); 
+	h_opening_angle_protons_com_raquel[i] = new TH1D(Form("h_opening_angle_protons_com_raquel%s",channel2[i]),Form("h_opening_angle_protons_com_raquel%s; cos(#gamma_{COM}); Counts",channel2[i]),bins,edges);
+        h_opening_angle_mu_leading_raquel[i] = new TH1D(Form("h_opening_angle_mu_leading_raquel%s",channel2[i]),Form("h_opening_angle_mu_leading_raquel%s;Opening Angle btwn Muon and Leading Proton; Counts",channel2[i]),bins,edges);
+        h_opening_angle_mu_both_raquel[i] = new TH1D(Form("h_opening_angle_mu_both_raquel%s",channel2[i]),Form("h_opening_angle_mu_both_raquel%s; Opening Angle btwn Muon and Total Proton Momentum; Counts",channel2[i]),bins,edges);
+        
+	const Int_t bins_stv_mom = 4;
+        Double_t edges_stv_mom[bins_stv_mom+1] = {0,0.2,0.4,0.6,1.0};
+	h_delta_PT_raquel[i] = new TH1D(Form("h_delta_PT_raquel%s",channel2[i]),Form("h_deltaPT_raquel%s;#delta P_{T} [GeV/c];Counts",channel2[i]),bins_stv_mom,edges_stv_mom);                
+ 
+	const Int_t bins_stv_angles = 6;
+        Double_t edges_stv_angles[bins_stv_angles+1] = {0,30,60,90,120,150,180};
+        h_delta_alphaT_raquel[i] = new TH1D(Form("h_delta_alphaT_raquel%s",channel2[i]),Form("h_delta_alphaT_raquel%s; #delta #alpha_{T} [Deg.];Counts",channel2[i]),bins_stv_angles,edges_stv_angles);
+	h_delta_phiT_raquel[i] = new TH1D(Form("h_delta_phiT_raquel%s",channel2[i]),Form("h_delta_phiT_raquel%s; #delta #phi_{T} [Deg.];Counts",channel2[i]),bins_stv_angles,edges_stv_angles);                                            
+
+	const Int_t bins_neutron = 20;
+	Double_t edges_neutron[bins_neutron+1] = {0.0,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0};
+	h_pn_raquel[i] = new TH1D(Form("h_pn_raquel%s",channel2[i]),Form("h_pn_raquel%s; p_{n} [GeV/c];Counts",channel2[i]),bins_neutron,edges_neutron);
+
+	const Int_t bins_nuE = 6;
+        Double_t edges_nuE[bins_nuE+1] = {0,0.3,0.5,0.7,0.9,1.2,4.0};
+	h_nu_E_raquel[i] =  new TH1D(Form("h_nu_E_raquel%s",channel2[i]),Form("h_nu_E_raquel%s; Total Energy; Counts;",channel2[i]),bins_nuE,edges_nuE);
+
+	//basic bitches
+        h_mom_struck_nuc_raquel[i] = new TH1D(Form("h_mom_struck_nuc_raquel%s",channel2[i]),Form("h_mom_struck_nuc_raquel%s; P_{Init}; Counts", channel2[i]),30, 0, 1);
+        h_tot_pz_raquel[i] = new TH1D(Form("h_tot_pz_raquel%s",channel2[i]),Form("h_tot_pz_raquel%s; P_{Z}^{Total}; Counts",channel2[i]), 20, 0, 2);
+        h_tot_E_raquel[i] = new TH1D(Form("h_tot_E_raquel%s",channel2[i]),Form("h_tot_E_raquel%s; Total Energy; Counts;",channel2[i]),50,0,2.5);
+        h_tot_E_minus_beam_raquel[i] = new TH1D(Form("h_tot_E_minus_beam_raquel%s",channel2[i]),Form("h_tot_E_minus_beam_raquel%s; Total Energy; Counts;",channel2[i]),100,-100,0);
+        h_E_resolution_raquel[i] = new TH1D(Form("h_E_resolution_raquel%s",channel2[i]),Form("h_E_resolution_raquel%s; Energy Resolution (GeV/c); Counts",channel2[i]),100,-1.0,1.0);
+        h_PT_squared_raquel[i] = new TH1D(Form("h_PT_squared_raquel%s",channel2[i]),Form("h_PT_squared_raquel%s; P_{T}^{2}; Counts", channel2[i]),50,0,5);
+
+      }else if( use_xsec_binning == false){
+	h_opening_angle_protons_lab_raquel[i] = new TH1D(Form("h_opening_angle_protons_lab_raquel%s",channel2[i]),Form("h_opening_angle_protons_lab_raquel%s; Opening Angle btwn Two Protons; Counts",channel2[i]),30,-1.5,1.5); //50, 0, 1.5           
+	h_opening_angle_protons_com_raquel[i] = new TH1D(Form("h_opening_angle_protons_com_raquel%s",channel2[i]),Form("h_oopening_angle_protons_com__raquel%s; cos(#gamma_{COM}); Counts",channel2[i]),30,-1.5,1.5);
+	h_opening_angle_mu_leading_raquel[i] = new TH1D(Form("h_opening_angle_mu_leading_raquel%s",channel2[i]),Form("h_opening_angle_mu_leading_raquel%s;Opening Angle btwn Muon and Leading Proton; Counts",channel2[i]),30,-1.5,1.5);
+	h_opening_angle_mu_both_raquel[i] = new TH1D(Form("h_opening_angle_mu_both_raquel%s",channel2[i]),Form("h_opening_angle_mu_both_raquel%s; Opening Angle btwn Muon and Total Proton Momentum; Counts",channel2[i]),30,-1.5,1.5);
+	h_delta_PT_raquel[i] = new TH1D(Form("h_delta_PT_raquel%s",channel2[i]),Form("h_deltaPT_raquel%s;#delta P_{T} [GeV/c];Counts",channel2[i]),15,0,1); //normally 10 bins                                                                    
+	h_delta_alphaT_raquel[i] = new TH1D(Form("h_delta_alphaT_raquel%s",channel2[i]),Form("h_delta_alphaT_raquel%s; #delta #alpha_{T} [Deg.];Counts",channel2[i]),10,0,180); //0,180                                                           
+	h_delta_phiT_raquel[i] = new TH1D(Form("h_delta_phiT_raquel%s",channel2[i]),Form("h_delta_phiT_raquel%s; #delta #phi_{T} [Deg.];Counts",channel2[i]),10,0,180); //0,180                                                                   
+	h_pn_raquel[i] = new TH1D(Form("h_pn_raquel%s",channel2[i]),Form("h_pn_raquel%s; p_{n} [GeV/c];Counts",channel2[i]),50,0,1.0);
+	h_nu_E_raquel[i] =  new TH1D(Form("h_nu_E_raquel%s",channel2[i]),Form("h_nu_E_raquel%s; Total Energy; Counts;",channel2[i]),50,0,2.5);
+	h_mom_struck_nuc_raquel[i] = new TH1D(Form("h_mom_struck_nuc_raquel%s",channel2[i]),Form("h_mom_struck_nuc_raquel%s; P_{Init}; Counts", channel2[i]),30, 0, 1);
+	h_tot_pz_raquel[i] = new TH1D(Form("h_tot_pz_raquel%s",channel2[i]),Form("h_tot_pz_raquel%s; P_{Z}^{Total}; Counts",channel2[i]), 20, 0, 2);
+	h_tot_E_raquel[i] = new TH1D(Form("h_tot_E_raquel%s",channel2[i]),Form("h_tot_E_raquel%s; Total Energy; Counts;",channel2[i]),50,0,2.5);
+	h_tot_E_minus_beam_raquel[i] = new TH1D(Form("h_tot_E_minus_beam_raquel%s",channel2[i]),Form("h_tot_E_minus_beam_raquel%s; Total Energy; Counts;",channel2[i]),100,-100,0);
+	h_E_resolution_raquel[i] = new TH1D(Form("h_E_resolution_raquel%s",channel2[i]),Form("h_E_resolution_raquel%s; Energy Resolution (GeV/c); Counts",channel2[i]),100,-1.0,1.0);
+	h_PT_squared_raquel[i] = new TH1D(Form("h_PT_squared_raquel%s",channel2[i]),Form("h_PT_squared_raquel%s; P_{T}^{2}; Counts", channel2[i]),50,0,5);
+    } //end of false statement           
+
+      h_list.push_back(h_PT_squared_raquel[i]);
+      h_list.push_back(h_E_resolution_raquel[i]);
+      h_list.push_back(h_opening_angle_mu_both_raquel[i]);
+      h_list.push_back(h_nu_E_raquel[i]);
+      h_list.push_back(h_tot_E_raquel[i]);
+      h_list.push_back(h_tot_E_minus_beam_raquel[i]);
+      h_list.push_back(h_mom_struck_nuc_raquel[i]);
+      h_list.push_back(h_tot_pz_raquel[i]);
+      h_list.push_back(h_opening_angle_protons_lab_raquel[i]);
+      h_list.push_back(h_opening_angle_protons_com_raquel[i]);
+      h_list.push_back(h_opening_angle_mu_leading_raquel[i]);
+      h_list.push_back(h_delta_PT_raquel[i]);
+      h_list.push_back(h_delta_alphaT_raquel[i]);
+      h_list.push_back(h_delta_phiT_raquel[i]);
+      h_list.push_back(h_pn_raquel[i]);
+
+    }
 
     //make sure to handle the weights correcly
     for (int i = 0; i < h_list.size(); i++){
@@ -1810,252 +2074,490 @@ void mc_efficiency::Define_Histograms(){
      }
 }
 
-void mc_efficiency::Fill_Efficiency_Thresholds(bool denom, int backtracked_pdg, bool contained_start, bool contained_end, TVector3 leading, TVector3 recoil,TVector3 backtracker_mom_vector,double mc_wgt = 1.0){
+void twoproton_nuwro_overlay::Fill_Track_Plots(int which_cut, float value, int pdg, bool contained_start, bool contained_end,double wgt){
 
-  if(denom == true){
+  //which cut identifies which cut we are looking at. 0 = after 3 pfps, 1 = after track score, 2 = after vertex distance
+  h_track_overlay[0][which_cut][0]->Fill(trk_score_v->at(value),wgt); //fills the total
+  h_track_overlay[1][which_cut][0]->Fill(trk_distance_v->at(value),wgt);
+  h_track_overlay[2][which_cut][0]->Fill(trk_len_v->at(value),wgt);
+  h_track_overlay[3][which_cut][0]->Fill(trk_llr_pid_score_v->at(value),wgt);  
 
-    //All Muons
-    if(std::abs(backtracked_pdg) == 13){
-      h_mom_threshold_denom[0]->Fill(backtracker_mom_vector.Mag(),mc_wgt);
-      //contained muons
-      if(contained_start == true && contained_end == true){
-	h_mom_threshold_denom[1]->Fill(backtracker_mom_vector.Mag(),mc_wgt);
-	denom_contained++;
-	//uncontained muons
-      } else if(contained_start == true && contained_end == false){
-	h_mom_threshold_denom[2]->Fill(backtracker_mom_vector.Mag(),mc_wgt);
-	denom_uncontained++;
-      } 
-      //all protons
-    }else if (std::abs(backtracked_pdg) == 2212){
-      h_mom_threshold_denom[3]->Fill(backtracker_mom_vector.Mag(),mc_wgt);
-      //leading proton
-      if(backtracker_mom_vector.Mag() == leading.Mag()){
-	h_mom_threshold_denom[4]->Fill(backtracker_mom_vector.Mag(),mc_wgt);
-	//recoil proton
-      } else if (backtracker_mom_vector.Mag() == recoil.Mag()){
-	h_mom_threshold_denom[5]->Fill(backtracker_mom_vector.Mag(),mc_wgt);
-      }
-      //pion+
-    }else if (backtracked_pdg == 211){
-      h_mom_threshold_denom[6]->Fill(backtracker_mom_vector.Mag(),mc_wgt);
-      //pion-
-    }else if (backtracked_pdg == -211){
-      h_mom_threshold_denom[7]->Fill(backtracker_mom_vector.Mag(),mc_wgt);
-      //pion0
-    }else if(backtracked_pdg == 111){
-      h_mom_threshold_denom[8]->Fill(backtracker_mom_vector.Mag(),mc_wgt);
-    } //end of else if pion
+  if(pdg == 2212 || pdg == -2212){
+    total_protons++;
+    if(contained_start == true && contained_end == true){
+      h_track_overlay[0][which_cut][1]->Fill(trk_score_v->at(value),wgt); //fills the contained protons
+      h_track_overlay[1][which_cut][1]->Fill(trk_distance_v->at(value),wgt);
+      h_track_overlay[2][which_cut][1]->Fill(trk_len_v->at(value),wgt);
+      h_track_overlay[3][which_cut][1]->Fill(trk_llr_pid_score_v->at(value),wgt);  
+      contain++;
+    } else if (contained_start == true && contained_end == false){
+      h_track_overlay[0][which_cut][2]->Fill(trk_score_v->at(value),wgt); //fills the uncontained protons                                                                                                                                          
+      h_track_overlay[1][which_cut][2]->Fill(trk_distance_v->at(value),wgt);
+      h_track_overlay[2][which_cut][2]->Fill(trk_len_v->at(value),wgt);
+      h_track_overlay[3][which_cut][2]->Fill(trk_llr_pid_score_v->at(value),wgt);
+      uncontain++;
+    }
 
-    
-  } else if (denom == false){
-    
-    //All Muons                                                                                                                                                                                                                                                      
-    if(std::abs(backtracked_pdg) == 13){
-      h_mom_threshold_num[0]->Fill(backtracker_mom_vector.Mag(),mc_wgt);
-      //contained muons                                                                                                                                                                                                                                              
-      if(contained_start == true && contained_end == true){
-        h_mom_threshold_num[1]->Fill(backtracker_mom_vector.Mag(),mc_wgt);
-        denom_contained++;
-        //uncontained muons                                                                                                                                                                                                                                          
-      } else if(contained_start == true && contained_end == false){
-        h_mom_threshold_num[2]->Fill(backtracker_mom_vector.Mag(),mc_wgt);
-        denom_uncontained++;
-      }
-      //all protons                                                                                                                                                                                                                                                  
-    }else if (std::abs(backtracked_pdg) == 2212){
-      h_mom_threshold_num[3]->Fill(backtracker_mom_vector.Mag(),mc_wgt);
-      //leading proton                                                                                                                                                                                                                                               
-      if(backtracker_mom_vector.Mag() == leading.Mag()){
-        h_mom_threshold_num[4]->Fill(backtracker_mom_vector.Mag(),mc_wgt);
-        //recoil proton                                                                                                                                                                                                                                              
-      } else if (backtracker_mom_vector.Mag() == recoil.Mag()){
-        h_mom_threshold_num[5]->Fill(backtracker_mom_vector.Mag(),mc_wgt);
-      }
-      //pion+                                                                                                                                                                                                                                                        
-    }else if (backtracked_pdg == 211){
-      h_mom_threshold_num[6]->Fill(backtracker_mom_vector.Mag(),mc_wgt);
-      //pion-                                                                                                                                                                                                                                                        
-    }else if (backtracked_pdg == -211){
-      h_mom_threshold_num[7]->Fill(backtracker_mom_vector.Mag(),mc_wgt);
-      //pion0                                                                                                                                                                                                                                                        
-    }else if(backtracked_pdg == 111){
-      h_mom_threshold_num[8]->Fill(backtracker_mom_vector.Mag(),mc_wgt);
-    } //end of else if pion  
-  } //end of num loop
+  } else if(pdg == 13 || pdg == -13){
+    h_track_overlay[0][which_cut][3]->Fill(trk_score_v->at(value),wgt); //fills the muon
+    h_track_overlay[1][which_cut][3]->Fill(trk_distance_v->at(value),wgt);
+    h_track_overlay[2][which_cut][3]->Fill(trk_len_v->at(value),wgt);
+    h_track_overlay[3][which_cut][3]->Fill(trk_llr_pid_score_v->at(value),wgt);  
 
-}//end of Fill_Eff_Thresholds
+  } else if(pdg == 211 || pdg == -211) {
+    h_track_overlay[0][which_cut][4]->Fill(trk_score_v->at(value),wgt); //fills the pionpm
+    h_track_overlay[1][which_cut][4]->Fill(trk_distance_v->at(value),wgt);
+    h_track_overlay[2][which_cut][4]->Fill(trk_len_v->at(value),wgt);
+    h_track_overlay[3][which_cut][4]->Fill(trk_llr_pid_score_v->at(value),wgt);  
 
+  } else if(pdg == 111) {
+    h_track_overlay[0][which_cut][5]->Fill(trk_score_v->at(value),wgt); //fills the pion0
+    h_track_overlay[1][which_cut][5]->Fill(trk_distance_v->at(value),wgt);
+    h_track_overlay[2][which_cut][5]->Fill(trk_len_v->at(value),wgt);
+    h_track_overlay[3][which_cut][5]->Fill(trk_llr_pid_score_v->at(value),wgt);  
 
-void mc_efficiency::Fill_Efficiency_XSec(bool denom, bool contained_start, bool contained_end, TVector3 vMuon,TVector3 vLead, TVector3 vRec,double mc_wgt = 1.0){
+  } else if(pdg == 11 || pdg == -11){
+    h_track_overlay[0][which_cut][6]->Fill(trk_score_v->at(value),wgt); //fills the electron
+    h_track_overlay[1][which_cut][6]->Fill(trk_distance_v->at(value),wgt);
+    h_track_overlay[2][which_cut][6]->Fill(trk_len_v->at(value),wgt);
+    h_track_overlay[3][which_cut][6]->Fill(trk_llr_pid_score_v->at(value),wgt);  
 
-  // Run the Calculate Variables function inside of variables.h. Returns following:                                                                                                                                                                                   
-  // 1) vector: momenta(muon_mom,lead_mom,rec_mom);                                                                                                                                                                                                                     
-  // 2) vector: Energies(KE_muon, TotE_muon, KE_Lead, TotE_Lead, KE_Rec, TotE_Rec);                                                                                                                                                                                     
-  // 3) vector: detector_angles(muon_theta,muon_phi,lead_theta,lead_phi,recoil_theta,recoil_phi);                                                                                                                                                                       
-  // 4) vector: opening_angles(opening_angle_protons_lab,opening_angle_protons_mu_leading,opening_angle_protons_mu_both);  
-  // 5) double: opening_angle_protons_COM                                                                                                      
-  // 6) vector: STVS(delta_pT,delta_alphaT,delta_phiT);                                                                                                                                                                                                                 
-  // 7) double: calculated_nu_E                   
-                                                                                                                                                                                                                   
-  variables.Calculate_Variables(vMuon,vLead,vRec,add_protons);
+  } else if(pdg == 22){
+    h_track_overlay[0][which_cut][7]->Fill(trk_score_v->at(value),wgt); //fills the gamma
+    h_track_overlay[1][which_cut][7]->Fill(trk_distance_v->at(value),wgt);
+    h_track_overlay[2][which_cut][7]->Fill(trk_len_v->at(value),wgt);
+    h_track_overlay[3][which_cut][7]->Fill(trk_llr_pid_score_v->at(value),wgt);  
 
-  //muon                                                                                                                                                                                                                                                             
-  double muon_mom = variables.momenta[0];
-  double muon_theta = variables.detector_angles[0]; //cosine applied                                                                                                                                                                                                 
-  double muon_phi = variables.detector_angles[1];
-  double EMuon = variables.Energies[0]; //KE                                                                                                                                                                                                                           
-  //lead proton                                                                                                                                                                                                                                                      
-  double lead_mom = variables.momenta[1];
-  double lead_theta = variables.detector_angles[2]; //cosine applied                                                                                                                                                                                                 
-  double lead_phi = variables.detector_angles[3];
-  double ELead = variables.Energies[2]; //KE                                                                                                                                                                                                                           
-  //recoil proton                                                                                                                                                                                                                                                    
-  double recoil_mom = variables.momenta[2];
-  double recoil_theta = variables.detector_angles[4]; //cosine applied                                                                                                                                                                                               
-  double recoil_phi =  variables.detector_angles[5];
-  double ERec = variables.Energies[4]; //KE                                                                                                                                                                                                                            
-  //opening angles                                                                                                                                                                                                                                                   
-  double opening_angle_protons_lab = variables.opening_angles[0]; //cosine applied                                                                                                                                                                                   
-  double opening_angle_protons_COM = variables.opening_angle_protons_COM; //cosine applied                                                                                                                                                                           
-  double opening_angle_protons_mu_leading = variables.opening_angles[1]; //cosine applied                                                                                                                                                                           
-  double opening_angle_protons_mu_both = variables.opening_angles[2]; //cosine applied                                                                                                                                                                                 
-  //stvs                                                                                                                                                                                                                                                             
-  double delta_PT = variables.stvs[0];
-  double delta_alphaT = variables.stvs[1]; //degrees                                                                                                                                                                                                                 
-  double delta_phiT = variables.stvs[2]; //degrees                             
-  double pn = variables.stvs[3];
+  } else if(pdg == 321 || pdg == -321 || pdg == 311){
+    h_track_overlay[0][which_cut][8]->Fill(trk_score_v->at(value),wgt); //fills the kaon
+    h_track_overlay[1][which_cut][8]->Fill(trk_distance_v->at(value),wgt);
+    h_track_overlay[2][which_cut][8]->Fill(trk_len_v->at(value),wgt);
+    h_track_overlay[3][which_cut][8]->Fill(trk_llr_pid_score_v->at(value),wgt);  
 
-  //neutrino energy
-  double Eneutrino = nu_e;//variables.calculated_nu_E;                                                                                                                                                                        
-
-if(denom == true){
-  
-  //All Muons
-  h_particle_denom[0][0]->Fill(muon_mom,mc_wgt); //momentum       
-  h_particle_denom[0][1]->Fill(muon_theta,mc_wgt); //muon costheta
-  h_particle_denom[0][2]->Fill(muon_phi,mc_wgt); //muon phi
-    
-  //contained muons
-  if(contained_start == true && contained_end == true){
-    h_particle_denom[1][0]->Fill(muon_mom,mc_wgt); //momentum 
-    h_particle_denom[1][1]->Fill(muon_theta,mc_wgt); //muon costheta                 
-    h_particle_denom[1][2]->Fill(muon_phi,mc_wgt); //muon phi  
-      
-    //uncontained muons
-  } else if(contained_start == true && contained_end == false){
-    h_particle_denom[2][0]->Fill(muon_mom,mc_wgt); //momentum 
-    h_particle_denom[2][1]->Fill(muon_theta,mc_wgt); //muon costheta                 
-    h_particle_denom[2][2]->Fill(muon_phi,mc_wgt); //muon phi
-  } 
-
-  //leading proton
-  h_particle_denom[3][0]->Fill(lead_mom,mc_wgt); //momentum 
-  h_particle_denom[3][1]->Fill(lead_theta,mc_wgt); //proton costheta                                      
-  h_particle_denom[3][2]->Fill(lead_phi,mc_wgt); //proton phi 
-
-  //recoil proton
-  h_particle_denom[4][0]->Fill(recoil_mom,mc_wgt); //momentum 
-  h_particle_denom[4][1]->Fill(recoil_theta,mc_wgt); //proton costheta                                     
-  h_particle_denom[4][2]->Fill(recoil_phi,mc_wgt); //proton phi 
-
-  //Other physics variables
-  h_other_eff_denom[0]->Fill(opening_angle_protons_lab,mc_wgt); //opening angle protons lab                                                                                                                                                                  
-  h_other_eff_denom[1]->Fill(opening_angle_protons_COM,mc_wgt); //opening angle protons com                                                                                                                                                                 
-  h_other_eff_denom[2]->Fill(opening_angle_protons_mu_leading,mc_wgt); //opening angle mu leading                                                                                                                                                                   
-  h_other_eff_denom[3]->Fill(opening_angle_protons_mu_both,mc_wgt); //opening angle mu both                                                                                                                                                                         
-  h_other_eff_denom[4]->Fill(delta_PT,mc_wgt); //delta pt                                                                                                                                                                                                          
-  h_other_eff_denom[5]->Fill(delta_alphaT,mc_wgt); //delta alphat                                                                                                                                                                                         
-  h_other_eff_denom[6]->Fill(delta_phiT,mc_wgt); //delta phit                                                                                                                                                                                            
-  h_other_eff_denom[7]->Fill(pn,mc_wgt); //neutron energy estimate  
-  h_other_eff_denom[8]->Fill(Eneutrino,mc_wgt); //neutrino energy 
-
-  } else if (denom == false){
-
-  //All Muons                                                                                                                                                                                                                                                        
-  h_particle_num[0][0]->Fill(muon_mom,mc_wgt); //momentum                                                                                                                                                                                                          
-  h_particle_num[0][1]->Fill(muon_theta,mc_wgt); //muon costheta                                                                                                                                                                                                   
-  h_particle_num[0][2]->Fill(muon_phi,mc_wgt); //muon phi                                                                                                                                                                                                          
-  
-  //contained muons                                                                                                                                                                                                                                                  
-  if(contained_start == true && contained_end == true){
-    h_particle_num[1][0]->Fill(muon_mom,mc_wgt); //momentum                                                                                                                                                                                                        
-    h_particle_num[1][1]->Fill(muon_theta,mc_wgt); //muon costheta                                                                                                                                                                                                 
-    h_particle_num[1][2]->Fill(muon_phi,mc_wgt); //muon phi                                                                                                                                                                                                        
-    
-    //uncontained muons                                                                                                                                                                                                                                              
-  } else if(contained_start == true && contained_end == false){
-    h_particle_num[2][0]->Fill(muon_mom,mc_wgt); //momentum                                                                                                                                                                                                      
-    h_particle_num[2][1]->Fill(muon_theta,mc_wgt); //muon costheta                                                                                                                                                                                               
-    h_particle_num[2][2]->Fill(muon_phi,mc_wgt); //muon phi                                                                                                                                                                                                      
+  } else {
+    if(_debug) std::cout<<"[FILL_TRACK_PLOTS] Here is the Value of the PDG in the Else Loop: "<<pdg<<std::endl;
+    other_else++;
+    if(pdg == 2112){
+      neutron++;
+    }
+    if( pdg == 14 || pdg == -14){
+      neutrino++;
+    }
+    if(pdg == 0){
+      zeros++;
+    }
+    h_track_overlay[0][which_cut][9]->Fill(trk_score_v->at(value),wgt); //fills the else
+    h_track_overlay[1][which_cut][9]->Fill(trk_distance_v->at(value),wgt);
+    h_track_overlay[2][which_cut][9]->Fill(trk_len_v->at(value),wgt);
+    h_track_overlay[3][which_cut][9]->Fill(trk_llr_pid_score_v->at(value),wgt);  
   }
+}
 
-  //leading proton                                                                                                                                                                                                                                                   
-  h_particle_num[3][0]->Fill(lead_mom,mc_wgt); //momentum                                                                                                                                                                                                          
-  h_particle_num[3][1]->Fill(lead_theta,mc_wgt); //proton costheta                                                                                                                                                                                                 
-  h_particle_num[3][2]->Fill(lead_phi,mc_wgt); //proton phi                                                                                                                                                                                                        
+void twoproton_nuwro_overlay::Fill_Mine(int i, int j, double wgt){
+  //index i indicates at which point the histograms are being filled 
+  //index j represents what channel we are filling                                                                
+  h_vtx_x_overlay[i][j]->Fill(reco_nu_vtx_sce_x,wgt);
+  h_vtx_y_overlay[i][j]->Fill(reco_nu_vtx_sce_y,wgt);
+  h_vtx_z_overlay[i][j]->Fill(reco_nu_vtx_sce_z,wgt);
 
-  //recoil proton                             
-  h_particle_num[4][0]->Fill(recoil_mom,mc_wgt); //momentum                                                                                                                                                                                                        
-  h_particle_num[4][1]->Fill(recoil_theta,mc_wgt); //proton costheta                                                                                                                                                                                               
-  h_particle_num[4][2]->Fill(recoil_phi,mc_wgt); //proton phi                                                                                                                                                                                                      
+  h_vtx_x_mc[i][j]->Fill(true_nu_vtx_x,wgt);
+  h_vtx_y_mc[i][j]->Fill(true_nu_vtx_y,wgt);
+  h_vtx_z_mc[i][j]->Fill(true_nu_vtx_z,wgt);
 
-  //Other physics variables                                                                                                                                                                                                                                          
-  h_other_eff_num[0]->Fill(opening_angle_protons_lab,mc_wgt); //opening angle protons lab                                                                                                                                                                          
-  h_other_eff_num[1]->Fill(opening_angle_protons_COM,mc_wgt); //opening angle protons com                                                                                                                                                                          
-  h_other_eff_num[2]->Fill(opening_angle_protons_mu_leading,mc_wgt); //opening angle mu leading                                                                                                                                                                   
-  h_other_eff_num[3]->Fill(opening_angle_protons_mu_both,mc_wgt); //opening angle mu both                                                                                                                                                                         
-  h_other_eff_num[4]->Fill(delta_PT,mc_wgt); //delta pt                                                                                                                                                                                                            
-  h_other_eff_num[5]->Fill(delta_alphaT,mc_wgt); //delta alphat                                                                                                                                                                                                    
-  h_other_eff_num[6]->Fill(delta_phiT,mc_wgt); //delta phit                                                                                                                                                                                                        
-  h_other_eff_num[7]->Fill(pn,mc_wgt); //neutron momentum estimate
-  h_other_eff_num[8]->Fill(Eneutrino,mc_wgt); //neutrino energy  
+  h_vtx_x_mc_sce[i][j]->Fill(true_nu_vtx_sce_x,wgt);
+  h_vtx_y_mc_sce[i][j]->Fill(true_nu_vtx_sce_y,wgt);
+  h_vtx_z_mc_sce[i][j]->Fill(true_nu_vtx_sce_z,wgt);
 
-  } //end of num loop
+  h_topological_score_overlay[i][j]->Fill(topological_score,wgt); //remember to add POT weight
+  h_cosmic_impact_parameter_overlay[i][j]->Fill(CosmicIP,wgt); //remember to add POT weight
+  //h_q2[i][j]->Fill(mc_q2,wgt);
+  //h_X[i][j]->Fill(mc_X,wgt);
+  //h_Y[i][j]->Fill(mc_Y,wgt);
+  //h_Pt[i][j]->Fill(mc_Pt,wgt);
+ }
 
- variables.momenta.clear();                                                                                                                                                                                                                                           
- variables.detector_angles.clear();                                                                                                                                                                                                                                   
- variables.opening_angles.clear();                                                                                                                                                                                                                                    
- variables.stvs.clear();                                                                                                                                                                                                                                              
- variables.Energies.clear();  
+void twoproton_nuwro_overlay::Fill_Raquel(int i, int j, double wgt){
+  //index i indicates at which point the histograms are being filled                                                 
+  //index j represents what channel we are filling          
+  h_vtx_x_raquel[i][j]->Fill(reco_nu_vtx_sce_x,wgt);
+  h_vtx_y_raquel[i][j]->Fill(reco_nu_vtx_sce_y,wgt);
+  h_vtx_z_raquel[i][j]->Fill(reco_nu_vtx_sce_z,wgt);
+
+  h_vtx_x_mc_raquel[i][j]->Fill(true_nu_vtx_x,wgt);
+  h_vtx_y_mc_raquel[i][j]->Fill(true_nu_vtx_y,wgt);
+  h_vtx_z_mc_raquel[i][j]->Fill(true_nu_vtx_z,wgt);
+
+  h_vtx_x_mc_sce_raquel[i][j]->Fill(true_nu_vtx_sce_x,wgt);
+  h_vtx_y_mc_sce_raquel[i][j]->Fill(true_nu_vtx_sce_y,wgt);
+  h_vtx_z_mc_sce_raquel[i][j]->Fill(true_nu_vtx_sce_z,wgt);
+
+  h_topological_score_raquel[i][j]->Fill(topological_score,wgt); //remember to add POT weight
+  h_cosmic_impact_parameter_raquel[i][j]->Fill(CosmicIP,wgt); //remember to add POT weight
+  //h_q2_raquel[i][j]->Fill(mc_q2,wgt);
+  ///h_X_raquel[i][j]->Fill(mc_X,wgt);
+  //h_Y_raquel[i][j]->Fill(mc_Y,wgt);
+  //h_Pt_raquel[i][j]->Fill(mc_Pt,wgt);
+ }
+
+
+void twoproton_nuwro_overlay::Fill_Histograms_Mine(int i, double wgt, int mc_n_threshold_muon, int mc_n_threshold_proton, int mc_n_threshold_pion0, int mc_n_threshold_pionpm, bool fv){
+  Fill_Mine(i,0,wgt);
+  //cc0p0pi                                                                                                                                  
+  if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton == 0 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
+    Fill_Mine(i,1,wgt);
+    cc0p0pi[i]++;
+    //cc1p0pi                                                                                                                                  
+  } else if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton == 1 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
+    Fill_Mine(i,2,wgt);
+    cc1p0pi[i]++;
+    //cc2p0pi                                                                                                           
+  } else if (ccnc == 0 && nu_pdg == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton == 2 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
+    Fill_Mine(i,3,wgt);
+    cc2p0pi[i]++;
+    //ccNp0pi                                                                                                                                  
+  } else if (ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton > 2 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
+    Fill_Mine(i,4,wgt);
+    ccNp0pi[i]++;
+    //ccNp1pi                                                                                                                                   
+  } else if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton >= 0 && (mc_n_threshold_pion0 == 1 || mc_n_threshold_pionpm == 1) && fv == true){
+    Fill_Mine(i,5,wgt);
+    ccNp1pi[i]++;
+    //ccNpNpi                                                                                                                                   
+  } else if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton >= 0 && (mc_n_threshold_pion0 > 1 || mc_n_threshold_pionpm > 1) && fv == true){
+    Fill_Mine(i,6,wgt);
+    ccNpNpi[i]++;
+    //CC NUE                                                                                                                                   
+  } else if(ccnc == 0 && abs(nu_pdg) == 12 && fv == true){
+    Fill_Mine(i,7,wgt);
+    ccnue[i]++;
+  //OUT OF FV                                                                                                                                
+  } else if(fv == false){                                                                                                                  
+    Fill_Mine(i,8,wgt);
+    outfv[i]++;
+    //NC                                                                                                                                       
+  } else if(ccnc == 1 && fv == true){
+    Fill_Mine(i,9,wgt);
+    nc[i]++;
+    //else                                                                                                                                     
+  } else{
+    Fill_Mine(i,10,wgt);
+    other[i]++;
+  }
+}
+
+void twoproton_nuwro_overlay::Fill_Histograms_Raquel(int i, double wgt, bool fv){
+  Fill_Raquel(i,0, wgt);
+  //CCQE
+  if(ccnc == 0 && interaction == 0 && abs(nu_pdg) == 14 && fv==true){
+    Fill_Raquel(i,1, wgt);
+    qel[i]++;
+    //CCCoh                                                                                                                                                                                             
+  } else if(ccnc == 0 && interaction == 3 && abs(nu_pdg) == 14 && fv == true){
+    Fill_Raquel(i,2, wgt);
+    coh[i]++;
+    //CCMEC                                                                                                                                                                                             
+  } else if(ccnc == 0 && interaction == 10 && abs(nu_pdg) == 14 && fv==true){
+    Fill_Raquel(i,3, wgt);
+    mec[i]++;
+
+    //checking the mec weight
+    if(std::isfinite(weightTune) && weightTune <= 100.) {
+      mec_wgt = weightSplineTimesTune;
+    } else {
+      mec_wgt = 1 * weightSpline;
+    }
+    h_mec_wgt[i]->Fill(mec_wgt,1);
+
+    //CCRES                                                                                                                                                                                             
+  } else if(ccnc == 0 && interaction == 1 && abs(nu_pdg) == 14 && fv==true){
+    //if(mc_n_threshold_muon == 1 && mc_n_threshold_proton == 2){
+    //  res_count[0]++;
+    //}else if (mc_n_threshold_muon == 1 && mc_n_threshold_proton == 1 && (mc_n_threshold_pion0 == 1 || mc_n_threshold_pionpm == 1)){
+    //  res_count[1]++;
+    //}else if(mc_n_threshold_muon == 1 && mc_n_threshold_proton > 2){
+    //  res_count[2]++;
+    //}else{
+    //  res_count[3]++;
+    //}
+    Fill_Raquel(i,4,wgt);
+    res[i]++;
+    //CCDIS                                                                                                                                                                                             
+  } else if(ccnc == 0 && interaction == 2 && abs(nu_pdg) == 14 && fv==true){
+  Fill_Raquel(i,5,wgt);
+    dis[i]++;
+    //CCNue                                                                                                                                                                                             
+  } else if(ccnc == 0  && abs(nu_pdg) == 12 && fv ==true){
+  Fill_Raquel(i,6, wgt);
+    ccnue_raquel[i]++;
+    //NC                                                                                                                                                                                                
+  } else if(ccnc == 1 && fv == true){
+    Fill_Raquel(i,7, wgt);
+    nc_raquel[i]++;
+    //OUT OF FV                                                                                                                                                                                          
+  } else if(fv == false){
+    Fill_Raquel(i,8, wgt);
+    outfv_raquel[i]++;
+    //Other                                                                                                                                                                                             
+  }else{
+    Fill_Raquel(i,9, wgt);
+    other_raquel[i]++;
+  } 
+}
+
+void twoproton_nuwro_overlay::Fill_Histograms_Particles(int mc_n_threshold_muon, int mc_n_threshold_proton, int mc_n_threshold_pion0, double mc_n_threshold_pionpm, bool fv,TVector3 vMuon, TLorentzVector muon, TVector3 vLead, TLorentzVector lead, TVector3 vRec, TLorentzVector rec, double wgt){
+  Fill_Particles(0,vMuon,muon,vLead,lead,vRec,rec,wgt);
+
+  //cc0p0pi                                                                                                                               
+  if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton == 0 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
+    Fill_Particles(1, vMuon,muon,vLead,lead,vRec,rec,wgt);
+    cc0p0pi[number]++;
+
+    //cc1p0pi                                                                                                                            
+  } else if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton == 1 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
+    Fill_Particles(2, vMuon,muon,vLead,lead,vRec,rec,wgt);
+    cc1p0pi[number]++;
+
+    //cc2p0pi                                                                                   
+  } else if (ccnc == 0 && nu_pdg == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton == 2 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
+    Fill_Particles(3, vMuon,muon,vLead,lead,vRec,rec,wgt);
+    cc2p0pi[number]++;
+    //ccNp0pi                                                                                                                            
+  } else if (ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton > 2 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
+    Fill_Particles(4, vMuon,muon,vLead,lead,vRec,rec,wgt);
+    ccNp0pi[number]++;
+    //ccNp1pi                                                                                                                            
+  } else if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton >= 0 && (mc_n_threshold_pion0 == 1 || mc_n_threshold_pionpm == 1) && fv == true){
+    Fill_Particles(5, vMuon,muon,vLead,lead,vRec,rec,wgt);
+    ccNp1pi[number]++;
+    //ccNpNpi                                                                                                                            
+  } else if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton >= 0 && (mc_n_threshold_pion0 > 1 || mc_n_threshold_pionpm > 1) && fv == true){
+    Fill_Particles(6, vMuon,muon,vLead,lead,vRec,rec,wgt);
+    ccNpNpi[number]++;
+    //CC NUE                                                                                                                             
+  } else if(ccnc == 0 && abs(nu_pdg) == 12 && fv == true){
+    Fill_Particles(7, vMuon,muon,vLead,lead,vRec,rec,wgt);
+    ccnue[number]++;
+    //OUT OF FV                                                                                                                            
+  } else if(fv == false){                                                                                                                     
+    Fill_Particles(8, vMuon,muon,vLead,lead,vRec,rec,wgt);
+    outfv[number]++;
+    //NC                                                                                                                                 
+  } else if(ccnc == 1 && fv == true){
+    Fill_Particles(9, vMuon,muon,vLead,lead,vRec,rec,wgt);
+    nc[number]++;    
+    //else                                                                                                                               
+  } else{
+    Fill_Particles(10, vMuon,muon,vLead,lead,vRec,rec,wgt);
+    other[number]++;
+  }
 
 }
 
-void mc_efficiency::Fill_Matrices(TVector3 vMuon, TVector3 muon,TVector3 vLead, TVector3 lead,TVector3 vRec, TVector3 rec, bool contained_start, bool true_contained_start,bool contained_end, bool true_contained_end,double mc_wgt){
+void twoproton_nuwro_overlay::Fill_Histograms_Particles_Raquel(TVector3 vMuon, TLorentzVector muon, TVector3 vLead, TLorentzVector lead, TVector3 vRec, TLorentzVector rec, double wgt, bool fv){
+  Fill_Particles_Raquel(0, vMuon,muon,vLead,lead,vRec,rec,wgt);
 
-  //Going to use Calculate Variables function inside of variables.h. Returns Following
-  // 1) vector: momenta(muon_mom,lead_mom,rec_mom);
-  // 2) vector: Energies(KE_muon, TotE_muon, KE_Lead, TotE_Lead, KE_Rec, TotE_Rec);    
+  //CCQE
+  if(ccnc == 0 && interaction == 0 && fv==true){
+    Fill_Particles_Raquel(1, vMuon,muon,vLead,lead,vRec,rec,wgt);
+    qel[number]++;
+
+    //CCCoh                                                                                                                                                                                             
+  } else if(ccnc == 0 && interaction == 3 && fv == true){
+    Fill_Particles_Raquel(2, vMuon,muon,vLead,lead,vRec,rec,wgt);
+    coh[number]++;
+
+    //CCMEC                                                                                                                                                                                             
+  } else if(ccnc == 0 && interaction == 10 && fv==true){
+    Fill_Particles_Raquel(3, vMuon,muon,vLead,lead,vRec,rec,wgt);
+    mec[number]++;
+
+    //CCRES                                                                                                                                                                                             
+  } else if(ccnc == 0 && interaction == 1 && fv==true){
+    Fill_Particles_Raquel(4, vMuon,muon,vLead,lead,vRec,rec,wgt);
+    res[number]++;
+
+    //CCDIS                                                                                                                                                                                             
+  } else if(ccnc == 0 && interaction == 2 && fv==true){
+    Fill_Particles_Raquel(5, vMuon,muon,vLead,lead,vRec,rec,wgt);
+    dis[number]++;
+
+    //CCNue                                                                                                                                                                                             
+  } else if(ccnc == 0 && abs(nu_pdg) == 12 && fv ==true){
+    Fill_Particles_Raquel(6, vMuon,muon,vLead,lead,vRec,rec,wgt);
+    ccnue_raquel[number]++;
+
+    //NC                                                                                                                                                                                                
+  } else if(ccnc == 1 && fv == true){
+    Fill_Particles_Raquel(7, vMuon,muon,vLead,lead,vRec,rec,wgt);
+    nc_raquel[number]++;
+
+    //OUT OF FV                                                                                                                                                                                          
+  } else if(fv == false){
+    Fill_Particles_Raquel(8, vMuon,muon,vLead,lead,vRec,rec,wgt);
+    outfv_raquel[number]++;
+
+    //Other                                                                                                                                                                                             
+  }else{
+    Fill_Particles_Raquel(9, vMuon,muon,vLead,lead,vRec,rec,wgt);
+    other_raquel[number]++;
+  } 
+} //end of fill particles raquel
+
+
+void twoproton_nuwro_overlay::Fill_Particles(int j, TVector3 vMuon, TLorentzVector muon, TVector3 vLead, TLorentzVector lead, TVector3 vRec, TLorentzVector rec, double wgt){
+
+  //Going to use Calculate Variables function inside of variables.h. Returns Following 
+  // 1) vector: momenta(muon_mom,lead_mom,rec_mom);                                  
+  // 2) vector: Energies(KE_muon, TotE_muon, KE_Lead, TotE_Lead, KE_Rec, TotE_Rec);
   // 3) vector: detector_angles(muon_theta,muon_phi,lead_theta,lead_phi,recoil_theta,recoil_phi);
-  // 4) vector: opening_angles(opening_angle_protons_lab,opening_angle_protons_mu_leading,opening_angle_protons_mu_both);   // 5) double: opening_angle_protons_COM 
-  // 6) vector: STVS(delta_pT,delta_alphaT,delta_phiT); 
-  // 7) double: calculated_nu_E
-
-  //Define all the reconstructed quantities
-  ////////////////////////////////////////
+  // 4) vector: opening_angles(opening_angle_protons_lab,opening_angle_protons_mu_leading,opening_angle_protons_mu_both);  
+  // 5) double: opening_angle_protons_COM 
+  // 6) vector: STVS(delta_pT,delta_alphaT,delta_phiT);  
+  // 7) double: calculated_nu_E                                                                                                                                                                                                                      
+  
   variables.Calculate_Variables(vMuon,vLead,vRec,add_protons);
-  double reco_muon_mom = variables.momenta[0];
-  double reco_muon_theta = variables.detector_angles[0];
-  double reco_muon_phi = variables.detector_angles[1];
-  double reco_lead_mom = variables.momenta[1];
-  double reco_lead_theta = variables.detector_angles[2];
-  double reco_lead_phi = variables.detector_angles[3];
-  double reco_recoil_mom = variables.momenta[2];
-  double reco_recoil_theta = variables.detector_angles[4];
-  double reco_recoil_phi =  variables.detector_angles[5];
-  double reco_opening_angle_protons_lab = variables.opening_angles[0]; 
-  double reco_opening_angle_protons_COM = variables.opening_angle_protons_COM;
-  double reco_opening_angle_protons_mu_leading = variables.opening_angles[1];
-  double reco_opening_angle_protons_mu_both = variables.opening_angles[2];
-  double reco_delta_PT = variables.stvs[0];
-  double reco_delta_alphaT = variables.stvs[1];
-  double reco_delta_phiT = variables.stvs[2];
-  double reco_pn = variables.stvs[3];
-  double reco_EMuon = variables.Energies[0];
-  double reco_ELead = variables.Energies[2];
-  double reco_ERec = variables.Energies[4];
-  TVector3 reco_PT_miss(vMuon[0]+vLead[0]+vRec[0],vMuon[1]+vRec[1]+vLead[1],0);
-  double reco_nu_E = variables.calculated_nu_E;
+
+  double muon_mom = variables.momenta[0];
+  double lead_mom = variables.momenta[1];
+  double recoil_mom = variables.momenta[2];
+
+  h_muon_overlay[0][j]->Fill(variables.momenta[0],wgt); //muon mom
+  h_muon_overlay[1][j]->Fill(variables.Energies[0],wgt); //muon energy
+  h_muon_overlay[2][j]->Fill(variables.detector_angles[0],wgt); //muon theta
+  h_muon_overlay[3][j]->Fill(variables.detector_angles[1],wgt); //muon phi
+
+  h_leading_overlay[0][j]->Fill(variables.momenta[1],wgt); //leading momentum
+  h_leading_overlay[1][j]->Fill(variables.Energies[2],wgt); //leading energy
+  h_leading_overlay[2][j]->Fill(variables.detector_angles[2],wgt); //leading theta
+  h_leading_overlay[3][j]->Fill(variables.detector_angles[3],wgt); //leading phi
+
+  h_recoil_overlay[0][j]->Fill(variables.momenta[2],wgt); //recoil momentum
+  h_recoil_overlay[1][j]->Fill(variables.Energies[4],wgt); //recoil energy
+  h_recoil_overlay[2][j]->Fill(variables.detector_angles[4],wgt); //recoil theta
+  h_recoil_overlay[3][j]->Fill(variables.detector_angles[5],wgt); //recoil phi
+
+  //Beam Stuff
+  double EMuon =variables.Energies[0];
+  double ELead = variables.Energies[2];
+  double ERec = variables.Energies[4];
+  double E_tot = (EMuon + MASS_MUON) + ELead + ERec;
+  TVector3 PT_miss(vMuon[0]+vLead[0]+vRec[0],vMuon[1]+vRec[1]+vLead[1],0);
+  double Eneutrino = variables.calculated_nu_E;//(EMuon+MASS_MUON) + ELead + ERec +((PT_miss.Mag2())/(2*35.37)) + 0.0304;
+  TVector3 vBeam(0.,0.,Eneutrino); // z-direction is defined along the neutrino direction                               
+  TVector3 vq = vBeam - vMuon; // Momentum transfer                                                                     
+  TVector3 vmiss = vLead - vq; // Missing momentum         
+  double E_tot_minus_beam = (E_tot - Eneutrino) * 1000;
+
+  if(_debug) std::cout<<"[FILL_PARTICLES] Value of PT_miss magnitude: "<<PT_miss.Mag()<<std::endl;
+  if(_debug) std::cout<<"[FILL_PARTICLES] Value of PT_miss magnitude2: "<<PT_miss.Mag2()<<std::endl;
+  if(_debug) std::cout<<"[FILL_PARTICLES] Value of PT_miss magnitude2 divided by 2*35.37: "<<(PT_miss.Mag2())/(2.0*35.37)<<std::endl;
+  if(_debug) std::cout<<"[FILL_PARTICLES] Value of Eneutrino: "<<Eneutrino<<std::endl;
+  if(_debug) std::cout<<"[FILL_PARTICLES] Value of E_tot_minus_beam: "<<E_tot_minus_beam<<std::endl;
+
+  //Struck nucleon Momentum:                                                                                            
+  TVector3 vector_sum(vMuon[0] + vLead[0] + vRec[0], vMuon[1] + vLead[1] + vRec[1], vMuon[2] + vLead[2] + vRec[2]);
+  TVector3 p_struck_nuc_vector(vector_sum[0], vector_sum[1], 0);
+  double p_struck_nuc = p_struck_nuc_vector.Mag();
+  double pz_tot = vLead[2] + vRec[2];
+
+  //Energy of Struck Nucleon:
+  double En = std::sqrt(std::pow(MASS_NEUTRON,2) + vmiss.Mag2()); //energy of struck nucleon 
+
+  h_opening_angle_protons_lab_overlay[j]->Fill(variables.opening_angles[0],wgt);
+  h_opening_angle_protons_com_overlay[j]->Fill(variables.opening_angle_protons_COM,wgt);  
+  h_opening_angle_mu_leading_overlay[j]->Fill(variables.opening_angles[1],wgt);
+  h_opening_angle_mu_both_overlay[j]->Fill(variables.opening_angles[2],wgt);
+  h_delta_PT_overlay[j]->Fill(variables.stvs[0],wgt);
+  h_delta_alphaT_overlay[j]->Fill(variables.stvs[1],wgt);
+  h_delta_phiT_overlay[j]->Fill(variables.stvs[2],wgt);
+  h_pn_overlay[j]->Fill(variables.stvs[3],wgt);
+  h_nu_E_overlay[j]->Fill(Eneutrino,wgt);  
+  h_mom_struck_nuc_overlay[j]->Fill(p_struck_nuc,wgt);
+  h_tot_pz_overlay[j]->Fill(pz_tot,wgt);
+  h_tot_E_overlay[j]->Fill(E_tot,wgt);
+  h_tot_E_minus_beam_overlay[j]->Fill(E_tot_minus_beam,wgt);
+  h_E_resolution_overlay[j]->Fill(Eneutrino - double(nu_e) ,wgt);
+  h_PT_squared_overlay[j]->Fill(PT_miss.Mag2(),wgt);
+  
+  variables.momenta.clear();
+  variables.detector_angles.clear();
+  variables.opening_angles.clear();
+  variables.stvs.clear();
+  variables.Energies.clear();
+
+}
+
+void twoproton_nuwro_overlay::Fill_Particles_Raquel(int j, TVector3 vMuon, TLorentzVector muon, TVector3 vLead, TLorentzVector lead, TVector3 vRec, TLorentzVector rec, double wgt){
+
+  //Going to use Calculate Variables function inside of variables.h. Returns Following 
+  // 1) vector: momenta(muon_mom,lead_mom,rec_mom); 
+  // 2) vector: Energies(KE_muon, TotE_muon, KE_Lead, TotE_Lead, KE_Rec, TotE_Rec);
+  // 3) vector: detector_angles(muon_theta,muon_phi,lead_theta,lead_phi,recoil_theta,recoil_phi); 
+  // 4) vector: opening_angles(opening_angle_protons_lab,opening_angle_protons_mu_leading,opening_angle_protons_mu_both);   
+  // 5) double: opening_angle_protons_COM  
+  // 6) vector: STVS(delta_pT,delta_alphaT,delta_phiT); 
+  // 7) double: calculated_nu_E                                                                                                                                                                                                                      
+  
+  variables.Calculate_Variables(vMuon,vLead,vRec,add_protons);
+  
+  h_muon_raquel[0][j]->Fill(variables.momenta[0],wgt);
+  h_leading_raquel[0][j]->Fill(variables.momenta[1],wgt);
+  h_recoil_raquel[0][j]->Fill(variables.momenta[2],wgt);
+  
+  h_muon_raquel[1][j]->Fill(variables.Energies[0],wgt);
+  h_leading_raquel[1][j]->Fill(variables.Energies[2],wgt);
+  h_recoil_raquel[1][j]->Fill(variables.Energies[4],wgt);
+
+  h_muon_raquel[2][j]->Fill(variables.detector_angles[0],wgt);
+  h_leading_raquel[2][j]->Fill(variables.detector_angles[2],wgt);
+  h_recoil_raquel[2][j]->Fill(variables.detector_angles[4],wgt);
+
+  h_muon_raquel[3][j]->Fill(variables.detector_angles[1],wgt);
+  h_leading_raquel[3][j]->Fill(variables.detector_angles[3],wgt);
+  h_recoil_raquel[3][j]->Fill(variables.detector_angles[5],wgt);
+  
+  //Beam Stuff
+  double EMuon =variables.Energies[0];
+  double ELead = variables.Energies[2];
+  double ERec = variables.Energies[4];
+  double E_tot = (EMuon + MASS_MUON) + ELead + ERec;
+  TVector3 PT_miss(vMuon[0]+vLead[0]+vRec[0],vMuon[1]+vRec[1]+vLead[1],0);
+  double Eneutrino = variables.calculated_nu_E;//(EMuon+MASS_MUON) + ELead + ERec +((PT_miss.Mag2())/(2*35.37)) + 0.0304;
+  TVector3 vBeam(0.,0.,Eneutrino); // z-direction is defined along the neutrino direction                               
+  TVector3 vq = vBeam - vMuon; // Momentum transfer                                                                     
+  TVector3 vmiss = vLead - vq; // Missing momentum         
+  double E_tot_minus_beam = (E_tot - Eneutrino) * 1000;
+
+  if(_debug) std::cout<<"[FILL_PARTICLES_RAQUEL] Value of PT_miss magnitude: "<<PT_miss.Mag()<<std::endl;
+  if(_debug) std::cout<<"[FILL_PARTICLES_RAQUEL] Value of PT_miss magnitude2: "<<PT_miss.Mag2()<<std::endl;
+  if(_debug) std::cout<<"[FILL_PARTICLES_RAQUEL] Value of PT_miss magnitude2 divided by 2*35.37: "<<(PT_miss.Mag2())/(2.0*35.37)<<std::endl;
+  if(_debug) std::cout<<"[FILL_PARTICLES_RAQUEL] Value of Eneutrino: "<<Eneutrino<<std::endl;
+  if(_debug) std::cout<<"[FILL_PARTICLES_RAQUEL] Value of E_tot_minus_beam: "<<E_tot_minus_beam<<std::endl;
+
+  //Struck nucleon Momentum:                                                                                            
+  TVector3 vector_sum(vMuon[0] + vLead[0] + vRec[0], vMuon[1] + vLead[1] + vRec[1], vMuon[2] + vLead[2] + vRec[2]);
+  TVector3 p_struck_nuc_vector(vector_sum[0], vector_sum[1], 0);
+  double p_struck_nuc = p_struck_nuc_vector.Mag();
+  double pz_tot = vLead[2] + vRec[2];
+
+  //Energy of Struck Nucleon:
+  double En = std::sqrt(std::pow(MASS_NEUTRON,2) + vmiss.Mag2()); //energy of struck nucleon 
+
+  h_opening_angle_protons_lab_raquel[j]->Fill(variables.opening_angles[0],wgt);
+  h_opening_angle_protons_com_raquel[j]->Fill(variables.opening_angle_protons_COM,wgt);  
+  h_opening_angle_mu_leading_raquel[j]->Fill(variables.opening_angles[1],wgt);
+  h_opening_angle_mu_both_raquel[j]->Fill(variables.opening_angles[2],wgt);
+  h_delta_PT_raquel[j]->Fill(variables.stvs[0],wgt);
+  h_delta_alphaT_raquel[j]->Fill(variables.stvs[1],wgt);
+  h_delta_phiT_raquel[j]->Fill(variables.stvs[2],wgt);
+  h_pn_raquel[j]->Fill(variables.stvs[3],wgt);
+  h_nu_E_raquel[j]->Fill(Eneutrino,wgt);
+  h_mom_struck_nuc_raquel[j]->Fill(p_struck_nuc,wgt);
+  h_tot_pz_raquel[j]->Fill(pz_tot,wgt);
+  h_tot_E_raquel[j]->Fill(E_tot,wgt);
+  h_tot_E_minus_beam_raquel[j]->Fill(E_tot_minus_beam,wgt);
+  h_E_resolution_raquel[j]->Fill(Eneutrino - double(nu_e) ,wgt);
+  h_PT_squared_raquel[j]->Fill(PT_miss.Mag2(),wgt);
 
   variables.momenta.clear();
   variables.detector_angles.clear();
@@ -2063,87 +2565,9 @@ void mc_efficiency::Fill_Matrices(TVector3 vMuon, TVector3 muon,TVector3 vLead, 
   variables.stvs.clear();
   variables.Energies.clear();
 
-  //Define all the true quantities
-  //////////////////////////////////
-  variables.Calculate_Variables(muon,lead,rec,add_protons);
-  double true_muon_mom = variables.momenta[0];
-  double true_muon_theta = variables.detector_angles[0];
-  double true_muon_phi = variables.detector_angles[1];
-  double true_lead_mom = variables.momenta[1];
-  double true_lead_theta = variables.detector_angles[2];
-  double true_lead_phi = variables.detector_angles[3];
-  double true_recoil_mom = variables.momenta[2];
-  double true_recoil_theta = variables.detector_angles[4];
-  double true_recoil_phi =  variables.detector_angles[5];
-  double true_opening_angle_protons_lab = variables.opening_angles[0]; 
-  double true_opening_angle_protons_COM = variables.opening_angle_protons_COM;
-  double true_opening_angle_protons_mu_leading = variables.opening_angles[1];
-  double true_opening_angle_protons_mu_both = variables.opening_angles[2];
-  double true_delta_PT = variables.stvs[0];
-  double true_delta_alphaT = variables.stvs[1];
-  double true_delta_phiT = variables.stvs[2];
-  double true_pn = variables.stvs[3];
-  double true_EMuon = variables.Energies[0];
-  double true_ELead = variables.Energies[2];
-  double true_ERec = variables.Energies[4];
-  TVector3 true_PT_miss(vMuon[0]+vLead[0]+vRec[0],vMuon[1]+vRec[1]+vLead[1],0);
-  double true_nu_E = nu_e;
+}
 
-  variables.momenta.clear();
-  variables.detector_angles.clear();
-  variables.opening_angles.clear();
-  variables.stvs.clear();
-  variables.Energies.clear();
-
-
-  if(true_lead_theta > -1.0 && true_lead_theta < -0.8 && reco_lead_theta > 0.8 && reco_lead_theta < 1.0){
-    std::cout<<"Leading Proton Reco 3 Vector: ("<<vLead[0]<<","<<vLead[1]<<","<<vLead[2]<<") And Magnitude: "<<reco_lead_mom<<std::endl;
-    std::cout<<"Leading Proton True 3 Vector: ("<<lead[0]<<","<<lead[1]<<","<<lead[2]<<") And Magnitude: "<<true_lead_mom<<std::endl;
-    std::cout<<"Recoil Proton Reco 3 Vector: ("<<vRec[0]<<","<<vRec[1]<<","<<vRec[2]<<") And Magnitude: "<<reco_recoil_mom<<std::endl;
-    std::cout<<"Recoil Proton True 3 Vector: ("<<rec[0]<<","<<rec[1]<<","<<rec[2]<<") And Magnitude: "<<true_recoil_mom<<std::endl;
-  }
-
-
-  //Now to do all the fancy filling stuff: this uses y,x,wgt form
-  ///////////////////////////////////////////////////////////////
-
-  h_particle_matrices[0][0]->Fill(reco_muon_mom, true_muon_mom, mc_wgt); //muon mom
-  h_particle_matrices[0][1]->Fill(reco_muon_theta, true_muon_theta, mc_wgt); //muon theta
-  h_particle_matrices[0][2]->Fill(reco_muon_phi, true_muon_phi, mc_wgt); //muon phi
-  
-  if(contained_start == true && contained_end == true && true_contained_start == true && true_contained_end == true){
-    h_particle_matrices[1][0]->Fill(reco_muon_mom, true_muon_mom, mc_wgt); //muon contained mom  
-    h_particle_matrices[1][1]->Fill(reco_muon_theta, true_muon_theta, mc_wgt); //muon contained theta  
-    h_particle_matrices[1][2]->Fill(reco_muon_phi, true_muon_phi, mc_wgt); //muon contained phi  
-    
-  } else if(contained_start == true && contained_end == false && true_contained_start == true && true_contained_end == false){
-    h_particle_matrices[2][0]->Fill(reco_muon_mom, true_muon_mom, mc_wgt); //muon uncontained mom  
-    h_particle_matrices[2][1]->Fill(reco_muon_theta, true_muon_theta, mc_wgt); //muon uncontained theta  
-    h_particle_matrices[2][2]->Fill(reco_muon_phi, true_muon_phi, mc_wgt); //muon uncontained phi  
-    
-  }
-
-  h_particle_matrices[3][0]->Fill(reco_lead_mom, true_lead_mom, mc_wgt); //lead proton mom  
-  h_particle_matrices[3][1]->Fill(reco_lead_theta, true_lead_theta, mc_wgt); //lead proton theta  
-  h_particle_matrices[3][2]->Fill(reco_lead_phi, true_lead_phi, mc_wgt); //lead proton phi  
-  
-  h_particle_matrices[4][0]->Fill(reco_recoil_mom, true_recoil_mom, mc_wgt); //recoil proton mom  
-  h_particle_matrices[4][1]->Fill(reco_recoil_theta, true_recoil_theta, mc_wgt); //recoil proton theta  
-  h_particle_matrices[4][2]->Fill(reco_recoil_phi, true_recoil_phi, mc_wgt); //recoil proton phi  
-
-  h_other_matrices[0]->Fill(reco_opening_angle_protons_lab, true_opening_angle_protons_lab, mc_wgt); //opening_angle_protons_lab
-  h_other_matrices[1]->Fill(reco_opening_angle_protons_COM, true_opening_angle_protons_COM, mc_wgt); //opening_angle_protons_COM
-  h_other_matrices[2]->Fill(reco_opening_angle_protons_mu_leading, true_opening_angle_protons_mu_leading, mc_wgt); //opening_angle_protons_mu_leading
-  h_other_matrices[3]->Fill(reco_opening_angle_protons_mu_both, true_opening_angle_protons_mu_both, mc_wgt); //opening_angle_protons_mu_both
-  h_other_matrices[4]->Fill(reco_delta_PT, true_delta_PT, mc_wgt); //Delta_PT
-  h_other_matrices[5]->Fill(reco_delta_alphaT, true_delta_alphaT, mc_wgt);//Delta_alphaT
-  h_other_matrices[6]->Fill(reco_delta_phiT, true_delta_phiT, mc_wgt); //Delta_phiT
-  h_other_matrices[7]->Fill(reco_pn, true_pn, mc_wgt); //neutrino energy
-  h_other_matrices[8]->Fill(reco_nu_E, true_nu_E, mc_wgt); //neutrino energy 
-
-} //end of fill matrices
-
-void mc_efficiency::Write_Histograms(){
+void twoproton_nuwro_overlay::Write_Histograms(){
   for(int i=0; i< h_list_2D.size(); i++){
     h_list_2D[i]->Write();
   }
@@ -2152,13 +2576,13 @@ void mc_efficiency::Write_Histograms(){
   }
 }
 
-Int_t mc_efficiency::GetEntry(Long64_t entry)
+Int_t twoproton_nuwro_overlay::GetEntry(Long64_t entry)
 {
 // Read contents of entry.
    if (!fChain) return 0;
    return fChain->GetEntry(entry);
 }
-Long64_t mc_efficiency::LoadTree(Long64_t entry)
+Long64_t twoproton_nuwro_overlay::LoadTree(Long64_t entry)
 {
 // Set the environment to read one entry
    if (!fChain) return -5;
@@ -2171,7 +2595,7 @@ Long64_t mc_efficiency::LoadTree(Long64_t entry)
    return centry;
 }
 
-void mc_efficiency::Init(TTree *tree)
+void twoproton_nuwro_overlay::Init(TTree *tree)
 {
    // The Init() function is called when the selector needs to initialize
    // a new tree or chain. Typically here the branch addresses and branch
@@ -3097,7 +3521,7 @@ void mc_efficiency::Init(TTree *tree)
    Notify();
 }
 
-Bool_t mc_efficiency::Notify()
+Bool_t twoproton_nuwro_overlay::Notify()
 {
    // The Notify() function is called when a new file is opened. This
    // can be either for a new TTree in a TChain or when when a new TTree
@@ -3108,18 +3532,18 @@ Bool_t mc_efficiency::Notify()
    return kTRUE;
 }
 
-void mc_efficiency::Show(Long64_t entry)
+void twoproton_nuwro_overlay::Show(Long64_t entry)
 {
 // Print contents of entry.
 // If entry is not specified, print current entry
    if (!fChain) return;
    fChain->Show(entry);
 }
-Int_t mc_efficiency::Cut(Long64_t entry)
+Int_t twoproton_nuwro_overlay::Cut(Long64_t entry)
 {
 // This function may be called from Loop.
 // returns  1 if entry is accepted.
 // returns -1 otherwise.
    return 1;
 }
-#endif // #ifdef mc_efficiency_cxx
+#endif // #ifdef twoproton_nuwro_overlay_cxx

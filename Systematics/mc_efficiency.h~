@@ -14,7 +14,8 @@
 #include "string"
 #include "map"
 #include "vector"
-#include "variables.h"
+#include "../variables.h"
+#include "cuts.h"
 using namespace Constants;
 
 class mc_efficiency {
@@ -1471,8 +1472,8 @@ public :
    const char* file;
    double pot_wgt;
 
-   static const int number = 10;
-   int cc2p0pi[number] = {0};
+   //static const int number = 10;
+   //int cc2p0pi[number] = {0};
  
   //Efficinecy As Function of Cuts
   /////////////////////////////////////////////
@@ -1515,8 +1516,9 @@ public :
   vector<TH2*> h_list_2D; //vector of all the 2D histograms
 
   //defining class stuff
-  helper_funcs cuts; //helper_funcs.h
+  helper_funcs help; //helper_funcs.h
   variables variables; //variables_funcs.h
+  Cuts cuts; //cuts.h
 
   int other_else = 0;
   int neutron = 0;

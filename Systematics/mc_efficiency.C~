@@ -10,7 +10,8 @@ void mc_efficiency::Loop()
 
   //Define objects of classes
   ////////////////////////////
-  helper_funcs cuts; //helper_funcs.h   
+  Cuts cuts; //cuts.h   
+  helper_funcs help; //helper_funcs.h
 
   //Making a new Root File that will contain all the histograms that we will want to plot and files with good RSEs:
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -26,6 +27,8 @@ void mc_efficiency::Loop()
   //Define all the histograms I am going to fill and the mc_wgt                                
   /////////////////////////////////////////////////////////////
   Define_Histograms();
+
+
   double mc_wgt; //mc cv weight
   int denom = 0;
   int god_dammit = 0;
@@ -68,25 +71,25 @@ void mc_efficiency::Loop()
       int pdg = mc_pdg->at( p );
       float energy = mc_E->at( p );
       if ( std::abs(pdg) == 13) {
-	double mom = cuts.real_sqrt( std::pow(energy, 2) - std::pow(MASS_MUON, 2) );
+	double mom = help.real_sqrt( std::pow(energy, 2) - std::pow(MASS_MUON, 2) );
 	if(_debug) std::cout<<"Value of the Muon Momentum: "<<mom<<std::endl;
 	if ( mom > MUON_MOM_CUT_LOW && mom < MUON_MOM_CUT_HIGH ) {
 	  mc_n_threshold_muon++;
 	}
       } else if (std::abs(pdg) == 2212 ) {
-	double mom = cuts.real_sqrt( std::pow(energy, 2) - std::pow(MASS_PROTON, 2) );
+	double mom = help.real_sqrt( std::pow(energy, 2) - std::pow(MASS_PROTON, 2) );
 	if(_debug) std::cout<<"Value of the Proton Momentum: "<<mom<<std::endl;
 	if ( mom > PROTON_MOM_CUT_LOW && mom < PROTON_MOM_CUT_HIGH) {
 	  mc_n_threshold_proton++;
 	}
       } else if ( pdg == 111 ) {
-	double mom = cuts.real_sqrt( std::pow(energy, 2) - std::pow(MASS_PION0, 2) );
+	double mom = help.real_sqrt( std::pow(energy, 2) - std::pow(MASS_PION0, 2) );
 	if(_debug) std::cout<<"Value of the Pion0 Momentum: "<<mom<<std::endl;
 	if ( mom > PION0_MOM_CUT) {
 	  mc_n_threshold_pion0++;
 	}
       } else if (std::abs(pdg) == 211 ) {
-	double mom = cuts.real_sqrt( std::pow(energy, 2) - std::pow(MASS_PIONPM, 2) );
+	double mom = help.real_sqrt( std::pow(energy, 2) - std::pow(MASS_PIONPM, 2) );
 	if(_debug) std::cout<<"Value of the PionPM Momentum: "<<mom<<std::endl;
 	if ( mom > CHARGED_PI_MOM_CUT ) {
 	  mc_n_threshold_pionpm++;
@@ -106,38 +109,23 @@ void mc_efficiency::Loop()
     if(_debug) std::cout<<"Number of threshold pionpm: "<<mc_n_threshold_pionpm<<std::endl;
 
     //Okay. This Selection requires the following things
-    // 1) The reconstructed neutrino vertex is inside the FV                                                                                                                                                                         
+    // 1) The reconstructed neutrino vertex is inside the FV                                                                             
     // 2) There are exactly 3 PFP's in the event
     // 3) The 3 PFP's are track like objects i.e they all have a track score > 0.8
     // 4) The 3 PFP's are within 4 cm of the Vertex
     // 5) PID  
     
-
     //Is this event a true 1mu2p?
     /////////////////////////////////
-    bool true_cc2p;
-    cuts.Overlay_In_FV(10,10,10,10,10,10,true_nu_vtx_sce_x,true_nu_vtx_sce_y,true_nu_vtx_sce_z); //overlay FV requirment
-    if(ccnc == 0 && nu_pdg == 14 && mc_n_threshold_proton == 2 && mc_n_threshold_muon == 1 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && cuts.fv == true){
-      true_cc2p = true;
-      cc2p0pi[0]++;
+    cuts.True_CC2p(true_nu_vtx_sce_x,true_nu_vtx_sce_y,true_nu_vtx_sce_z, ccnc, nu_pdg, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0, mc_n_threshold_pionpm);
+    if(cuts.true_cc2p == true){
       cc2p_true << run << " " << sub << " " << evt << " " ;
       cc2p_true << endl;
-    }else{
-      true_cc2p = false;
     }
 
-    //Reconstructed FV Stuff                                                                                                                                                                                                              
+    //Reconstructed FV Stuff                                                                                                             
     ///////////////////////////////// 
-    bool reco_in_FV = cuts.In_FV(10,10,10,10,10,10,reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z); 
-
-    //Are there 3 pfps?
-    /////////////////////
-    bool three_pfps;
-    if(n_pfps == 3){
-      three_pfps = true;
-    }else{
-      three_pfps = false;
-    }
+    cuts.In_FV(10,10,10,10,10,10,reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z);
 
     //now we have to fill some variables real quick
     //////////////////////////////////////////////
@@ -163,41 +151,9 @@ void mc_efficiency::Loop()
       }
     }
 
-    //Are there 3 tracks with a good track score?
+    //Are there 3 PFPs, that are tracks, and within 4cm of the vertex. Also 1 mu and 2 protons?
     ///////////////////////////////////////////
-    bool three_tracks;
-    if(tracks_w_good_score == 3){
-      three_tracks = true;
-    }else{
-      three_tracks = false;
-    }
-    
-    //Are there 3 tracks within 4cm of reco vertex?
-    ///////////////////////////////////////////////
-    bool three_tracks_4cm_vertex;
-    if(tracks_w_good_distance == 3){
-      three_tracks_4cm_vertex = true;
-    }else{
-      three_tracks_4cm_vertex = false;
-    }
-
-    //are there exactly 1 muon and 2 protons
-    ///////////////////////////////////////
-    bool reco_cc2p_event;
-    if(muons == 1 && protons == 2){
-      reco_cc2p_event = true;
-    }else{
-      reco_cc2p_event = false;
-    }
-
-    //Filling a final bool that just indicates that the event is a good reco event:                                                                                                                                                       
-    ///////////////////////////////////////////////////////////////////////////////                                                                                                                                                  
-    bool reconstructed_event;
-    if(reco_in_FV == true && three_pfps == true && three_tracks == true && three_tracks_4cm_vertex == true && reco_cc2p_event == true){
-      reconstructed_event = true;
-    }else{
-      reconstructed_event = false;
-    }
+    cuts.Event_Selection(n_pfps, tracks_w_good_score, tracks_w_good_distance, muons, protons);
 
     //This is the hard part. Finding the ID's of the particles and filling the variables
     /////////////////////////////////////////////////////////////////////////////////
@@ -205,18 +161,15 @@ void mc_efficiency::Loop()
     bool muon_start_contained;
     bool muon_end_contained;
     TVector3 vMuon(1,1,1);
-
     int leading_proton_id;
     TVector3 vLead(1,1,1);
-
     int recoil_proton_id;
     TVector3 vRec(1,1,1);
-
     std::vector<int> proton_id_vector;
     TVector3 nu_vtx_reco;
     TVector3 nu_vtx_true;
 
-    if(reconstructed_event == true){
+    if(cuts.good_pid == true){
 
       for(int i=0; i < trk_pfp_id_v->size(); i++){
 	int trk_id = trk_pfp_id_v->at(i);
@@ -298,7 +251,8 @@ void mc_efficiency::Loop()
       TLorentzVector lead(vLead[0],vLead[1],vLead[2],ELead); 
       total_lead++;
 
-      if(_debug) std::cout<<"Leading Proton 4 Vector: ("<<lead[0]<<","<<lead[1]<<","<<lead[2]<<","<<lead[3]<<")"<<std::endl;                                                                                                             if(_debug) std::cout<<"[Reconstructed] Leading Start Distance: "<<lead_track_start_distance_reco<<" Leading End Distance: "<<lead_track_end_distance_reco<<std::endl;                                                       
+      if(_debug) std::cout<<"Leading Proton 4 Vector: ("<<lead[0]<<","<<lead[1]<<","<<lead[2]<<","<<lead[3]<<")"<<std::endl;                                                                                                             
+      if(_debug) std::cout<<"[Reconstructed] Leading Start Distance: "<<lead_track_start_distance_reco<<" Leading End Distance: "<<lead_track_end_distance_reco<<std::endl;                                                       
       if(_debug) std::cout<<"Leading PID Value: "<<trk_llr_pid_score_v->at(leading_proton_id)<<std::endl;                                                                                                                                                                                  
       //flip momentum if this occurs                                                                                                                                                                                             
       if(lead_track_start_distance_reco > lead_track_end_distance_reco){
@@ -331,98 +285,20 @@ void mc_efficiency::Loop()
 	flip_recoil++;
       }
       if(_debug) std::cout<<"After Flipping: Recoil Proton 4 Vector: ("<<rec[0]<<","<<rec[1]<<","<<rec[2]<<","<<rec[3]<<")"<<std::endl;
-    } //end of good reco event
+    } //end of good pid event
 
-    //We had to add another cut: The muon and protons must have reconstructed momentum within the thresholdss defined                                                                                                                  // this is the only way to get the closure test to work                                                                                                                                                                            /////////////////////////////////////////////////////                                                                                                                                                                          
-    bool good_muon_mom;
-    if(vMuon.Mag() > MUON_MOM_CUT_LOW && vMuon.Mag() < MUON_MOM_CUT_HIGH){
-      good_muon_mom = true;
-    }else{
-      good_muon_mom = false;
-    }
+    //We had to add another cut: The muon and protons must have reconstructed momentum within the thresholdss defined                              
+    // this is the only way to get the closure test to work                                                                                                                                                                            
+    /////////////////////////////////////////////////////                                                                                                                                                                          
+    cuts.Reco_Momentum(vMuon,vLead,vRec);
 
-    bool good_lead_mom;
-    if(vLead.Mag() > PROTON_MOM_CUT_LOW && vLead.Mag() < PROTON_MOM_CUT_HIGH){
-      good_lead_mom = true;
-    }else{
-      good_lead_mom = false;
-    }
-
-    bool good_recoil_mom;
-    if(vRec.Mag() > PROTON_MOM_CUT_LOW && vRec.Mag() < PROTON_MOM_CUT_HIGH){
-      good_recoil_mom = true;
-    }else{
-      good_recoil_mom = false;
-    }
-
-    //Make sure to fill the counters                                                                                                                                                                                               
-    /////////////////////////////////                                                                                                                                                                                              
-
-    //fv
-    if(reco_in_FV == true){
-      fvcntr++;
-      if(true_cc2p == true){
-	cc2p0pi[1]++;
-      }
-    }
-
-    //three pfps
-    if(reco_in_FV && three_pfps == true){
-      threepfps++;
-      if(true_cc2p == true){
-	cc2p0pi[2]++;
-      }
-    }
-
-    //three tracks
-    if(reco_in_FV==true && three_pfps == true && three_tracks == true){
-      threetrkcntr++;
-      if(true_cc2p == true){
-        cc2p0pi[3]++;
-      }
-    }
-
-    //three connected tracks
-    if(reco_in_FV == true && three_pfps == true && three_tracks == true && three_tracks_4cm_vertex == true){
-      threetrk_connected++;
-      if(true_cc2p == true){
-        cc2p0pi[4]++;
-      }
-    }
-    
-    //pid
-    if(reco_in_FV == true && three_pfps == true && three_tracks == true && three_tracks_4cm_vertex == true && reco_cc2p_event == true){
-      if(true_cc2p == true){
-        cc2p0pi[5]++;
-      }
-      pid++;
-    }
-
-    //muon_mom_cut
-    if(reconstructed_event == true && good_muon_mom == true){
-      reco_muon_mom_cut++;
-      if(true_cc2p == true){
-        cc2p0pi[6]++;
-      } 
-    }
-
-    //lead_mom_cut                                                                                                                                                                                                                
-    if(reconstructed_event == true && good_muon_mom == true && good_lead_mom == true){
-      reco_lead_mom_cut++;
-      if(true_cc2p == true){
-        cc2p0pi[7]++;
-      }
-    }
-
-    //recoil_mom_cut                                                                                                                                                                                                              
-    if(reconstructed_event == true && good_muon_mom == true && good_lead_mom == true && good_recoil_mom == true){
-      reco_recoil_mom_cut++;
-      cc2p_reco << run << " " << sub << " " << evt << " " ;
-      cc2p_reco << endl;
-      if(true_cc2p == true){
-        cc2p0pi[8]++;
-      }
-    }
+    //Tell me if this is a reco event?
+    ////////////////////////////////
+    cuts.Reco_Event();
+                                                                                              
+    //Fill The Counters
+    /////////////////////////////////                                                                                               
+    cuts.Fill_Counters(true, true_nu_vtx_sce_x,true_nu_vtx_sce_y,true_nu_vtx_sce_z, ccnc, nu_pdg,mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0, mc_n_threshold_pionpm, interaction);
 
     //Filling the Denominator of the Efficiency
     ////////////////////////////////////////////
@@ -437,7 +313,7 @@ void mc_efficiency::Loop()
     TVector3 vleading_denom;
     TVector3 vrecoil_denom;
 
-    if(true_cc2p == true){
+    if(cuts.true_cc2p == true){
       denom++;
       
       for(int j=0u; j < mc_pdg->size(); j++){
@@ -503,7 +379,7 @@ void mc_efficiency::Loop()
     TVector3 vleading_num;
     TVector3 vrecoil_num;
     
-    if(true_cc2p == true && reconstructed_event == true && good_muon_mom == true && good_lead_mom == true && good_recoil_mom == true){
+    if(cuts.true_cc2p == true && cuts.reconstructed_event == true){
       num++;
       for(int j=0; j < mc_pdg->size(); j++){
         int pdg = mc_pdg->at(j);
