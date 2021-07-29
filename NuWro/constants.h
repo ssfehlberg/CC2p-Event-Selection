@@ -9,7 +9,7 @@ namespace Constants{
   bool add_protons = true;
 
   //Are we using the xsecc binning
-  bool use_xsec_binning = false;
+  bool use_xsec_binning = true;
 
   //Cut Values
   double TRACK_SCORE_CUT = 0.8;
@@ -51,7 +51,18 @@ namespace Constants{
   int reco_muon_mom_cut = 0; //Number of events where reco muon momentum is < 0.1 and > 2.5
   int reco_lead_mom_cut = 0; //Number of events where reco lead momentum is < 0.25 and > 1.2  
   int reco_recoil_mom_cut = 0; //Number of events where reco recoil momentum is < 0.25 and > 1.2  
+  int muon_contained[3] = {0}; //are the muon start and end contained?
+  int lead_contained[3] = {0}; //are the lead start and end contained?
+  int recoil_contained[3] = {0}; //are ther ecoil start and end contained?
   int events_remaining = 0; //sanity check for number of events remaining
+
+  //counters to check the number of flipped tracks
+  int total_muon = 0;
+  int flip_muon = 0;
+  int total_lead = 0;
+  int flip_lead = 0;
+  int total_recoil = 0;
+  int flip_recoil = 0;
 
   //Neutrino counters                                                                                     
   int neutrinos_0 = 0; //# of 0 neutrino slice events

@@ -1544,8 +1544,8 @@ public :
   const char* variable[num_track] = {"_track_score","_track_vertex_distance","_track_length","_track_pid"};
   static const int track_cut = 3;
   const char* which_track_cut[track_cut] = {"_after_3_pfps","_after_track_score","_after_distance_cut"};
-  static const int num_part = 10;
-  const char* particle[num_part] = {"_total","_proton_contained","_proton_uncontained","_muon","_pionpm","_pion0","_electron","_gamma","_kaon","_other"};
+  static const int num_part = 11;
+  const char* particle[num_part] = {"_total","_proton_contained","_proton_uncontained","_muon_contained","_muon_uncontained","_pionpm","_pion0","_electron","_gamma","_kaon","_other"};
   TH1D* h_track_overlay[num_track][track_cut][num_part]; //overlay
   int num_bins_track[num_track] = {30,10,50,50};
   double xlim_low_track[num_track] = {0.0,0.0,0.0,-1.0};
@@ -1720,13 +1720,13 @@ twoproton_nuwro_overlay::~twoproton_nuwro_overlay()
 void twoproton_nuwro_overlay::Which_Run(){
   if(response =='1'){
     directory = "Run1";
-    pot_wgt = 0.124;
+    pot_wgt = 0.396;
   } else if(response == '2'){
     directory = "Run2";
-    pot_wgt = 0.257;
+    pot_wgt = 0.853;
   } else if(response == '3'){
     directory ="Run3";
-    pot_wgt = 0.190;
+    pot_wgt = 0.882;
   }  
 } //end of which_run
 
@@ -2091,7 +2091,7 @@ void twoproton_nuwro_overlay::Fill_Track_Plots(int which_cut, float value, int p
       h_track_overlay[3][which_cut][1]->Fill(trk_llr_pid_score_v->at(value),wgt);  
       contain++;
     } else if (contained_start == true && contained_end == false){
-      h_track_overlay[0][which_cut][2]->Fill(trk_score_v->at(value),wgt); //fills the uncontained protons                                                                                                                                          
+      h_track_overlay[0][which_cut][2]->Fill(trk_score_v->at(value),wgt); //fills the uncontained protons                                                                                                                 
       h_track_overlay[1][which_cut][2]->Fill(trk_distance_v->at(value),wgt);
       h_track_overlay[2][which_cut][2]->Fill(trk_len_v->at(value),wgt);
       h_track_overlay[3][which_cut][2]->Fill(trk_llr_pid_score_v->at(value),wgt);
@@ -2099,40 +2099,48 @@ void twoproton_nuwro_overlay::Fill_Track_Plots(int which_cut, float value, int p
     }
 
   } else if(pdg == 13 || pdg == -13){
-    h_track_overlay[0][which_cut][3]->Fill(trk_score_v->at(value),wgt); //fills the muon
-    h_track_overlay[1][which_cut][3]->Fill(trk_distance_v->at(value),wgt);
-    h_track_overlay[2][which_cut][3]->Fill(trk_len_v->at(value),wgt);
-    h_track_overlay[3][which_cut][3]->Fill(trk_llr_pid_score_v->at(value),wgt);  
+    if(contained_start == true && contained_end == true){ //contained muons
+      h_track_overlay[0][which_cut][3]->Fill(trk_score_v->at(value),wgt); 
+      h_track_overlay[1][which_cut][3]->Fill(trk_distance_v->at(value),wgt);
+      h_track_overlay[2][which_cut][3]->Fill(trk_len_v->at(value),wgt);
+      h_track_overlay[3][which_cut][3]->Fill(trk_llr_pid_score_v->at(value),wgt);  
+
+    }else if(contained_start == true && contained_end == false){ //uncontained muons
+      h_track_overlay[0][which_cut][4]->Fill(trk_score_v->at(value),wgt);
+      h_track_overlay[1][which_cut][4]->Fill(trk_distance_v->at(value),wgt);
+      h_track_overlay[2][which_cut][4]->Fill(trk_len_v->at(value),wgt);
+      h_track_overlay[3][which_cut][4]->Fill(trk_llr_pid_score_v->at(value),wgt);
+    }
 
   } else if(pdg == 211 || pdg == -211) {
-    h_track_overlay[0][which_cut][4]->Fill(trk_score_v->at(value),wgt); //fills the pionpm
-    h_track_overlay[1][which_cut][4]->Fill(trk_distance_v->at(value),wgt);
-    h_track_overlay[2][which_cut][4]->Fill(trk_len_v->at(value),wgt);
-    h_track_overlay[3][which_cut][4]->Fill(trk_llr_pid_score_v->at(value),wgt);  
+      h_track_overlay[0][which_cut][5]->Fill(trk_score_v->at(value),wgt); //fills the pionpm
+      h_track_overlay[1][which_cut][5]->Fill(trk_distance_v->at(value),wgt);
+      h_track_overlay[2][which_cut][5]->Fill(trk_len_v->at(value),wgt);
+      h_track_overlay[3][which_cut][5]->Fill(trk_llr_pid_score_v->at(value),wgt);  
 
   } else if(pdg == 111) {
-    h_track_overlay[0][which_cut][5]->Fill(trk_score_v->at(value),wgt); //fills the pion0
-    h_track_overlay[1][which_cut][5]->Fill(trk_distance_v->at(value),wgt);
-    h_track_overlay[2][which_cut][5]->Fill(trk_len_v->at(value),wgt);
-    h_track_overlay[3][which_cut][5]->Fill(trk_llr_pid_score_v->at(value),wgt);  
-
-  } else if(pdg == 11 || pdg == -11){
-    h_track_overlay[0][which_cut][6]->Fill(trk_score_v->at(value),wgt); //fills the electron
+    h_track_overlay[0][which_cut][6]->Fill(trk_score_v->at(value),wgt); //fills the pion0
     h_track_overlay[1][which_cut][6]->Fill(trk_distance_v->at(value),wgt);
     h_track_overlay[2][which_cut][6]->Fill(trk_len_v->at(value),wgt);
     h_track_overlay[3][which_cut][6]->Fill(trk_llr_pid_score_v->at(value),wgt);  
 
-  } else if(pdg == 22){
-    h_track_overlay[0][which_cut][7]->Fill(trk_score_v->at(value),wgt); //fills the gamma
+  } else if(pdg == 11 || pdg == -11){
+    h_track_overlay[0][which_cut][7]->Fill(trk_score_v->at(value),wgt); //fills the electron
     h_track_overlay[1][which_cut][7]->Fill(trk_distance_v->at(value),wgt);
     h_track_overlay[2][which_cut][7]->Fill(trk_len_v->at(value),wgt);
     h_track_overlay[3][which_cut][7]->Fill(trk_llr_pid_score_v->at(value),wgt);  
 
-  } else if(pdg == 321 || pdg == -321 || pdg == 311){
-    h_track_overlay[0][which_cut][8]->Fill(trk_score_v->at(value),wgt); //fills the kaon
+  } else if(pdg == 22){
+    h_track_overlay[0][which_cut][8]->Fill(trk_score_v->at(value),wgt); //fills the gamma
     h_track_overlay[1][which_cut][8]->Fill(trk_distance_v->at(value),wgt);
     h_track_overlay[2][which_cut][8]->Fill(trk_len_v->at(value),wgt);
     h_track_overlay[3][which_cut][8]->Fill(trk_llr_pid_score_v->at(value),wgt);  
+
+  } else if(pdg == 321 || pdg == -321 || pdg == 311){
+    h_track_overlay[0][which_cut][9]->Fill(trk_score_v->at(value),wgt); //fills the kaon
+    h_track_overlay[1][which_cut][9]->Fill(trk_distance_v->at(value),wgt);
+    h_track_overlay[2][which_cut][9]->Fill(trk_len_v->at(value),wgt);
+    h_track_overlay[3][which_cut][9]->Fill(trk_llr_pid_score_v->at(value),wgt);  
 
   } else {
     if(_debug) std::cout<<"[FILL_TRACK_PLOTS] Here is the Value of the PDG in the Else Loop: "<<pdg<<std::endl;
@@ -2146,10 +2154,10 @@ void twoproton_nuwro_overlay::Fill_Track_Plots(int which_cut, float value, int p
     if(pdg == 0){
       zeros++;
     }
-    h_track_overlay[0][which_cut][9]->Fill(trk_score_v->at(value),wgt); //fills the else
-    h_track_overlay[1][which_cut][9]->Fill(trk_distance_v->at(value),wgt);
-    h_track_overlay[2][which_cut][9]->Fill(trk_len_v->at(value),wgt);
-    h_track_overlay[3][which_cut][9]->Fill(trk_llr_pid_score_v->at(value),wgt);  
+    h_track_overlay[0][which_cut][10]->Fill(trk_score_v->at(value),wgt); //fills the else
+    h_track_overlay[1][which_cut][10]->Fill(trk_distance_v->at(value),wgt);
+    h_track_overlay[2][which_cut][10]->Fill(trk_len_v->at(value),wgt);
+    h_track_overlay[3][which_cut][10]->Fill(trk_llr_pid_score_v->at(value),wgt);  
   }
 }
 
@@ -2435,6 +2443,12 @@ void twoproton_nuwro_overlay::Fill_Particles(int j, TVector3 vMuon, TLorentzVect
   h_recoil_overlay[1][j]->Fill(variables.Energies[4],wgt); //recoil energy
   h_recoil_overlay[2][j]->Fill(variables.detector_angles[4],wgt); //recoil theta
   h_recoil_overlay[3][j]->Fill(variables.detector_angles[5],wgt); //recoil phi
+
+
+  //Make sure to fill those resolution plots
+  
+
+
 
   //Beam Stuff
   double EMuon =variables.Energies[0];

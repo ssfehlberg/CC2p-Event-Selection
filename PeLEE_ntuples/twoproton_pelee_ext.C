@@ -18,7 +18,12 @@ void twoproton_pelee_ext::Loop()
   //Making a new Root File that will contain all the histograms that we will want to plot and file with good RSEs:                      
   ///////////////////////////////////////////////////////////////////////////////////////                          
   Which_Run();
-  TFile *tfile = new TFile(Form("root_files/%s/histograms_pelee_ext.root",directory),"RECREATE"); //root file
+  TFile *tfile;
+  if(use_xsec_binning == true){
+    tfile = new TFile(Form("root_files/%s/histograms_pelee_xsec_ext.root",directory),"RECREATE"); //root file                                                                                                                                                             
+  }else{
+    tfile = new TFile(Form("root_files/%s/histograms_pelee_ext.root",directory),"RECREATE"); //root file                                                                                                                                                                  
+  }
   ofstream myfile;//File that will contain RSE of good events                                                                 
   myfile.open(Form("lists/%s/files_filtered_ext.list",directory));
   myfile<<"Run"<<" "<<"Subrun"<<" "<<"Event"<<endl;
@@ -176,8 +181,12 @@ void twoproton_pelee_ext::Loop()
     //First check is the muon if fully contained
     bool muon_start_contained = cuts.In_FV(10,10,10,10,10,10,trk_sce_start_x_v->at(muon_id),trk_sce_start_y_v->at(muon_id),trk_sce_start_z_v->at(muon_id)); //is the muon start within the FV?
     bool muon_end_contained = cuts.In_FV(0,0,0,0,0,0,trk_sce_end_x_v->at(muon_id),trk_sce_end_y_v->at(muon_id),trk_sce_end_z_v->at(muon_id)); //is the muon end within the detector?
-    if(muon_start_contained == false || muon_end_contained == false) continue;
-    muon_contained++;
+    if(muon_start_contained == false) continue;
+    muon_contained[0]++;
+    if(muon_start_contained == true && muon_end_contained == false)continue;
+    muon_contained[1]++;
+    if(muon_start_contained == false && muon_end_contained == false) continue;
+    muon_contained[2]++;
 
     //now to define the momentum
     TVector3 vMuon(1,1,1);
@@ -219,8 +228,12 @@ void twoproton_pelee_ext::Loop()
     //first check is lead proton is fully contained
     bool lead_start_contained = cuts.In_FV(10,10,10,10,10,10,trk_sce_start_x_v->at(leading_proton_id),trk_sce_start_y_v->at(leading_proton_id),trk_sce_start_z_v->at(leading_proton_id)); //start of the lead proton within the FV
     bool lead_end_contained = cuts.In_FV(0,0,0,0,0,0,trk_sce_end_x_v->at(leading_proton_id),trk_sce_end_y_v->at(leading_proton_id),trk_sce_end_z_v->at(leading_proton_id)); //is end of the lead proton within the detector
-    if(lead_start_contained == false || lead_end_contained == false) continue;
-    lead_contained++;
+    if(lead_start_contained == false) continue;
+    lead_contained[0]++;
+    if(lead_start_contained == true && lead_end_contained == false)continue;
+    lead_contained[1]++;
+    if(lead_start_contained == false && lead_end_contained == false) continue;
+    lead_contained[2]++;
 
     //now define the momentum
     TVector3 vLead(1,1,1);
@@ -253,8 +266,12 @@ void twoproton_pelee_ext::Loop()
     //first check if recoil proton is fully contained
     bool recoil_start_contained = cuts.In_FV(10,10,10,10,10,10,trk_sce_start_x_v->at(recoil_proton_id),trk_sce_start_y_v->at(recoil_proton_id),trk_sce_start_z_v->at(recoil_proton_id)); //start of the recoil proton within the FV                              
     bool recoil_end_contained = cuts.In_FV(0,0,0,0,0,0,trk_sce_end_x_v->at(recoil_proton_id),trk_sce_end_y_v->at(recoil_proton_id),trk_sce_end_z_v->at(recoil_proton_id)); //is end of the recoil proton within the detector                                    
-    if(recoil_start_contained == false || recoil_end_contained == false) continue;
-    recoil_contained++;
+    if(recoil_start_contained == false) continue;
+    recoil_contained[0]++;
+    if(recoil_start_contained == true && recoil_end_contained == false) continue;
+    recoil_contained[1]++;
+    if(recoil_start_contained == false && recoil_end_contained == false) continue;
+    recoil_contained[2]++;
 
     //now define the momentum
     TVector3 vRec(1,1,1);
@@ -307,9 +324,15 @@ void twoproton_pelee_ext::Loop()
   std::cout << "[ANALYZER] Number of Events with 3 Tracks: "<<threetrkcntr<<" Fraction of Total: "<<float(100.*float(threetrkcntr)/float(nentries))<<"%"<<std::endl;
   std::cout << "[ANALYZER] Number of Events with 3 Tracks Connected to Vertex: "<<threetrk_connected<<" Fraction of Total: "<<float(100.*float(threetrk_connected)/float(nentries))<<"%"<<std::endl; 
   std::cout << "[ANALYZER] Number of Events with 1 Muon and 2 Protons: "<<pid<<" Fraction of Total: "<<float(100.*float(pid)/float(nentries))<<"%"<<std::endl;
-  std::cout << "[ANALYZER] Number of Events with Muon Contained: "<<muon_contained<<" Fraction of Total: "<<float(100.*float(muon_contained)/float(nentries))<<"%"<<std::endl;
-  std::cout << "[ANALYZER] Number of Events with Lead Proton Contained: "<<lead_contained<<" Fraction of Total: "<<float(100.*float(lead_contained)/float(nentries))<<"%"<<std::endl;
-  std::cout << "[ANALYZER] Number of Events with Recoil Proton Contained: "<<recoil_contained<<" Fraction of Total: "<<float(100.*float(recoil_contained)/float(nentries))<<"%"<<std::endl;
+  std::cout << "[ANALYZER] Number of Events with Muon Contained: "<<muon_contained[0]<<" Fraction of Total: "<<float(100.*float(muon_contained[0])/float(nentries))<<"%"<<std::endl;
+  std::cout << "[ANALYZER] Number of Events with Muon Contained: "<<muon_contained[1]<<" Fraction of Total: "<<float(100.*float(muon_contained[1])/float(nentries))<<"%"<<std::endl;
+  std::cout << "[ANALYZER] Number of Events with Muon Contained: "<<muon_contained[2]<<" Fraction of Total: "<<float(100.*float(muon_contained[2])/float(nentries))<<"%"<<std::endl;
+  std::cout << "[ANALYZER] Number of Events with Lead Proton Contained: "<<lead_contained[0]<<" Fraction of Total: "<<float(100.*float(lead_contained[0])/float(nentries))<<"%"<<std::endl;
+  std::cout << "[ANALYZER] Number of Events with Lead Proton Contained: "<<lead_contained[1]<<" Fraction of Total: "<<float(100.*float(lead_contained[1])/float(nentries))<<"%"<<std::endl;
+  std::cout << "[ANALYZER] Number of Events with Lead Proton Contained: "<<lead_contained[2]<<" Fraction of Total: "<<float(100.*float(lead_contained[2])/float(nentries))<<"%"<<std::endl;
+  std::cout << "[ANALYZER] Number of Events with Recoil Proton Contained: "<<recoil_contained[0]<<" Fraction of Total: "<<float(100.*float(recoil_contained[0])/float(nentries))<<"%"<<std::endl;
+  std::cout << "[ANALYZER] Number of Events with Recoil Proton Contained: "<<recoil_contained[1]<<" Fraction of Total: "<<float(100.*float(recoil_contained[1])/float(nentries))<<"%"<<std::endl;
+  std::cout << "[ANALYZER] Number of Events with Recoil Proton Contained: "<<recoil_contained[2]<<" Fraction of Total: "<<float(100.*float(recoil_contained[2])/float(nentries))<<"%"<<std::endl;
   std::cout << "[ANALYZER] Number of Events with Reco. Muon Momentum above 0.1 GeV and below 2.5 GeV: "<<reco_muon_mom_cut<<" Fraction of Total: "<<float(100.*float(reco_muon_mom_cut)/float(nentries))<<"%"<<std::endl;
   std::cout << "[ANALYZER] Number of Events with Reco. Lead Momentum above 0.1 GeV and below 2.5 GeV: "<<reco_lead_mom_cut<<" Fraction of Total: "<<float(100.*float(reco_lead_mom_cut)/float(nentries))<<"%"<<std::endl;
   std::cout << "[ANALYZER] Number of Events with Reco. Recoil Momentum above 0.1 GeV and below 2.5 GeV: "<<reco_recoil_mom_cut<<" Fraction of Total: "<<float(100.*float(reco_recoil_mom_cut)/float(nentries))<<"%"<<std::endl;

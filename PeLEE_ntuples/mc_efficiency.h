@@ -1471,7 +1471,7 @@ public :
    const char* file;
    double pot_wgt;
 
-   static const int number = 10;
+   static const int number = 13;
    int cc2p0pi[number] = {0};
  
   //Efficinecy As Function of Cuts
@@ -1510,6 +1510,12 @@ public :
   TH1D* h_other_eff_num[num_other_eff];
   TH1D* h_other_eff_denom[num_other_eff];
   TH2D* h_other_matrices[num_other_eff]; //migration matrix
+
+  //Some resolution plots that I needed
+  static const int num_slices = 10;
+  const char* slices[num_slices] = {"0.25_0.35","0.35_0.45","0.45_0.55","0.55_0.65","0.65_0.75","0.75_0.85","0.85_0.95","0.95_1.05","1.05_1.15","1.15_1.25"};
+  TH1D* h_leading_resolution[num_slices];
+  TH1D* h_recoil_resolution[num_slices];
 
   vector<TH1*> h_list; //vector of all the 1D histograms
   vector<TH2*> h_list_2D; //vector of all the 2D histograms
@@ -1800,6 +1806,13 @@ void mc_efficiency::Define_Histograms(){
       h_list_2D.push_back(h_other_matrices[i]);
     }
   }
+
+    for(int i=0; i < num_slices; i++){
+      h_leading_resolution[i] = new TH1D(Form("h_leading_resolution_%s",slices[i]),Form("h_leading_resolution_%s",slices[i]),40,-20,20);
+      h_recoil_resolution[i] = new TH1D(Form("h_recoil_resolution_%s",slices[i]),Form("h_recoil_resolution_%s",slices[i]),40,-20,20);
+      h_list.push_back(h_leading_resolution[i]);    
+      h_list.push_back(h_recoil_resolution[i]);
+}
 
     //make sure to handle the weights correcly
     for (int i = 0; i < h_list.size(); i++){

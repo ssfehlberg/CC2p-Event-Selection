@@ -1494,10 +1494,10 @@ public :
   TH2D *h_correlation_overlay[num2d];
       
   //Varaibles I wanted to check after each cut
-  static const int  number = 7; //number cuts                                                                        
+  static const int  number = 8; //number cuts                                                                        
   static const int  number2 = 11; //categories I defined                                                            
   static const int  number3 = 10; //categories raquel defined
-  const char * point[number] ={"_before_selection","_after_fv","_after_three_pfps","_after_track_cut","_after_connection_cut","_after_pid","_after_reco_mom"}; //this defines histograms after each cut    
+  const char * point[number] ={"_before_selection","_after_fv","_after_three_pfps","_after_track_cut","_after_connection_cut","_after_pid","_after_containment","_after_reco_mom"}; //this defines histograms after each cut    
   const char * channel[number2]={"_total","_cc0p0pi","_cc1p0pi","_cc2p0pi","_ccNp0pi",
 				 "_ccNp1pi","_ccNpNpi","_ccnue","_outfv","_nc","_other"}; //these are the channels I defined        
   const char * channel2[number3] = {"_total","_ccQE","_ccCOH","_ccMEC","_ccRES","_ccDIS",
@@ -1544,8 +1544,8 @@ public :
   const char* variable[num_track] = {"_track_score","_track_vertex_distance","_track_length","_track_pid"};
   static const int track_cut = 3;
   const char* which_track_cut[track_cut] = {"_after_3_pfps","_after_track_score","_after_distance_cut"};
-  static const int num_part = 10;
-  const char* particle[num_part] = {"_total","_proton_contained","_proton_uncontained","_muon","_pionpm","_pion0","_electron","_gamma","_kaon","_other"};
+  static const int num_part = 11;
+  const char* particle[num_part] = {"_total","_proton_contained","_proton_uncontained","_muon_contained","_muon_uncontained","_pionpm","_pion0","_electron","_gamma","_kaon","_other"};
   TH1D* h_track_overlay[num_track][track_cut][num_part]; //overlay
   int num_bins_track[num_track] = {30,10,50,50};
   double xlim_low_track[num_track] = {0.0,0.0,0.0,-1.0};
@@ -1563,11 +1563,12 @@ public :
   //All the single particle plots
   static const int num_var = 4;
   const char* var[num_var] = {"_mom","_E","_theta","_phi"};
-  int num_bins[num_var] = {50,50,30,10};
-  double xlim_low[num_var] = {0,0,-1.5,-3.15}; //0.2 normally first -1.5                                                        
-  double xlim_high_recoil[num_var] = {0.8,0.35,1.5,3.15};
-  double xlim_high_leading[num_var] = {1.2,0.6,1.5,3.15}; //1.5 normally in first, 1.2                                          
-  double xlim_high_muon[num_var]={2.5,1,1.5,3.15}; //2.5 first, 1.5 third     
+  int num_bins[num_var] = {40,50,30,10};
+  double xlim_low_muon[num_var] = {0.1,0.0,-1.5,-3.15}; //0.2 normally first -1.5                                             
+  double xlim_low_proton[num_var] = {0.3,0,-1.5,-3.15};
+  double xlim_high_recoil[num_var] = {1.0,0.35,1.5,3.15};
+  double xlim_high_leading[num_var] = {1.0,0.6,1.5,3.15}; //1.5 normally in first, 1.2                                        
+  double xlim_high_muon[num_var]={1.2,1,1.5,3.15}; //2.5 first, 1.5 third     
   const char* xlabel[num_var] ={"P [GeV/c]","E [GeV]","cos(#theta)","#phi [Rad]"};
   TH1D* h_muon_overlay[num_var][number2]; //overlay
   TH1D* h_recoil_overlay[num_var][number2];
@@ -1867,14 +1868,14 @@ void twoproton_pelee_overlay::Define_Histograms(){
 	    h_leading_overlay[j][k] = new TH1D(Form("h_leading%s%s",var[j],channel[k]),Form("h_leading%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),bins_theta,edges_theta);
 
 	  }else{//phi and energy
-	    h_muon_overlay[j][k] = new TH1D(Form("h_muon%s%s",var[j],channel[k]),Form(" h_muon%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_muon[j]);
-            h_recoil_overlay[j][k] = new TH1D(Form("h_recoil%s%s",var[j],channel[k]),Form("h_recoil%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_recoil[j]);
-            h_leading_overlay[j][k] = new TH1D(Form("h_leading%s%s",var[j],channel[k]),Form("h_leading%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_leading[j]);
+	    h_muon_overlay[j][k] = new TH1D(Form("h_muon%s%s",var[j],channel[k]),Form(" h_muon%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),num_bins[j],xlim_low_muon[j],xlim_high_muon[j]);
+            h_recoil_overlay[j][k] = new TH1D(Form("h_recoil%s%s",var[j],channel[k]),Form("h_recoil%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),num_bins[j],xlim_low_proton[j],xlim_high_recoil[j]);
+            h_leading_overlay[j][k] = new TH1D(Form("h_leading%s%s",var[j],channel[k]),Form("h_leading%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),num_bins[j],xlim_low_proton[j],xlim_high_leading[j]);
 	  }
 	} else if (use_xsec_binning == false){
-	  h_muon_overlay[j][k] = new TH1D(Form("h_muon%s%s",var[j],channel[k]),Form(" h_muon%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_muon[j]);
-          h_recoil_overlay[j][k] = new TH1D(Form("h_recoil%s%s",var[j],channel[k]),Form("h_recoil%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_recoil[j]);
-          h_leading_overlay[j][k] = new TH1D(Form("h_leading%s%s",var[j],channel[k]),Form("h_leading%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_leading[j]);
+	  h_muon_overlay[j][k] = new TH1D(Form("h_muon%s%s",var[j],channel[k]),Form(" h_muon%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),num_bins[j],xlim_low_muon[j],xlim_high_muon[j]);
+          h_recoil_overlay[j][k] = new TH1D(Form("h_recoil%s%s",var[j],channel[k]),Form("h_recoil%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),num_bins[j],xlim_low_proton[j],xlim_high_recoil[j]);
+          h_leading_overlay[j][k] = new TH1D(Form("h_leading%s%s",var[j],channel[k]),Form("h_leading%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),num_bins[j],xlim_low_proton[j],xlim_high_leading[j]);
 	} //end of false statement
 
 	h_list.push_back(h_muon_overlay[j][k]);
@@ -1909,14 +1910,14 @@ void twoproton_pelee_overlay::Define_Histograms(){
 	    h_leading_raquel[j][k] = new TH1D(Form("h_leading_raquel%s%s",var[j],channel2[k]),Form("h_leading_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),bins_theta,edges_theta);
 
 	  } else{ //phi and energy
-	    h_muon_raquel[j][k] = new TH1D(Form("h_muon_raquel%s%s",var[j],channel2[k]),Form(" h_muon_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_muon[j]);
-	    h_recoil_raquel[j][k] = new TH1D(Form("h_recoil_raquel%s%s",var[j],channel2[k]),Form("h_recoil_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_recoil[j]);
-	    h_leading_raquel[j][k] = new TH1D(Form("h_leading_raquel%s%s",var[j],channel2[k]),Form("h_leading_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_leading[j]);
+	    h_muon_raquel[j][k] = new TH1D(Form("h_muon_raquel%s%s",var[j],channel2[k]),Form(" h_muon_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),num_bins[j],xlim_low_muon[j],xlim_high_muon[j]);
+	    h_recoil_raquel[j][k] = new TH1D(Form("h_recoil_raquel%s%s",var[j],channel2[k]),Form("h_recoil_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),num_bins[j],xlim_low_proton[j],xlim_high_recoil[j]);
+	    h_leading_raquel[j][k] = new TH1D(Form("h_leading_raquel%s%s",var[j],channel2[k]),Form("h_leading_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),num_bins[j],xlim_low_proton[j],xlim_high_leading[j]);
 	  }
 	}else if(use_xsec_binning == false){
-	  h_muon_raquel[j][k] = new TH1D(Form("h_muon_raquel%s%s",var[j],channel2[k]),Form(" h_muon_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_muon[j]);
-	  h_recoil_raquel[j][k] = new TH1D(Form("h_recoil_raquel%s%s",var[j],channel2[k]),Form("h_recoil_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_recoil[j]);
-	  h_leading_raquel[j][k] = new TH1D(Form("h_leading_raquel%s%s",var[j],channel2[k]),Form("h_leading_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),num_bins[j],xlim_low[j],xlim_high_leading[j]);
+	  h_muon_raquel[j][k] = new TH1D(Form("h_muon_raquel%s%s",var[j],channel2[k]),Form(" h_muon_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),num_bins[j],xlim_low_muon[j],xlim_high_muon[j]);
+	  h_recoil_raquel[j][k] = new TH1D(Form("h_recoil_raquel%s%s",var[j],channel2[k]),Form("h_recoil_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),num_bins[j],xlim_low_proton[j],xlim_high_recoil[j]);
+	  h_leading_raquel[j][k] = new TH1D(Form("h_leading_raquel%s%s",var[j],channel2[k]),Form("h_leading_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),num_bins[j],xlim_low_proton[j],xlim_high_leading[j]);
 	} //end of false statement
 
 	h_list.push_back(h_muon_raquel[j][k]);
@@ -2094,7 +2095,7 @@ void twoproton_pelee_overlay::Fill_Track_Plots(int which_cut, float value, int p
       h_track_overlay[3][which_cut][1]->Fill(trk_llr_pid_score_v->at(value),wgt);  
       contain++;
     } else if (contained_start == true && contained_end == false){
-      h_track_overlay[0][which_cut][2]->Fill(trk_score_v->at(value),wgt); //fills the uncontained protons                                                                                                                                          
+      h_track_overlay[0][which_cut][2]->Fill(trk_score_v->at(value),wgt); //fills the uncontained protons                                                                                                                 
       h_track_overlay[1][which_cut][2]->Fill(trk_distance_v->at(value),wgt);
       h_track_overlay[2][which_cut][2]->Fill(trk_len_v->at(value),wgt);
       h_track_overlay[3][which_cut][2]->Fill(trk_llr_pid_score_v->at(value),wgt);
@@ -2102,40 +2103,48 @@ void twoproton_pelee_overlay::Fill_Track_Plots(int which_cut, float value, int p
     }
 
   } else if(pdg == 13 || pdg == -13){
-    h_track_overlay[0][which_cut][3]->Fill(trk_score_v->at(value),wgt); //fills the muon
-    h_track_overlay[1][which_cut][3]->Fill(trk_distance_v->at(value),wgt);
-    h_track_overlay[2][which_cut][3]->Fill(trk_len_v->at(value),wgt);
-    h_track_overlay[3][which_cut][3]->Fill(trk_llr_pid_score_v->at(value),wgt);  
+    if(contained_start == true && contained_end == true){ //contained muons
+      h_track_overlay[0][which_cut][3]->Fill(trk_score_v->at(value),wgt); 
+      h_track_overlay[1][which_cut][3]->Fill(trk_distance_v->at(value),wgt);
+      h_track_overlay[2][which_cut][3]->Fill(trk_len_v->at(value),wgt);
+      h_track_overlay[3][which_cut][3]->Fill(trk_llr_pid_score_v->at(value),wgt);  
+
+    }else if(contained_start == true && contained_end == false){ //uncontained muons
+      h_track_overlay[0][which_cut][4]->Fill(trk_score_v->at(value),wgt);
+      h_track_overlay[1][which_cut][4]->Fill(trk_distance_v->at(value),wgt);
+      h_track_overlay[2][which_cut][4]->Fill(trk_len_v->at(value),wgt);
+      h_track_overlay[3][which_cut][4]->Fill(trk_llr_pid_score_v->at(value),wgt);
+    }
 
   } else if(pdg == 211 || pdg == -211) {
-    h_track_overlay[0][which_cut][4]->Fill(trk_score_v->at(value),wgt); //fills the pionpm
-    h_track_overlay[1][which_cut][4]->Fill(trk_distance_v->at(value),wgt);
-    h_track_overlay[2][which_cut][4]->Fill(trk_len_v->at(value),wgt);
-    h_track_overlay[3][which_cut][4]->Fill(trk_llr_pid_score_v->at(value),wgt);  
+      h_track_overlay[0][which_cut][5]->Fill(trk_score_v->at(value),wgt); //fills the pionpm
+      h_track_overlay[1][which_cut][5]->Fill(trk_distance_v->at(value),wgt);
+      h_track_overlay[2][which_cut][5]->Fill(trk_len_v->at(value),wgt);
+      h_track_overlay[3][which_cut][5]->Fill(trk_llr_pid_score_v->at(value),wgt);  
 
   } else if(pdg == 111) {
-    h_track_overlay[0][which_cut][5]->Fill(trk_score_v->at(value),wgt); //fills the pion0
-    h_track_overlay[1][which_cut][5]->Fill(trk_distance_v->at(value),wgt);
-    h_track_overlay[2][which_cut][5]->Fill(trk_len_v->at(value),wgt);
-    h_track_overlay[3][which_cut][5]->Fill(trk_llr_pid_score_v->at(value),wgt);  
-
-  } else if(pdg == 11 || pdg == -11){
-    h_track_overlay[0][which_cut][6]->Fill(trk_score_v->at(value),wgt); //fills the electron
+    h_track_overlay[0][which_cut][6]->Fill(trk_score_v->at(value),wgt); //fills the pion0
     h_track_overlay[1][which_cut][6]->Fill(trk_distance_v->at(value),wgt);
     h_track_overlay[2][which_cut][6]->Fill(trk_len_v->at(value),wgt);
     h_track_overlay[3][which_cut][6]->Fill(trk_llr_pid_score_v->at(value),wgt);  
 
-  } else if(pdg == 22){
-    h_track_overlay[0][which_cut][7]->Fill(trk_score_v->at(value),wgt); //fills the gamma
+  } else if(pdg == 11 || pdg == -11){
+    h_track_overlay[0][which_cut][7]->Fill(trk_score_v->at(value),wgt); //fills the electron
     h_track_overlay[1][which_cut][7]->Fill(trk_distance_v->at(value),wgt);
     h_track_overlay[2][which_cut][7]->Fill(trk_len_v->at(value),wgt);
     h_track_overlay[3][which_cut][7]->Fill(trk_llr_pid_score_v->at(value),wgt);  
 
-  } else if(pdg == 321 || pdg == -321 || pdg == 311){
-    h_track_overlay[0][which_cut][8]->Fill(trk_score_v->at(value),wgt); //fills the kaon
+  } else if(pdg == 22){
+    h_track_overlay[0][which_cut][8]->Fill(trk_score_v->at(value),wgt); //fills the gamma
     h_track_overlay[1][which_cut][8]->Fill(trk_distance_v->at(value),wgt);
     h_track_overlay[2][which_cut][8]->Fill(trk_len_v->at(value),wgt);
     h_track_overlay[3][which_cut][8]->Fill(trk_llr_pid_score_v->at(value),wgt);  
+
+  } else if(pdg == 321 || pdg == -321 || pdg == 311){
+    h_track_overlay[0][which_cut][9]->Fill(trk_score_v->at(value),wgt); //fills the kaon
+    h_track_overlay[1][which_cut][9]->Fill(trk_distance_v->at(value),wgt);
+    h_track_overlay[2][which_cut][9]->Fill(trk_len_v->at(value),wgt);
+    h_track_overlay[3][which_cut][9]->Fill(trk_llr_pid_score_v->at(value),wgt);  
 
   } else {
     if(_debug) std::cout<<"[FILL_TRACK_PLOTS] Here is the Value of the PDG in the Else Loop: "<<pdg<<std::endl;
@@ -2149,10 +2158,10 @@ void twoproton_pelee_overlay::Fill_Track_Plots(int which_cut, float value, int p
     if(pdg == 0){
       zeros++;
     }
-    h_track_overlay[0][which_cut][9]->Fill(trk_score_v->at(value),wgt); //fills the else
-    h_track_overlay[1][which_cut][9]->Fill(trk_distance_v->at(value),wgt);
-    h_track_overlay[2][which_cut][9]->Fill(trk_len_v->at(value),wgt);
-    h_track_overlay[3][which_cut][9]->Fill(trk_llr_pid_score_v->at(value),wgt);  
+    h_track_overlay[0][which_cut][10]->Fill(trk_score_v->at(value),wgt); //fills the else
+    h_track_overlay[1][which_cut][10]->Fill(trk_distance_v->at(value),wgt);
+    h_track_overlay[2][which_cut][10]->Fill(trk_len_v->at(value),wgt);
+    h_track_overlay[3][which_cut][10]->Fill(trk_llr_pid_score_v->at(value),wgt);  
   }
 }
 
@@ -2217,6 +2226,8 @@ void twoproton_pelee_overlay::Fill_Histograms_Mine(int i, double wgt, int mc_n_t
   } else if (ccnc == 0 && nu_pdg == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton == 2 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
     Fill_Mine(i,3,wgt);
     cc2p0pi[i]++;
+    std::cout<<"SIGNAL EVENT"<<std::endl;
+
     //ccNp0pi                                                                                                                                  
   } else if (ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton > 2 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
     Fill_Mine(i,4,wgt);
@@ -2438,6 +2449,12 @@ void twoproton_pelee_overlay::Fill_Particles(int j, TVector3 vMuon, TLorentzVect
   h_recoil_overlay[1][j]->Fill(variables.Energies[4],wgt); //recoil energy
   h_recoil_overlay[2][j]->Fill(variables.detector_angles[4],wgt); //recoil theta
   h_recoil_overlay[3][j]->Fill(variables.detector_angles[5],wgt); //recoil phi
+
+
+  //Make sure to fill those resolution plots
+  
+
+
 
   //Beam Stuff
   double EMuon =variables.Energies[0];

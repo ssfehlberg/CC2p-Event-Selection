@@ -18,11 +18,11 @@ namespace Constants{
 
   //Momentum Cut Values (only used by the overlay)
   double MUON_MOM_CUT_LOW = 0.1;
-  double MUON_MOM_CUT_HIGH = 2.5;
-  double PROTON_MOM_CUT_LOW = 0.25;
-  double PROTON_MOM_CUT_HIGH = 1.2;
+  double MUON_MOM_CUT_HIGH = 1.2;
+  double PROTON_MOM_CUT_LOW = 0.3;
+  double PROTON_MOM_CUT_HIGH = 1.0;
   double CHARGED_PI_MOM_CUT = 0.065;
-  double PION0_MOM_CUT = 0.065;
+  //double PION0_MOM_CUT = 0.065;
 
   //Argon 40 properties
   double MASS_TARGET = 37.215526; //GeV
@@ -51,9 +51,9 @@ namespace Constants{
   int reco_muon_mom_cut = 0; //Number of events where reco muon momentum is < 0.1 and > 2.5
   int reco_lead_mom_cut = 0; //Number of events where reco lead momentum is < 0.25 and > 1.2  
   int reco_recoil_mom_cut = 0; //Number of events where reco recoil momentum is < 0.25 and > 1.2  
-  int muon_contained = 0; //are the muon start and end contained?
-  int lead_contained = 0; //are the lead start and end contained?
-  int recoil_contained = 0; //are ther ecoil start and end contained?
+  int muon_contained[3] = {0}; //are the muon start and end contained?
+  int lead_contained[3] = {0}; //are the lead start and end contained?
+  int recoil_contained[3] = {0}; //are ther ecoil start and end contained?
   int events_remaining = 0; //sanity check for number of events remaining
 
   //counters to check the number of flipped tracks
