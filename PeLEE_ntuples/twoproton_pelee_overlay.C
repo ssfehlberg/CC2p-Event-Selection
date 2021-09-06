@@ -127,9 +127,9 @@ void twoproton_pelee_overlay::Loop()
 
     //Filling histograms before any selection is made
     ////////////////////////////////////////////////
-    cuts.Overlay_In_FV(10,10,10,10,10,10,reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z); //overlay FV requirment    
+    cuts.Overlay_In_FV(10,10,10,10,10,10,true_nu_vtx_sce_x,true_nu_vtx_sce_y,true_nu_vtx_sce_z); //overlay FV requirment    
     Fill_Histograms_Mine(0, pot_wgt*mc_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0 ,mc_n_threshold_pionpm,cuts.fv); 
-    Fill_Histograms_Raquel(0, pot_wgt*mc_wgt,cuts.fv);
+    Fill_Histograms_Raquel(0, pot_wgt*mc_wgt,mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv);
     
     //Okay. This Selection requires the following things:
     // 1) The reconstructed neutrino vertex is inside the FV 
@@ -143,14 +143,14 @@ void twoproton_pelee_overlay::Loop()
     if(cuts.In_FV(10,10,10,10,10,10,reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z) == false) continue; //10 cm border except from backend of detector
     fvcntr++;
     Fill_Histograms_Mine(1, pot_wgt*mc_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv); 
-    Fill_Histograms_Raquel(1, pot_wgt*mc_wgt,cuts.fv);
+    Fill_Histograms_Raquel(1, pot_wgt*mc_wgt,mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv);
 
     //2) There are exactly 3 PFP's in the Event 
     ///////////////////////////////////////////////////////
     if(n_pfps != 3) continue;
     threepfps++;
     Fill_Histograms_Mine(2, pot_wgt*mc_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv);
-    Fill_Histograms_Raquel(2, pot_wgt*mc_wgt, cuts.fv);
+    Fill_Histograms_Raquel(2, pot_wgt*mc_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv);
     for(int i = 0; i < n_pfps; i++){
       int track_pdg = testVector.at(i);
       bool contained_start = cuts.In_FV(10,10,10,10,10,10,trk_start_x_v->at(i),trk_start_y_v->at(i),trk_start_z_v->at(i));
@@ -191,7 +191,7 @@ void twoproton_pelee_overlay::Loop()
     if(y != 3) continue; 
     threetrkcntr++;
     Fill_Histograms_Mine(3, pot_wgt*mc_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv);
-    Fill_Histograms_Raquel(3, pot_wgt*mc_wgt, cuts.fv);
+    Fill_Histograms_Raquel(3, pot_wgt*mc_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv);
     for(int i = 0; i < n_pfps; i++){
       int track_pdg = testVector.at(i);
       bool contained_start = cuts.In_FV(10,10,10,10,10,10,trk_start_x_v->at(i),trk_start_y_v->at(i),trk_start_z_v->at(i));
@@ -203,7 +203,7 @@ void twoproton_pelee_overlay::Loop()
     if(y1 != 3) continue;
     threetrk_connected++;
     Fill_Histograms_Mine(4, pot_wgt*mc_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv);
-    Fill_Histograms_Raquel(4, pot_wgt*mc_wgt, cuts.fv);
+    Fill_Histograms_Raquel(4, pot_wgt*mc_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv);
     for(int i = 0; i < n_pfps; i++){
       int track_pdg = testVector.at(i);
       bool contained_start = cuts.In_FV(10,10,10,10,10,10,trk_start_x_v->at(i),trk_start_y_v->at(i),trk_start_z_v->at(i));
@@ -216,7 +216,7 @@ void twoproton_pelee_overlay::Loop()
     if(muons != 1 && protons != 2) continue;
     pid++;
     Fill_Histograms_Mine(5, pot_wgt*mc_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv);
-    Fill_Histograms_Raquel(5, pot_wgt*mc_wgt, cuts.fv);
+    Fill_Histograms_Raquel(5, pot_wgt*mc_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv);
 
     //Identifying the Partciles
     ///////////////////////////
@@ -380,12 +380,10 @@ void twoproton_pelee_overlay::Loop()
     }
     if(_debug) std::cout<<"After Flipping: Recoil Proton 4 Vector: ("<<rec[0]<<","<<rec[1]<<","<<rec[2]<<","<<rec[3]<<")"<<std::endl;
     
-
-
     //Have to fill here for after containment
     ////////////////////////////////////////
     Fill_Histograms_Mine(6, pot_wgt*mc_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv);
-    Fill_Histograms_Raquel(6, pot_wgt*mc_wgt, cuts.fv);
+    Fill_Histograms_Raquel(6, pot_wgt*mc_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm, cuts.fv);
 
     //We had to add another cut: The muon and protons must have reconstructed momentum within the thresholdss defined
     // this is the only way to get the closure test to work
@@ -402,7 +400,7 @@ void twoproton_pelee_overlay::Loop()
     //Now you can fill your final histograms!
     /////////////////////////////////////
     Fill_Histograms_Mine(7, pot_wgt*mc_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv);
-    Fill_Histograms_Raquel(7, pot_wgt*mc_wgt, cuts.fv);
+    Fill_Histograms_Raquel(7, pot_wgt*mc_wgt, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0,mc_n_threshold_pionpm,cuts.fv);
     Fill_Histograms_Particles(mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0, mc_n_threshold_pionpm, cuts.fv, vMuon, muon, vLead, lead, vRec, rec, mc_wgt*pot_wgt);
     Fill_Histograms_Particles_Raquel(vMuon, muon, vLead, lead, vRec, rec, mc_wgt*pot_wgt, cuts.fv);
 
@@ -496,7 +494,7 @@ void twoproton_pelee_overlay::Loop()
   std::cout << "[MC_RECO] Initial Number of Events That were Reconstructed: "<<events_remaining<<std::endl;
   std::cout << "[MC_RECO] Number of CCOpOpi Events: "<<cc0p0pi[number-1]<<" Fraction of the Total: "<<float(100.*(float(cc0p0pi[number-1])/float(events_remaining)))<<"%"<<std::endl;
   std::cout << "[MC_RECO] Number of CC1p0pi Events: "<<cc1p0pi[number-1]<<" Fraction of the Total: "<<float(100.*(float(cc1p0pi[number-1])/float(events_remaining)))<<"%"<<std::endl;
-  std::cout << "[MC_RECO] Number of CC2p0pi Events: "<<cc2p0pi[6]<<" Fraction of the Total: "<<float(100.*(float(cc2p0pi[6])/float(events_remaining)))<<"%"<<std::endl;
+  std::cout << "[MC_RECO] Number of CC2p0pi Events: "<<cc2p0pi[number-1]<<" Fraction of the Total: "<<float(100.*(float(cc2p0pi[number-1])/float(events_remaining)))<<"%"<<std::endl;
   std::cout << "[MC_RECO] Number of CCNp0pi Events: "<<ccNp0pi[number-1]<<" Fraction of the Total: "<<float(100.*(float(ccNp0pi[number-1])/float(events_remaining)))<<"%"<<std::endl;
   std::cout << "[MC_RECO] Number of CCNp1pi Events: "<<ccNp1pi[number-1]<<" Fraction of the Total: "<<float(100.*(float(ccNp1pi[number-1])/float(events_remaining)))<<"%"<<std::endl;
   std::cout << "[MC_RECO] Number of CCNpNpi Events: "<<ccNpNpi[number-1]<<" Fraction of the Total: "<<float(100.*(float(ccNpNpi[number-1])/float(events_remaining)))<<"%"<<std::endl;
@@ -505,6 +503,35 @@ void twoproton_pelee_overlay::Loop()
   std::cout << "[MC_RECO] Number of NC Events: "<<nc[number-1]<<" Fraction of the Total: "<<float(100.*(float(nc[number-1])/float(events_remaining)))<<"%"<<std::endl;
   std::cout << "[MC_RECO] Number of Else Events: "<<other[number-1]<<" Fraction of the Total: "<<float(100.*(float(other[number-1])/float(events_remaining)))<<"%"<<std::endl;
   std::cout <<"-----NOTHING REALLY MATTERS. ANYONE CAN SEE. NOTHING REALLY MATTERS. NOTHING REALLY MATTERS TO ME-----"<<std::endl;
+
+  std::cout<<"-----Selected CC2p in terms of Interaction Channels-----"<<std::endl;
+  std::cout << "[CC2P_INTERACTION_CHANNELS] Initial Number of Events That were Reconstructed: "<<cc2p0pi[number-1]<<std::endl;
+  std::cout << "[CC2P_INTERACTION_CHANNELS] Number of CCQEL Events: "<<qel_cc2p<<" Fraction of the Total: "<<float(100.*(float(qel_cc2p)/float(events_remaining)))<<"%"<<std::endl;
+  std::cout << "[CC2P_INTERACTION_CHANNELS] Number of CCRES Events: "<<res_cc2p<<" Fraction of the Total: "<<float(100.*(float(res_cc2p)/float(events_remaining)))<<"%"<<std::endl;
+  std::cout << "[CC2P_INTERACTION_CHANNELS] Number of CCMEC Events: "<<mec_cc2p<<" Fraction of the Total: "<<float(100.*(float(mec_cc2p)/float(events_remaining)))<<"%"<<std::endl;
+  std::cout << "[CC2P_INTERACTION_CHANNELS] Number of CCCOH Events: "<<coh_cc2p<<" Fraction of the Total: "<<float(100.*(float(coh_cc2p)/float(events_remaining)))<<"%"<<std::endl;
+  std::cout << "[CC2P_INTERACTION_CHANNELS] Number of CCDIS Events: "<<dis_cc2p<<" Fraction of the Total: "<<float(100.*(float(dis_cc2p)/float(events_remaining)))<<"%"<<std::endl;
+  std::cout << "[CC2P_INTERACTION_CHANNELS] Number of CCNue Events: "<<ccnue_cc2p<<" Fraction of the Total: "<<float(100.*(float(ccnue_cc2p)/float(events_remaining)))<<"%"<<std::endl;
+  std::cout << "[CC2P_INTERACTION_CHANNELS] Number of OUTFV Events: "<<outfv_cc2p<<" Fraction of the Total: "<<float(100.*(float(outfv_cc2p)/float(events_remaining)))<<"%"<<std::endl;
+  std::cout << "[CC2P_INTERACTION_CHANNELS] Number of NC Events: "<<nc_cc2p<<" Fraction of the Total: "<<float(100.*(float(nc_cc2p)/float(events_remaining)))<<"%"<<std::endl;
+  std::cout << "[CC2P_INTERACTION_CHANNELS] Number of Else Events: "<<other_cc2p<<" Fraction of the Total: "<<float(100.*(float(other_cc2p)/float(events_remaining)))<<"%"<<std::endl;
+  std::cout <<"-----ONE FOR THE DAGGER, AND ONE FOR THE ONE YOU BELIEVE!!-----"<<std::endl;
+
+
+  std::cout<<"-----Selected CCQE in terms of topologies-----"<<std::endl;
+  std::cout << "[CCQE_TOPOLOGIES] Initial Number of Events That were Reconstructed: "<<events_remaining<<std::endl;
+  std::cout << "[CCQE_TOPOLOGIES] Number of CCOpOpi Events: "<<cc0p0pi_ccqe<<" Fraction of the Total: "<<float(100.*(float(cc0p0pi_ccqe)/float(events_remaining)))<<"%"<<std::endl;
+  std::cout << "[CCQE_TOPOLOGIES] Number of CC1p0pi Events: "<<cc1p0pi_ccqe<<" Fraction of the Total: "<<float(100.*(float(cc1p0pi_ccqe)/float(events_remaining)))<<"%"<<std::endl;
+  std::cout << "[CCQE_TOPOLOGIES] Number of CC2p0pi Events: "<<cc2p0pi_ccqe<<" Fraction of the Total: "<<float(100.*(float(cc2p0pi[6])/float(events_remaining)))<<"%"<<std::endl;
+  std::cout << "[CCQE_TOPOLOGIES] Number of CCNp0pi Events: "<<ccNp0pi_ccqe<<" Fraction of the Total: "<<float(100.*(float(ccNp0pi_ccqe)/float(events_remaining)))<<"%"<<std::endl;
+  std::cout << "[CCQE_TOPOLOGIES] Number of CCNp1pi Events: "<<ccNp1pi_ccqe<<" Fraction of the Total: "<<float(100.*(float(ccNp1pi_ccqe)/float(events_remaining)))<<"%"<<std::endl;
+  std::cout << "[CCQE_TOPOLOGIES] Number of CCNpNpi Events: "<<ccNpNpi_ccqe<<" Fraction of the Total: "<<float(100.*(float(ccNpNpi_ccqe)/float(events_remaining)))<<"%"<<std::endl;
+  std::cout << "[CCQE_TOPOLOGIES] Number of CCNue Events: "<<ccnue_ccqe<<" Fraction of the Total: "<<float(100.*(float(ccnue_ccqe)/float(events_remaining)))<<"%"<<std::endl;
+  std::cout << "[CCQE_TOPOLOGIES] Number of OUTFV Events: "<<outfv_ccqe<<" Fraction of the Total: "<<float(100.*(float(outfv_ccqe)/float(events_remaining)))<<"%"<<std::endl;
+  std::cout << "[CCQE_TOPOLOGIES] Number of NC Events: "<<nc_ccqe<<" Fraction of the Total: "<<float(100.*(float(nc_ccqe)/float(events_remaining)))<<"%"<<std::endl;
+  std::cout << "[CCQE_TOPOLOGIES] Number of Else Events: "<<other_ccqe<<" Fraction of the Total: "<<float(100.*(float(other_ccqe)/float(events_remaining)))<<"%"<<std::endl;
+  std::cout <<"-----NOTHING REALLY MATTERS. ANYONE CAN SEE. NOTHING REALLY MATTERS. NOTHING REALLY MATTERS TO ME-----"<<std::endl;
+
 
   std::cout<<"Neutrinos 0: "<<neutrinos_0<<std::endl;
   std::cout<<"Neutrinos 1: "<<neutrinos_1<<std::endl;

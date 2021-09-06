@@ -107,7 +107,7 @@ void mc_efficiency::Loop()
     //Is this event a true 1mu2p?
     /////////////////////////////////
     bool true_cc2p;
-    cuts.Overlay_In_FV(10,10,10,10,10,10,reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z); //overlay FV requirment
+    cuts.Overlay_In_FV(10,10,10,10,10,10,true_nu_vtx_sce_x,true_nu_vtx_sce_y,true_nu_vtx_sce_z); //overlay FV requirment
     if(ccnc == 0 && nu_pdg == 14 && mc_n_threshold_proton == 2 && mc_n_threshold_muon == 1 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && cuts.fv == true){
       true_cc2p = true;
       cc2p0pi[0]++;

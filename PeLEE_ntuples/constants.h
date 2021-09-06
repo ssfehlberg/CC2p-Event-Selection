@@ -17,12 +17,11 @@ namespace Constants{
   double PID_CUT = 0.2;
 
   //Momentum Cut Values (only used by the overlay)
-  double MUON_MOM_CUT_LOW = 0.1;
-  double MUON_MOM_CUT_HIGH = 1.2;
-  double PROTON_MOM_CUT_LOW = 0.3;
-  double PROTON_MOM_CUT_HIGH = 1.0;
-  double CHARGED_PI_MOM_CUT = 0.065;
-  //double PION0_MOM_CUT = 0.065;
+  double MUON_MOM_CUT_LOW = 0.1;//0.0;
+  double MUON_MOM_CUT_HIGH = 1.2;//999;
+  double PROTON_MOM_CUT_LOW = 0.3;//0.0;
+  double PROTON_MOM_CUT_HIGH = 1.0;//9999;
+  double CHARGED_PI_MOM_CUT = 0.065;//9999;
 
   //Argon 40 properties
   double MASS_TARGET = 37.215526; //GeV

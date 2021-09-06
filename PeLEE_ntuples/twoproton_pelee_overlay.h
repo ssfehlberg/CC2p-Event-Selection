@@ -1458,7 +1458,7 @@ public :
    virtual void     Which_Run();
    virtual void     Define_Histograms(); //defines histograms. works for all samples
    virtual void     Fill_Histograms_Mine(int i, double wgt, int mc_n_threshold_muon, int mc_n_threshold_proton, int mc_n_threshold_pion0, int mc_n_threshold_pionpm, bool fv);
-   virtual void     Fill_Histograms_Raquel(int i, double wgt, bool fv);
+   virtual void     Fill_Histograms_Raquel(int i, double wgt,  int mc_n_threshold_muon, int mc_n_threshold_proton, int mc_n_threshold_pion0, int mc_n_threshold_pionpm, bool fv);
    virtual void     Fill_Track_Plots(int which_cut,float value, int pdg, bool contained_start,bool contained_end, double wgt); //fills the track variables 
    virtual void     Fill_Histograms_Particles(int mc_n_threshold_muon, int mc_n_threshold_proton, int mc_n_threshold_pion0, double mc_n_threshold_pionpm, bool fv,TVector3 vMuon, TLorentzVector muon, TVector3 vLead, TLorentzVector lead, TVector3 vRec, TLorentzVector rec, double wgt);
    virtual void     Fill_Histograms_Particles_Raquel(TVector3 vMuon, TLorentzVector muon, TVector3 vLead, TLorentzVector lead, TVector3 vRec, TLorentzVector rec, double wgt, bool fv);
@@ -1595,6 +1595,7 @@ public :
   TH1D* h_tot_E_overlay[number2];
   TH1D* h_tot_E_minus_beam_overlay[number2];
   TH1D* h_E_resolution_overlay[number2];
+  TH1D* h_E_true_overlay[number2];
   TH1D* h_PT_squared_overlay[number2];
 
   //raquel
@@ -1658,6 +1659,30 @@ public :
   int nc_raquel[number+1] = {0};
   int other_raquel[number+1] = {0};
   int res_count[4] = {0};
+ 
+
+  //counters to see what the selected cc2p are in terms of interactions
+  int qel_cc2p = 0;
+  int coh_cc2p = 0;
+  int mec_cc2p = 0;
+  int res_cc2p = 0;
+  int dis_cc2p = 0;
+  int ccnue_cc2p = 0;
+  int nc_cc2p = 0;
+  int outfv_cc2p = 0;
+  int other_cc2p = 0;
+
+  //counters to see what is inside of the ccqe events
+  int cc0p0pi_ccqe = 0; 
+  int cc1p0pi_ccqe = 0;
+  int cc2p0pi_ccqe = 0;
+  int ccNp0pi_ccqe = 0;
+  int ccNp1pi_ccqe = 0;
+  int ccNpNpi_ccqe = 0;
+  int ccnue_ccqe = 0;
+  int outfv_ccqe = 0;
+  int nc_ccqe = 0;
+  int other_ccqe = 0;
   
   int other_else = 0;
   int neutron = 0;
@@ -1754,9 +1779,9 @@ void twoproton_pelee_overlay::Define_Histograms(){
       h_list.push_back(h_mec_wgt[i]);
 
       for(int j=0; j < number2; j++){ //my stuff                                                                                        
-	h_vtx_x_overlay[i][j]=new TH1D(Form("h_vtx_x%s%s",point[i],channel[j]),Form("h_vtx_x%s%s",point[i],channel[j]),50,0,250);
-	h_vtx_y_overlay[i][j]=new TH1D(Form("h_vtx_y%s%s",point[i],channel[j]),Form("h_vtx_y%s%s",point[i],channel[j]),50,-125,125);
-	h_vtx_z_overlay[i][j]=new TH1D(Form("h_vtx_z%s%s",point[i],channel[j]),Form("h_vtx_z%s%s",point[i],channel[j]),50,0,1050);
+	h_vtx_x_overlay[i][j]=new TH1D(Form("h_vtx_x%s%s",point[i],channel[j]),Form("h_vtx_x%s%s",point[i],channel[j]),26,0,260);
+	h_vtx_y_overlay[i][j]=new TH1D(Form("h_vtx_y%s%s",point[i],channel[j]),Form("h_vtx_y%s%s",point[i],channel[j]),24,-120,120);
+	h_vtx_z_overlay[i][j]=new TH1D(Form("h_vtx_z%s%s",point[i],channel[j]),Form("h_vtx_z%s%s",point[i],channel[j]),104,0,1040);
 	h_vtx_x_mc[i][j]=new TH1D(Form("h_vtx_x_mc%s%s",point[i],channel[j]),Form("h_vtx_x_mc%s%s",point[i],channel[j]),40,0,275);
 	h_vtx_y_mc[i][j]=new TH1D(Form("h_vtx_y_mc%s%s",point[i],channel[j]),Form("h_vtx_y_mc%s%s",point[i],channel[j]),40,-125,125);
 	h_vtx_z_mc[i][j]=new TH1D(Form("h_vtx_z_mc%s%s",point[i],channel[j]),Form("h_vtx_z_mc%s%s",point[i],channel[j]),50,0,1050);
@@ -1960,6 +1985,7 @@ void twoproton_pelee_overlay::Define_Histograms(){
 	h_tot_E_overlay[i] = new TH1D(Form("h_tot_E%s",channel[i]),Form("h_tot_E%s; Total Energy; Counts;",channel[i]),50,0,2.5);
 	h_tot_E_minus_beam_overlay[i] = new TH1D(Form("h_tot_E_minus_beam%s",channel[i]),Form("h_tot_E_minus_beam%s; Total Energy Remaining (MeV/c); Counts;",channel[i]),100,-100,0);
 	h_E_resolution_overlay[i] = new TH1D(Form("h_E_resolution%s",channel[i]),Form("h_E_resolution%s; Energy Resolution (GeV/c); Counts",channel[i]),100,-1.0,1.0);
+	h_E_true_overlay[i] =  new TH1D(Form("h_E_true%s",channel[i]),Form("h_E_true%s; Energy True (GeV/c); Counts",channel[i]),bins_nuE,edges_nuE);
 	h_PT_squared_overlay[i] = new TH1D(Form("h_PT_squared%s",channel[i]),Form("h_PT_squared%s; P_{T}^{2}; Counts", channel[i]),50,0,5);
 
       }else if( use_xsec_binning == false){
@@ -1977,11 +2003,13 @@ void twoproton_pelee_overlay::Define_Histograms(){
 	h_tot_E_overlay[i] = new TH1D(Form("h_tot_E%s",channel[i]),Form("h_tot_E%s; Total Energy; Counts;",channel[i]),50,0,2.5);
 	h_tot_E_minus_beam_overlay[i] = new TH1D(Form("h_tot_E_minus_beam%s",channel[i]),Form("h_tot_E_minus_beam%s; Total Energy Remaining (MeV/c); Counts;",channel[i]),100,-100,0);
 	h_E_resolution_overlay[i] = new TH1D(Form("h_E_resolution%s",channel[i]),Form("h_E_resolution%s; Energy Resolution (GeV/c); Counts",channel[i]),100,-1.0,1.0);
+	h_E_true_overlay[i] =  new TH1D(Form("h_E_true%s",channel[i]),Form("h_E_true%s; Energy True (GeV/c); Counts",channel[i]),50,0,2.5);
 	h_PT_squared_overlay[i] = new TH1D(Form("h_PT_squared%s",channel[i]),Form("h_PT_squared%s; P_{T}^{2}; Counts", channel[i]),50,0,5);
       } //end of false statement
 
       h_list.push_back(h_PT_squared_overlay[i]);
       h_list.push_back(h_E_resolution_overlay[i]);
+      h_list.push_back(h_E_true_overlay[i]);
       h_list.push_back(h_opening_angle_mu_both_overlay[i]);
       h_list.push_back(h_nu_E_overlay[i]);
       h_list.push_back(h_tot_E_overlay[i]);
@@ -2226,8 +2254,41 @@ void twoproton_pelee_overlay::Fill_Histograms_Mine(int i, double wgt, int mc_n_t
   } else if (ccnc == 0 && nu_pdg == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton == 2 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
     Fill_Mine(i,3,wgt);
     cc2p0pi[i]++;
-    std::cout<<"SIGNAL EVENT"<<std::endl;
 
+    if(i == 7){
+ 
+      //CCQE
+      if(ccnc == 0 && interaction == 0 && abs(nu_pdg) == 14 && fv==true){
+	qel_cc2p++;
+	//CCCoh                                                                                                                                                                                             
+      } else if(ccnc == 0 && interaction == 3 && abs(nu_pdg) == 14 && fv == true){
+	coh_cc2p++;
+	//CCMEC                                                                                                                                                                                             
+      } else if(ccnc == 0 && interaction == 10 && abs(nu_pdg) == 14 && fv==true){
+	mec_cc2p++;
+	
+	//CCRES                                                                                                                                                                                             
+      } else if(ccnc == 0 && interaction == 1 && abs(nu_pdg) == 14 && fv==true){
+	res_cc2p++;
+	//CCDIS                                                                                                                                                                                             
+      } else if(ccnc == 0 && interaction == 2 && abs(nu_pdg) == 14 && fv==true){
+	dis_cc2p++;
+	//CCNue                                                                                                                                                                                             
+      } else if(ccnc == 0  && abs(nu_pdg) == 12 && fv ==true){
+	ccnue_cc2p++;
+	//NC                                                                                                                                                                                                
+      } else if(ccnc == 1 && fv == true){
+	nc_cc2p++;
+	//OUT OF FV                                                                                                                                                                                          
+      } else if(fv == false){
+	outfv_cc2p++;
+	//Other                                                                                                                                                                                             
+      }else{
+	other_cc2p++;
+      } 
+
+    } //end of if i == 7
+    
     //ccNp0pi                                                                                                                                  
   } else if (ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton > 2 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
     Fill_Mine(i,4,wgt);
@@ -2259,12 +2320,47 @@ void twoproton_pelee_overlay::Fill_Histograms_Mine(int i, double wgt, int mc_n_t
   }
 }
 
-void twoproton_pelee_overlay::Fill_Histograms_Raquel(int i, double wgt, bool fv){
+void twoproton_pelee_overlay::Fill_Histograms_Raquel(int i, double wgt,  int mc_n_threshold_muon, int mc_n_threshold_proton, int mc_n_threshold_pion0, int mc_n_threshold_pionpm, bool fv){
   Fill_Raquel(i,0, wgt);
   //CCQE
   if(ccnc == 0 && interaction == 0 && abs(nu_pdg) == 14 && fv==true){
     Fill_Raquel(i,1, wgt);
     qel[i]++;
+
+    if(i == 7){
+      if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton == 0 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
+	cc0p0pi_ccqe++;
+	//cc1p0pi                                                                                                                                  
+      } else if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton == 1 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
+	cc1p0pi_ccqe++;
+	//cc2p0pi                                                                                                           
+      } else if (ccnc == 0 && nu_pdg == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton == 2 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
+	cc2p0pi_ccqe++;
+	//ccNp0pi                                                                                                                                  
+      } else if (ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton > 2 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && fv == true){
+	ccNp0pi_ccqe++;
+	//ccNp1pi                                                                                                                                   
+      } else if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton >= 0 && (mc_n_threshold_pion0 == 1 || mc_n_threshold_pionpm == 1) && fv == true){
+	ccNp1pi_ccqe++;
+	//ccNpNpi                                                                                                                                   
+      } else if(ccnc == 0 && abs(nu_pdg) == 14 && mc_n_threshold_muon == 1 && mc_n_threshold_proton >= 0 && (mc_n_threshold_pion0 > 1 || mc_n_threshold_pionpm > 1) && fv == true){
+	ccNpNpi_ccqe++;
+	//CC NUE                                                                                                                                   
+      } else if(ccnc == 0 && abs(nu_pdg) == 12 && fv == true){
+	ccnue_ccqe++;
+	//OUT OF FV                                                                                                                                
+      } else if(fv == false){                                                                                                                  
+	outfv_ccqe++;
+	//NC                                                                                                                                       
+      } else if(ccnc == 1 && fv == true){
+	nc_ccqe++;
+	//else                                                                                                                                     
+      } else{
+	other_ccqe++;
+      }
+
+    } //end of if i == 7
+
     //CCCoh                                                                                                                                                                                             
   } else if(ccnc == 0 && interaction == 3 && abs(nu_pdg) == 14 && fv == true){
     Fill_Raquel(i,2, wgt);
@@ -2453,9 +2549,6 @@ void twoproton_pelee_overlay::Fill_Particles(int j, TVector3 vMuon, TLorentzVect
 
   //Make sure to fill those resolution plots
   
-
-
-
   //Beam Stuff
   double EMuon =variables.Energies[0];
   double ELead = variables.Energies[2];
@@ -2497,6 +2590,7 @@ void twoproton_pelee_overlay::Fill_Particles(int j, TVector3 vMuon, TLorentzVect
   h_tot_E_overlay[j]->Fill(E_tot,wgt);
   h_tot_E_minus_beam_overlay[j]->Fill(E_tot_minus_beam,wgt);
   h_E_resolution_overlay[j]->Fill(Eneutrino - double(nu_e) ,wgt);
+  h_E_true_overlay[j]->Fill(double(nu_e), wgt);
   h_PT_squared_overlay[j]->Fill(PT_miss.Mag2(),wgt);
   
   variables.momenta.clear();
