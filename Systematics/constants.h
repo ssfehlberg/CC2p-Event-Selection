@@ -5,6 +5,9 @@ namespace Constants{
   //debug statements
   bool _debug = false; 
 
+  //print module summary
+  bool print_module_summary = true;
+
   //Are we adding protons together in the STVs?
   bool add_protons = true;
 
@@ -51,12 +54,66 @@ namespace Constants{
   int reco_muon_mom_cut = 0; //Number of events where reco muon momentum is < 0.1 and > 2.5
   int reco_lead_mom_cut = 0; //Number of events where reco lead momentum is < 0.25 and > 1.2  
   int reco_recoil_mom_cut = 0; //Number of events where reco recoil momentum is < 0.25 and > 1.2  
+  int muon_contained[3] = {0}; //are the muon start and end contained?
+  int lead_contained[3] = {0}; //are the lead start and end contained?
+  int recoil_contained[3] = {0}; //are ther ecoil start and end contained?
   int events_remaining = 0; //sanity check for number of events remaining
 
   //Neutrino counters                                                                                     
   int neutrinos_0 = 0; //# of 0 neutrino slice events
   int neutrinos_1 = 0; //# of 1 neutrino slice events
   int neutrinos_else = 0; ///# of other neutrino slice events
+
+  //MC Counters
+  ///////////
+  static const int number = 8; //number of applied cuts
+  
+  //number of generated event/channel                                                                                                                                                                                                                            
+  int cc0p0pi[number+1] = {0}; //number-1 is after pid. number then would be particle specifics...should be same as number-1                                                                                                                                      
+  int cc1p0pi[number+1] = {0};
+  int cc2p0pi[number+1] = {0};
+  int ccNp0pi[number+1] = {0};
+  int ccNp1pi[number+1] = {0};
+  int ccNpNpi[number+1] = {0};
+  int ccnue[number+1] = {0};
+  int outfv[number+1] = {0};
+  int nc[number+1] = {0};
+  int other[number+1] = {0};
+
+  //number of generated event/channel                                                                                                                                                                                                                             
+  int qel[number+1] = {0};
+  int res[number+1] = {0};
+  int mec[number+1] = {0};
+  int coh[number+1] = {0};
+  int dis[number+1] = {0};
+  int ccnue_raquel[number+1] = {0};
+  int outfv_raquel[number+1] = {0};
+  int nc_raquel[number+1] = {0};
+  int other_raquel[number+1] = {0};
+  int res_count[4] = {0};
+
+  //counters to see what the selected cc2p are in terms of interactions                                                                                                                                                                                           
+  int qel_cc2p = 0;
+  int coh_cc2p = 0;
+  int mec_cc2p = 0;
+  int res_cc2p = 0;
+  int dis_cc2p = 0;
+  int ccnue_cc2p = 0;
+  int nc_cc2p = 0;
+  int outfv_cc2p = 0;
+  int other_cc2p = 0;
+
+  //counters to see what is inside of the ccqe events                                                                                                                                                                                                            
+  int cc0p0pi_ccqe = 0;
+  int cc1p0pi_ccqe = 0;
+  int cc2p0pi_ccqe = 0;
+  int ccNp0pi_ccqe = 0;
+  int ccNp1pi_ccqe = 0;
+  int ccNpNpi_ccqe = 0;
+  int ccnue_ccqe = 0;
+  int outfv_ccqe = 0;
+  int nc_ccqe = 0;
+  int other_ccqe = 0;
 
   //stupid counters used only by overlay
   int nue = 0; //checking the number of nue's
@@ -67,6 +124,13 @@ namespace Constants{
   int denom_uncontained = 0;
   int num_contained = 0;
   int num_uncontained = 0;
+  int total_protons = 0;
+  int uncontain = 0;
+  int contain = 0;
+  int other_else = 0;
+  int neutron = 0;
+  int neutrino = 0;
+  int zeros = 0;
 
 }
 #endif

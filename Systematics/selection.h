@@ -1,6 +1,5 @@
-#include "constants.h"
 using namespace Constants;
-class Cuts{
+class Selection{
 
  public:
 
@@ -56,7 +55,7 @@ class Cuts{
 
 //Used in the Overlay to help with the MC breakdown definitions. Does same thing as above but returns fv variable
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool Cuts::Overlay_In_FV(float x_low_edge, float x_up_edge, float y_low_edge, float y_up_edge, float z_low_edge, float z_up_edge, float x, float y, float z){
+bool Selection::Overlay_In_FV(float x_low_edge, float x_up_edge, float y_low_edge, float y_up_edge, float z_low_edge, float z_up_edge, float x, float y, float z){
   float_t xmin = 0.0 + x_low_edge;
   float_t xmax = 256.35 - x_up_edge;
   float_t ymin = -116.5 + y_low_edge;
@@ -74,7 +73,7 @@ bool Cuts::Overlay_In_FV(float x_low_edge, float x_up_edge, float y_low_edge, fl
 
 //Determines if the input x,y,z is wihtin the FV. The distance from any edge can be defined by VAR_low(high)_edge
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool Cuts::In_FV(float x_low_edge, float x_up_edge, float y_low_edge, float y_up_edge, float z_low_edge, float z_up_edge, float x, float y, float z){
+bool Selection::In_FV(float x_low_edge, float x_up_edge, float y_low_edge, float y_up_edge, float z_low_edge, float z_up_edge, float x, float y, float z){
   float_t xmin = 0.0 + x_low_edge;
   float_t xmax = 256.35 - x_up_edge;
   float_t ymin = -116.5 + y_low_edge;
@@ -91,7 +90,7 @@ bool Cuts::In_FV(float x_low_edge, float x_up_edge, float y_low_edge, float y_up
 } //end of In_FV
 
 //Determines if the Event is a True CC2p                                                                                                                                                                                                                                   ////////////////////////////////////////                                                                                                                                                                                                                                  
-bool Cuts::True_CC2p(float x, float y, float z, int ccnc, int nu_pdg, int mc_n_threshold_muon, int mc_n_threshold_proton, int mc_n_threshold_pion0, int mc_n_threshold_pionpm){
+bool Selection::True_CC2p(float x, float y, float z, int ccnc, int nu_pdg, int mc_n_threshold_muon, int mc_n_threshold_proton, int mc_n_threshold_pion0, int mc_n_threshold_pionpm){
   Overlay_In_FV(10,10,10,10,10,10,x,y,z); //check is the true vertex is in the FV      
   if(ccnc == 0 && nu_pdg == 14 && mc_n_threshold_proton == 2 && mc_n_threshold_muon == 1 && mc_n_threshold_pion0 == 0 && mc_n_threshold_pionpm == 0 && true_fv == true){
     true_cc2p = true;
@@ -103,7 +102,7 @@ bool Cuts::True_CC2p(float x, float y, float z, int ccnc, int nu_pdg, int mc_n_t
 
 //Determines if the MC Breakdown
 ////////////////////////////////////////
-void Cuts::True_Breakdown(float x, float y, float z, int ccnc, int nu_pdg, int mc_n_threshold_muon, int mc_n_threshold_proton, int mc_n_threshold_pion0, int mc_n_threshold_pionpm, int interaction, int i){
+void Selection::True_Breakdown(float x, float y, float z, int ccnc, int nu_pdg, int mc_n_threshold_muon, int mc_n_threshold_proton, int mc_n_threshold_pion0, int mc_n_threshold_pionpm, int interaction, int i){
 
   Overlay_In_FV(10,10,10,10,10,10,x,y,z); //check is the true vertex is in the FV
 
@@ -199,7 +198,7 @@ void Cuts::True_Breakdown(float x, float y, float z, int ccnc, int nu_pdg, int m
 
 } //end of true_breakdown
 
-bool Cuts::Event_Selection(int n_pfps, int tracks_w_good_score,int tracks_w_good_distance, int muons, int protons){
+bool Selection::Event_Selection(int n_pfps, int tracks_w_good_score,int tracks_w_good_distance, int muons, int protons){
   
   //are there 3 PFPs?
   if(n_pfps == 3){
@@ -231,9 +230,9 @@ bool Cuts::Event_Selection(int n_pfps, int tracks_w_good_score,int tracks_w_good
 
   return three_pfps && three_tracks && three_tracks_4cm_vertex && good_pid;
 
-}//end of 1mu2p
+}//end of event Selection
 
-bool Cuts::Reco_Momentum(TVector3 vMuon, TVector3 vLead, TVector3 vRec){
+bool Selection::Reco_Momentum(TVector3 vMuon, TVector3 vLead, TVector3 vRec){
 
     if(vMuon.Mag() > MUON_MOM_CUT_LOW && vMuon.Mag() < MUON_MOM_CUT_HIGH){
       good_muon_mom = true;
@@ -257,7 +256,7 @@ bool Cuts::Reco_Momentum(TVector3 vMuon, TVector3 vLead, TVector3 vRec){
 
 } //end of Reco_Momentum
 
-bool Cuts::Reco_Event(){
+bool Selection::Reco_Event(){
   if(pid == true && good_muon_mom == true && good_lead_mom == true && good_recoil_mom == true){
     reconstructed_event = true;
   } else {
@@ -267,7 +266,7 @@ bool Cuts::Reco_Event(){
 
 }//end of reco event
 
-void Cuts::Fill_Counters(bool overlay,float x, float y, float z, int ccnc, int nu_pdg, int mc_n_threshold_muon, int mc_n_threshold_proton, int mc_n_threshold_pion0, int mc_n_threshold_pionpm,int interaction){
+void Selection::Fill_Counters(bool overlay,float x, float y, float z, int ccnc, int nu_pdg, int mc_n_threshold_muon, int mc_n_threshold_proton, int mc_n_threshold_pion0, int mc_n_threshold_pionpm,int interaction){
 
   if(overlay == true){
     True_Breakdown(x,y,z,ccnc,nu_pdg,mc_n_threshold_muon,mc_n_threshold_proton,mc_n_threshold_pion0,mc_n_threshold_pionpm,interaction,0);
