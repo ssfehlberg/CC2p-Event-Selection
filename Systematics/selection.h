@@ -10,7 +10,7 @@ class Selection{
   virtual bool Event_Selection(int n_pfps, int tracks_w_good_score,int tracks_w_good_distance, int muons, int protons); //3 pfps, who are tracks, with 1mu and 2 protons
   virtual bool Reco_Momentum(TVector3 vMuon, TVector3 vLead, TVector3 vRec); //is the reco momentum of the particles okay?
   virtual bool Reco_Event(); //create the reco event boolean
-  virtual void Fill_Counters(bool overlay,float x, float y, float z, int ccnc, int nu_pdg, int mc_n_threshold_muon, int mc_n_threshold_proton, int mc_n_threshold_pion0, int mc_n_threshold_pionpm,int interaction); //Fill all the Counters!
+  //virtual void Fill_Counters(bool overlay,float x, float y, float z, int ccnc, int nu_pdg, int mc_n_threshold_muon, int mc_n_threshold_proton, int mc_n_threshold_pion0, int mc_n_threshold_pionpm,int interaction); //Fill all the Counters!
 
   bool true_fv; //is the true vertex in the FV?
   bool reco_fv; //is the reconstructed vertex in the FV?
@@ -257,7 +257,7 @@ bool Selection::Reco_Momentum(TVector3 vMuon, TVector3 vLead, TVector3 vRec){
 } //end of Reco_Momentum
 
 bool Selection::Reco_Event(){
-  if(pid == true && good_muon_mom == true && good_lead_mom == true && good_recoil_mom == true){
+  if(good_pid == true && good_muon_mom == true && good_lead_mom == true && good_recoil_mom == true){
     reconstructed_event = true;
   } else {
     reconstructed_event = false;
@@ -266,7 +266,7 @@ bool Selection::Reco_Event(){
 
 }//end of reco event
 
-void Selection::Fill_Counters(bool overlay,float x, float y, float z, int ccnc, int nu_pdg, int mc_n_threshold_muon, int mc_n_threshold_proton, int mc_n_threshold_pion0, int mc_n_threshold_pionpm,int interaction){
+/*void Selection::Fill_Counters(bool overlay,float x, float y, float z, int ccnc, int nu_pdg, int mc_n_threshold_muon, int mc_n_threshold_proton, int mc_n_threshold_pion0, int mc_n_threshold_pionpm,int interaction){
 
   if(overlay == true){
     True_Breakdown(x,y,z,ccnc,nu_pdg,mc_n_threshold_muon,mc_n_threshold_proton,mc_n_threshold_pion0,mc_n_threshold_pionpm,interaction,0);
@@ -337,3 +337,4 @@ void Selection::Fill_Counters(bool overlay,float x, float y, float z, int ccnc, 
   }
 
 }//end of fill counters
+*/

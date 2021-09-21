@@ -4,12 +4,10 @@
 #include "selection.h"
 #include "constants.h"
 using namespace Constants;
-#include <chrono>
-using namespace std::chrono;
 
 void twoproton_pelee::Loop()
 {
-  auto start = high_resolution_clock::now(); 
+  //auto start = high_resolution_clock::now(); 
 
   //Define objects of classes
   ////////////////////////////
@@ -39,6 +37,20 @@ void twoproton_pelee::Loop()
   //Define all the histograms I am going to fill and the mc_wgt                                
   /////////////////////////////////////////////////////////////
   hist.Define_Histograms(Form("%s",sample),Overlay);
+  
+  /*  int fvcntr = 0; //Number of events with reconstructed vertex within the FV                                                                                                                                                         
+  int threepfps = 0;
+  int threetrkcntr = 0; //Number of events with three tracks                                                                                                                                                                         
+  int threetrk_connected = 0; //Number of Events with three tracks attached to the vertex                                                                                                                                            
+  int pid = 0; //Number of events with 1 track with PID > 0.6 and 2 tracks with PID < 0.6                                                                                                                                            
+  int reco_muon_mom_cut = 0; //Number of events where reco muon momentum is < 0.1 and > 2.5                                                                                                                                          
+  int reco_lead_mom_cut = 0; //Number of events where reco lead momentum is < 0.25 and > 1.2                                                                                                                                        
+  int reco_recoil_mom_cut = 0; //Number of events where reco recoil momentum is < 0.25 and > 1.2                                                                                                                                     
+  int muon_contained[3] = {0}; //are the muon start and end contained?                                                                                                                                                               
+  int lead_contained[3] = {0}; //are the lead start and end contained?                                                                                                                                                               
+  int recoil_contained[3] = {0}; //are ther ecoil start and end contained?                                                                                                                                                           
+  int events_remaining = 0; //sanity check for number of events remaining
+  */
   double event_weight; //event weight
   double mc_wgt; //MC weight. Overlay and Dirt Only
   int ohshit_denom = 0;
@@ -66,6 +78,8 @@ void twoproton_pelee::Loop()
     //Need to set the event weight for samples
     ////////////////////////////////////////////////
 
+    if(_debug) std::cout<<"STARTING TO GET THE MC WEIGHT"<< std::endl;
+
     //Overlay and Dirt
     if(Overlay == true || Dirt == true){
       if(std::isfinite(weightTune) && weightTune <= 100.) {
@@ -73,15 +87,24 @@ void twoproton_pelee::Loop()
       } else {
 	mc_wgt = 1 * weightSpline;
       }
+
       event_weight = pot_weight * mc_wgt;
+      if(_debug) std::cout<<"Value of the MC Weight: "<< mc_wgt<< std::endl;
+      if(_debug) std::cout<<"Value of the POT Weight: "<<pot_weight << std::endl;
+      if(_debug) std::cout<<"Value of Event Weight: "<< event_weight << std::endl;
 
       //BNB & EXT
     } else {
       event_weight = pot_weight;
+      if(_debug) std::cout<<"Value of the POT Weight: "<<pot_weight << std::endl;
+      if(_debug) std::cout<<"Value of Event Weight: "<< std::endl;
+
     } //end of else
 
     //Checking how many nue's & neutrino slices we have
     /////////////////////////////////
+    if(_debug) std::cout<<"CHECKING THE NUMBER OF NEUTRINO SLICES"<< std::endl;
+
     if(nu_pdg == 12) nue++;
     if(nslice == 0){
       neutrinos_0++;
@@ -92,13 +115,19 @@ void twoproton_pelee::Loop()
     }
 
     //Create a TVector3 of the reco and true vertex
+    /////////////////////////////////////////////////
     TVector3 reco_nu_vtx(reco_nu_vtx_sce_x,reco_nu_vtx_sce_y,reco_nu_vtx_sce_z);
     TVector3 true_nu_vtx(true_nu_vtx_x,true_nu_vtx_y,true_nu_vtx_z);
     TVector3 true_nu_vtx_sce(true_nu_vtx_sce_x,true_nu_vtx_sce_y,true_nu_vtx_sce_z);
 
+    if(_debug) std::cout<<"Location of the Reconstructed Vertex: "<<reco_nu_vtx[0] << ", "<< reco_nu_vtx[1] << ", " <<reco_nu_vtx[2] << std::endl;
+    if(_debug) std::cout<<"Location of the True Vertex: "<<true_nu_vtx[0] << ", "<< true_nu_vtx[1] << ", " <<true_nu_vtx[2] << std::endl;
+    if(_debug) std::cout<<"Location of the True SCE Vertex: "<<true_nu_vtx_sce[0] << ", "<< true_nu_vtx_sce[1] << ", " <<true_nu_vtx_sce[2] << std::endl;
+
     //Fill the MC thresholds. 
     //I need to rewrite this, but everytime i try, i fuck it up!
     /////////////////////////////////////////////////////////
+    if(_debug) std::cout<<"FILLING THE MC GARBAGE"<< std::endl;
     int mc_n_threshold_muon = 0;
     int mc_n_threshold_proton = 0;
     int mc_n_threshold_pion0 = 0;
@@ -179,11 +208,15 @@ void twoproton_pelee::Loop()
     ///////////////////////////////////////////////
 
     //Fill Histograms Before the Selection
+    if(_debug) std::cout<<"FILLING HISTOGRAMS BEFORE CUTS"<< std::endl;    
     hist.Fill_Histograms(Overlay,0,reco_nu_vtx,true_nu_vtx,true_nu_vtx_sce,CosmicIP,topological_score,event_weight);
 
     //1) Event must be in the FV, defined to be 10cm from any TPC edge 
+    if(_debug) std::cout<<"FILLING HISTOGRAMS AFTER FV CUT"<< std::endl;
     cuts.In_FV(10,10,10,10,10,10,reco_nu_vtx[0],reco_nu_vtx[1],reco_nu_vtx[2]); //returns fv bool
+    if(cuts.reco_fv != true) continue;    
     hist.Fill_Histograms(Overlay,1,reco_nu_vtx,true_nu_vtx,true_nu_vtx_sce,CosmicIP,topological_score,event_weight);
+    fvcntr++;
 
     //2)  There must be exactly 3 PFPs in the event (npfps == 3), 3 tracks with track score above 0.8, 3 tracks with distance less than 4cm to the vertex, and events with exactly 1 muon and 2 protons (pid)
     int tracks_w_good_score = 0;
@@ -210,13 +243,39 @@ void twoproton_pelee::Loop()
 
     //Here is the function that calculates this.
     cuts.Event_Selection(n_pfps, tracks_w_good_score, tracks_w_good_distance, muons, protons); //returns bool for the pfp selection + pid
-    //hist.Fill_Track_Plots(); //fil the track plots with the track ids and such
+
+    if(_debug) std::cout<<"FILLING HISTOGRAMS AFTER 3 PFPs"<< std::endl;
+    if(cuts.three_pfps == false) continue;
     hist.Fill_Histograms(Overlay,2,reco_nu_vtx,true_nu_vtx,true_nu_vtx_sce,CosmicIP,topological_score,event_weight);
+    threepfps++;
+    /*for(int i=0; i < n_pfps; i++){
+      hist.Fill_Track_Plots(0, Overlay, trk_score_v, trk_distance_v, trk_len_v,trk_llr_pid_score_v, event_weight);
+    }
+    */
+
+    if(_debug) std::cout<<"FILLING HISTOGRAMS AFTER 3 Tracks"<< std::endl;
+    if(cuts.three_tracks == false) continue;
+    hist.Fill_Histograms(Overlay,3,reco_nu_vtx,true_nu_vtx,true_nu_vtx_sce,CosmicIP,topological_score,event_weight);
+    threetrkcntr++;
+    //hist.Fill_Track_Plots(); //fil the track plots with the track ids and such
+
+    if(_debug) std::cout<<"FILLING HISTOGRAMS AFTER 3 4cm TRACKS"<< std::endl;
+    if(cuts.three_tracks_4cm_vertex == false) continue;
+    hist.Fill_Histograms(Overlay,4,reco_nu_vtx,true_nu_vtx,true_nu_vtx_sce,CosmicIP,topological_score,event_weight);
+    threetrk_connected++;
+    //hist.Fill_Track_Plots(); //fil the track plots with the track ids and such
+
+    if(_debug) std::cout<<"FILLING HISTOGRAMS AFTER PID"<< std::endl;
+    if(cuts.good_pid == false) continue;
+    hist.Fill_Histograms(Overlay,5,reco_nu_vtx,true_nu_vtx,true_nu_vtx_sce,CosmicIP,topological_score,event_weight);
+    pid++;
+    //hist.Fill_Track_Plots(); //fil the track plots with the track ids and such
 
     /////////////////////////////////////////////////////////////
     //Okay. Now we have to identify the leading and recoil proton
     // Determine if these are contained and define there momentum vectors
     ////////////////////////////////////////////////////////////
+    if(_debug) std::cout<<"NOW TO IDENTIFY THE PARTICLES AND FILL THEIR MOMENTUM"<< std::endl;
     int muon_id;
     int leading_proton_id;
     int recoil_proton_id;
@@ -234,6 +293,7 @@ void twoproton_pelee::Loop()
 
     float mom0 = trk_energy_proton_v->at(proton_id_vector[0]-1);
     float mom1 = trk_energy_proton_v->at(proton_id_vector[1]-1);
+
     if (abs(mom0) > abs(mom1)){
       leading_proton_id = proton_id_vector[0] - 1; //you have to do the -1 cause of course the id's are indexed at one like fucking losers
       recoil_proton_id = proton_id_vector[1] - 1;
@@ -242,12 +302,16 @@ void twoproton_pelee::Loop()
       recoil_proton_id = proton_id_vector[0] - 1;
     }
 
+    if(_debug) std::cout<<"Muon ID: "<< muon_id << std::endl;
+    if(_debug) std::cout<<"Leading Proton ID: "<< leading_proton_id << std::endl;
+    if(_debug) std::cout<<"Recoil Proton ID: "<< recoil_proton_id << std::endl;
+
     //Now to get the three momentum vectors
     /////////////////////////////////////////
 
     //Muon
     //////////
-    
+    if(_debug) std::cout<<"---MUON---"<< std::endl;
     //First check is the muon if fully contained
     bool muon_start_contained = cuts.In_FV(10,10,10,10,10,10,trk_sce_start_x_v->at(muon_id),trk_sce_start_y_v->at(muon_id),trk_sce_start_z_v->at(muon_id)); //is the muon start within the FV?
     bool muon_end_contained = cuts.In_FV(0,0,0,0,0,0,trk_sce_end_x_v->at(muon_id),trk_sce_end_y_v->at(muon_id),trk_sce_end_z_v->at(muon_id)); //is the muon end within the detector?
@@ -294,7 +358,8 @@ void twoproton_pelee::Loop()
 
     //Leading Proton
     /////////////////////
-    
+    if(_debug) std::cout<<"---LEADING---"<< std::endl;
+
     //first check is lead proton is fully contained
     bool lead_start_contained = cuts.In_FV(10,10,10,10,10,10,trk_sce_start_x_v->at(leading_proton_id),trk_sce_start_y_v->at(leading_proton_id),trk_sce_start_z_v->at(leading_proton_id)); //start of the lead proton within the FV
     bool lead_end_contained = cuts.In_FV(0,0,0,0,0,0,trk_sce_end_x_v->at(leading_proton_id),trk_sce_end_y_v->at(leading_proton_id),trk_sce_end_z_v->at(leading_proton_id)); //is end of the lead proton within the detector
@@ -332,6 +397,7 @@ void twoproton_pelee::Loop()
 
     //Recoil Proton
     ////////////////////////
+    if(_debug) std::cout<<"---RECOIL---"<< std::endl;
 
     //first check if recoil proton is fully contained
     bool recoil_start_contained = cuts.In_FV(10,10,10,10,10,10,trk_sce_start_x_v->at(recoil_proton_id),trk_sce_start_y_v->at(recoil_proton_id),trk_sce_start_z_v->at(recoil_proton_id)); //start of the recoil proton within the FV                              
@@ -368,45 +434,70 @@ void twoproton_pelee::Loop()
     }
     if(_debug) std::cout<<"After Flipping: Recoil Proton 4 Vector: ("<<rec[0]<<","<<rec[1]<<","<<rec[2]<<","<<rec[3]<<")"<<std::endl;
 
+    ///////////////////////////////////
+    // The containment was applied in the above sections. 
+    // Below we plot the result of containment for all three particles
+    ///////////////////////////////////////////
+    hist.Fill_Histograms(Overlay,6,reco_nu_vtx,true_nu_vtx,true_nu_vtx_sce,CosmicIP,topological_score,event_weight);
+
     /////////////////////////////////////////////////////////////////////////////////////
     //3) Require the muon, leading proton, and recoil proton to be within Momentum Limits
     ////////////////////////////////////////////////////////////////////////////////////
     cuts.Reco_Momentum(vMuon, vLead, vRec);
-    //hist.Fill_Particles(Overlay, vMuon,muon,vLead,lead,vRec,rec,event_weight);
+    if(cuts.good_muon_mom == false) continue;
+    reco_muon_mom_cut++;
+    if(cuts.good_lead_mom == false) continue;
+    reco_lead_mom_cut++;
+    if(cuts.good_recoil_mom == false) continue;
+    reco_recoil_mom_cut++;
+    hist.Fill_Histograms(Overlay,7,reco_nu_vtx,true_nu_vtx,true_nu_vtx_sce,CosmicIP,topological_score,event_weight);
+    hist.Fill_Particles(Overlay, vMuon,muon,vLead,lead,vRec,rec,event_weight);
 
     //////////////////////////////////////////////////////////////////
     //Now to fill the Reco_Event Boolean, and fill the final counters
-    //Also clean up the stupid vectors
     /////////////////////////////////////////////////////////////////
     cuts.Reco_Event(); 
-    cuts.Fill_Counters(Overlay, true_nu_vtx_sce[0],true_nu_vtx_sce[1],true_nu_vtx_sce[2],ccnc, nu_pdg, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0, mc_n_threshold_pionpm,interaction); //fills the counters
+    //cuts.Fill_Counters(Overlay, true_nu_vtx_sce[0],true_nu_vtx_sce[1],true_nu_vtx_sce[2],ccnc, nu_pdg, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0, mc_n_threshold_pionpm,interaction); //fills the counters
 
-    //Make sure to clean up before you finish                                                                                                                                                                                                                     
+    /////////////////////////////////////////
+    //Making sure to save the RSE in the Myfile
+    //Also save the CC2p stuff for the overlay
+    // Also, Also, clean up the vectors
+    ////////////////////////////////////
+    myfile << run << " " << sub << " " << evt << " " ;
+    myfile << endl;
+
     if(Overlay == true){
+      if(cuts.true_cc2p == true){
+	cc2p << run << " " << sub << " " << evt << " " ;
+	cc2p << endl;
+      }
       proton_id_vector.clear();
       testVector.clear();
     }
 
     events_remaining++;
-
+    
   } //END OF LOOP OVER EVENTS
 
   ///////////////////////////////////////////////////////////////
-  //Making an Output CSV to save the number of events after cuts;
+  // Saving the RSE for the Events in the MyFILE CSV
+  //Also Making an Output CSV to save the number of events after cuts.
   ////////////////////////////////////////////////////////////////
   std::ofstream csv_file;
-  csv_file.open(Form("%s/%s.csv",directory,sample));
-  csv_file << Form("Number of Events to Begin With, %lld, Fraction of Total, %f", nentries, float(100.*float(nentries)/float(nentries)));
-  csv_file << Form("Number of Events with Vertex in FV, %d , Fraction of Total,%f \n",fvcntr,float(100.*float(fvcntr)/float(nentries)));
-  csv_file << Form("Number of Events with 3 PFPs , %d , Fraction of Total,%f \n",threepfps,float(100.*float(threepfps)/float(nentries)));
-  csv_file << Form("Number of Events with 3 Tracks , %d , Fraction of Total,%f \n",threetrkcntr,float(100.*float(threetrkcntr)/float(nentries)));
-  csv_file << Form("Number of Events with 3 Tracks Connected to the Vertex, %d , Fraction of Total,%f \n",threetrk_connected,float(100.*float(threetrk_connected)/float(nentries)));
-  csv_file << Form("Number of Events with 1 Muon and 2 Protons, %d , Fraction of Total,%f \n",pid,float(100.*float(pid)/float(nentries)));
-  csv_file << Form("Number of Events with Reco. Muon Momentum above %f and below %f GeV/c, %d , Fraction of Total,%f \n",MUON_MOM_CUT_LOW, MUON_MOM_CUT_HIGH,reco_muon_mom_cut,float(100.*float(reco_muon_mom_cut)/float(nentries)));
-  csv_file << Form("Number of Events with Reco. Leading Momentum above %f and below %f GeV/c, %d , Fraction of Total,%f \n",PROTON_MOM_CUT_LOW, PROTON_MOM_CUT_HIGH,reco_muon_mom_cut,float(100.*float(reco_lead_mom_cut)/float(nentries)));
-  csv_file << Form("Number of Events with Reco. Recoil Momentum above %f and below %f GeV/c, %d , Fraction of Total,%f \n",PROTON_MOM_CUT_LOW, PROTON_MOM_CUT_HIGH,reco_muon_mom_cut,float(100.*float(reco_recoil_mom_cut)/float(nentries)));  
+  csv_file.open(Form("lists/%s/%s.csv",directory,sample));
+  csv_file << "Cut, Number of Events, Fraction of Total (%) \n";
+  csv_file << Form("Number of Events to Begin With, %lld,  %f \n", nentries, float(100.*float(nentries)/float(nentries)));
+  csv_file << Form("Number of Events with Vertex in FV, %d , %f \n",fvcntr,float(100.*float(fvcntr)/float(nentries)));
+  csv_file << Form("Number of Events with 3 PFPs , %d , %f \n",threepfps,float(100.*float(threepfps)/float(nentries)));
+  csv_file << Form("Number of Events with 3 Tracks , %d , %f \n",threetrkcntr,float(100.*float(threetrkcntr)/float(nentries)));
+  csv_file << Form("Number of Events with 3 Tracks Connected to the Vertex, %d , %f \n",threetrk_connected,float(100.*float(threetrk_connected)/float(nentries)));
+  csv_file << Form("Number of Events with 1 Muon and 2 Protons, %d , %f \n",pid,float(100.*float(pid)/float(nentries)));
+  csv_file << Form("Number of Events with Reco. Muon Momentum above %f and below %f GeV/c, %d , %f \n",MUON_MOM_CUT_LOW, MUON_MOM_CUT_HIGH,reco_muon_mom_cut,float(100.*float(reco_muon_mom_cut)/float(nentries)));
+  csv_file << Form("Number of Events with Reco. Leading Momentum above %f and below %f GeV/c, %d , %f \n",PROTON_MOM_CUT_LOW, PROTON_MOM_CUT_HIGH,reco_lead_mom_cut,float(100.*float(reco_lead_mom_cut)/float(nentries)));
+  csv_file << Form("Number of Events with Reco. Recoil Momentum above %f and below %f GeV/c, %d , %f \n",PROTON_MOM_CUT_LOW, PROTON_MOM_CUT_HIGH,reco_recoil_mom_cut,float(100.*float(reco_recoil_mom_cut)/float(nentries)));  
   csv_file << Form("Sanity Check of the  Total Number of Events Remaining, %d \n",events_remaining);
-  csv_file.close();
+  //csv_file.close();
 
   if(print_module_summary){
     std::cout<<"-----MODULE SUMMARY-----"<<std::endl;
@@ -423,6 +514,8 @@ void twoproton_pelee::Loop()
     std::cout <<"-----CLOSING TIME. YOU DON'T HAVE TO GO HOME, BUT YOU CAN'T STAY HERE-----"<<std::endl;
   }
 
+  std::ofstream overlay_csv_file;
+  overlay_csv_file.open(Form("lists/%s/%s.csv",directory,sample));
   if(Overlay == true){
   
     //Before we finish the overlay, we need to make the efficiency and purity plots:
@@ -443,9 +536,6 @@ void twoproton_pelee::Loop()
     hist.pur_graph->Write("pur_graph");
 
     //create CSV file with the selected event information
-    std::ofstream overlay_csv_file;
-    overlay_csv_file.open(Form("%s/%s.csv",directory,sample));
-
     overlay_csv_file << "EFFICIENCY AND PURITY VALUES \n";
     overlay_csv_file <<"CUT, EFFICIENCY, PURITY\n";
     overlay_csv_file << Form("No Cuts, %f, %f \n", eff_pur[0].first, eff_pur[0].second);
@@ -508,7 +598,7 @@ void twoproton_pelee::Loop()
     overlay_csv_file << Form("Number of Other Events, %d, Fraction of Total, %f \n",other[0], float(100.*float(other[0])/float(events_remaining)));
     overlay_csv_file << "\n";
 
-    overlay_csv_file.close();
+    //overlay_csv_file.close();
    
     if(print_module_summary){
 
@@ -612,12 +702,14 @@ void twoproton_pelee::Loop()
   hist.Write_Histograms(); //function that writes all our histograms                                                      
   tfile->Close(); //write the root file that contains our histograms                                                    
   myfile.close(); //Write the file that contains the RSE of good events                                                 
+  csv_file.close(); //Write the file that contains the module summary
   if(Overlay == true){
     cc2p.close(); //Write the file that contains the RSE of good 1mu2p events
+    overlay_csv_file.close(); //Write the file that contains the module summary
   }
 
-  auto stop = high_resolution_clock::now();
-  auto duration = duration_cast<minutes>(stop - start); 
-  std::cout<<"Program Run Time: "<<duration.count()<<std::endl;
+  //auto stop = high_resolution_clock::now();
+  //auto duration = duration_cast<minutes>(stop - start); 
+  //std::cout<<"Program Run Time: "<<duration.count()<<std::endl;
   
 } //end of progrm

@@ -11,9 +11,16 @@
 #include <TROOT.h>
 #include <TChain.h>
 #include <TFile.h>
+#include <array>
+using std::array; 
+using std::fill;
+
 #include "string"
 #include "map"
 #include "vector"
+
+#include <chrono>
+using namespace std::chrono;
 
 class twoproton_pelee {
 public :
@@ -1454,19 +1461,109 @@ public :
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
    virtual double real_sqrt(double x);
+   virtual void Reset_Counters();
 
  private:
    char response; //which files
-   bool Overlay;
-   bool Dirt;
-   int number_of_files;
-   const char* files[3] = "";
-   std::string file;
-   const char* directories[3] = {"Run1","Run2","Run3"};
-   const char* directory;
-   std::vector<double> pot_weights;
-   double pot_weight;
-   const char* sample;
+   bool Overlay; //is it Overlay?
+   bool Dirt; //is it Dirt?
+   int number_of_files; //How many files to run over?
+   std::vector<std::string> files; //vector of files
+   const char*  file; //specific file to run
+   const char* directories[3] = {"Run1","Run2","Run3"}; //vector of directories
+   const char* directory; //directory to save the files
+   std::vector<double> pot_weights; //vector of pot weights
+   double pot_weight; //pot weight to apply
+   const char* sample; //sample name
+
+  //Counters                                                                                               
+  ////////////////////////////////////////
+  int fvcntr = 0; //Number of events with reconstructed vertex within the FV                                      
+  int threepfps = 0; //Number of Events with Three PFPs
+  int threetrkcntr = 0; //Number of events with three tracks    
+  int threetrk_connected = 0; //Number of Events with three tracks attached to the vertex
+  int pid = 0; //Number of events with 1 track with PID > 0.6 and 2 tracks with PID < 0.6
+  int reco_muon_mom_cut = 0; //Number of events where reco muon momentum is < 0.1 and > 2.5
+  int reco_lead_mom_cut = 0; //Number of events where reco lead momentum is < 0.25 and > 1.2  
+  int reco_recoil_mom_cut = 0; //Number of events where reco recoil momentum is < 0.25 and > 1.2  
+  int muon_contained[3] = {0}; //are the muon start and end contained?
+  int lead_contained[3] = {0}; //are the lead start and end contained?
+  int recoil_contained[3] = {0}; //are ther ecoil start and end contained?
+  int events_remaining = 0; //sanity check for number of events remaining
+  
+  //Neutrino counters                                                                                     
+  int neutrinos_0 = 0; //# of 0 neutrino slice events
+  int neutrinos_1 = 0; //# of 1 neutrino slice events
+  int neutrinos_else = 0; ///# of other neutrino slice events
+
+  //MC Counters
+  ///////////
+  static const int number = 8; //number of applied cuts
+  
+  //number of generated event/channel                                                                           
+  int cc0p0pi[number+1] = {0}; //number-1 is after pid. number then would be particle specifics...should be same as number-1                                                                                                        
+  int cc1p0pi[number+1] = {0};
+  int cc2p0pi[number+1] = {0};
+  int ccNp0pi[number+1] = {0};
+  int ccNp1pi[number+1] = {0};
+  int ccNpNpi[number+1] = {0};
+  int ccnue[number+1] = {0};
+  int outfv[number+1] = {0};
+  int nc[number+1] = {0};
+  int other[number+1] = {0};
+
+  //number of generated event/channel                                                                             
+  int qel[number+1] = {0};
+  int res[number+1] = {0};
+  int mec[number+1] = {0};
+  int coh[number+1] = {0};
+  int dis[number+1] = {0};
+  int ccnue_raquel[number+1] = {0};
+  int outfv_raquel[number+1] = {0};
+  int nc_raquel[number+1] = {0};
+  int other_raquel[number+1] = {0};
+  int res_count[4] = {0};
+
+  //counters to see what the selected cc2p are in terms of interactions                                           
+  int qel_cc2p = 0;
+  int coh_cc2p = 0;
+  int mec_cc2p = 0;
+  int res_cc2p = 0;
+  int dis_cc2p = 0;
+  int ccnue_cc2p = 0;
+  int nc_cc2p = 0;
+  int outfv_cc2p = 0;
+  int other_cc2p = 0;
+
+  //counters to see what is inside of the ccqe events                                                              
+  int cc0p0pi_ccqe = 0;
+  int cc1p0pi_ccqe = 0;
+  int cc2p0pi_ccqe = 0;
+  int ccNp0pi_ccqe = 0;
+  int ccNp1pi_ccqe = 0;
+  int ccNpNpi_ccqe = 0;
+  int ccnue_ccqe = 0;
+  int outfv_ccqe = 0;
+  int nc_ccqe = 0;
+  int other_ccqe = 0;
+
+  //stupid counters used only by overlay
+  int nue = 0; //checking the number of nue's
+  int uhoh = 0; //helps to diagnose the proton id
+  int contained = 0;
+  int uncontained = 0;
+  int denom_contained =0; //checking number of events that are uncontained and contained
+  int denom_uncontained = 0;
+  int num_contained = 0;
+  int num_uncontained = 0;
+  int total_protons = 0;
+  int uncontain = 0;
+  int contain = 0;
+  int other_else = 0;
+  int neutron = 0;
+  int neutrino = 0;
+  int zeros = 0;
+
 
 };
 
@@ -1475,6 +1572,8 @@ public :
 #ifdef twoproton_pelee_cxx
 twoproton_pelee::twoproton_pelee(TTree *tree) : fChain(0) 
 {
+  auto start = high_resolution_clock::now();
+
   // if parameter tree is not specified (or zero), connect the file
   // used to generate this class and read the Tree.
   std::cout<<"Which Sample Are We Looking At?"<<std::endl;
@@ -1486,9 +1585,10 @@ twoproton_pelee::twoproton_pelee(TTree *tree) : fChain(0)
     Overlay = true;
     Dirt = false;
     number_of_files = 3;
-    files = {"/pnfs/uboone/persistent/users/davidc/searchingfornues/v08_00_00_43/0928/prodgenie_bnb_nu_uboone_overlay_mcc9.1_v08_00_00_26_filter_run1_reco2_reco2.root",
-	     "/pnfs/uboone/persistent/users/davidc/searchingfornues/v08_00_00_43/0928/prodgenie_bnb_nu_uboone_overlay_mcc9.1_v08_00_00_26_filter_run2_reco2_D1D2_reco2.root",
-	     "/pnfs/uboone/persistent/users/davidc/searchingfornues/v08_00_00_43/0928/prodgenie_bnb_nu_uboone_overlay_mcc9.1_v08_00_00_26_filter_run3_reco2_G_reco2.root"};
+    files.insert(files.end(),{
+	"/pnfs/uboone/persistent/users/davidc/searchingfornues/v08_00_00_43/0928/prodgenie_bnb_nu_uboone_overlay_mcc9.1_v08_00_00_26_filter_run1_reco2_reco2.root",
+	  "/pnfs/uboone/persistent/users/davidc/searchingfornues/v08_00_00_43/0928/prodgenie_bnb_nu_uboone_overlay_mcc9.1_v08_00_00_26_filter_run2_reco2_D1D2_reco2.root",
+	  "/pnfs/uboone/persistent/users/davidc/searchingfornues/v08_00_00_43/0928/prodgenie_bnb_nu_uboone_overlay_mcc9.1_v08_00_00_26_filter_run3_reco2_G_reco2.root"});
     pot_weights = {0.124, 0.257, 0.190}; //pot weight for run 1, run 2, and run 3 files
     sample = "overlay_wgt";
 
@@ -1497,9 +1597,10 @@ twoproton_pelee::twoproton_pelee(TTree *tree) : fChain(0)
     Overlay = false;
     Dirt = false;
     number_of_files = 3;
-    files = {"/uboone/data/users/davidc/searchingfornues/v08_00_00_41/cc0pinp/0617/nslice/run1_neutrinoselection_filt_numu_ALL.root",
-	    "/uboone/data/users/davidc/searchingfornues/v08_00_00_41/cc0pinp/0617/nslice/run2_neutrinoselection_filt_numu_ALL.root",
-	    "/uboone/data/users/davidc/searchingfornues/v08_00_00_41/cc0pinp/0617/nslice/run3_neutrinoselection_filt_numu_ALL.root"};
+    files.insert(files.end(),{
+	"/uboone/data/users/davidc/searchingfornues/v08_00_00_41/cc0pinp/0617/nslice/run1_neutrinoselection_filt_numu_ALL.root",
+	  "/uboone/data/users/davidc/searchingfornues/v08_00_00_41/cc0pinp/0617/nslice/run2_neutrinoselection_filt_numu_ALL.root",
+	  "/uboone/data/users/davidc/searchingfornues/v08_00_00_41/cc0pinp/0617/nslice/run3_neutrinoselection_filt_numu_ALL.root"});
     pot_weights = {1.0,1.0,1.0};
     sample = "bnb";
 
@@ -1508,9 +1609,10 @@ twoproton_pelee::twoproton_pelee(TTree *tree) : fChain(0)
     Overlay =false;
     Dirt = false;
     number_of_files = 3;
-    files = {"/uboone/data/users/davidc/searchingfornues/v08_00_00_43/0702/run1/data_extbnb_mcc9.1_v08_00_00_25_reco2_C_all_reco2.root",
-	     "/uboone/data/users/davidc/searchingfornues/v08_00_00_43/0702/run2/data_extbnb_mcc9.1_v08_00_00_25_reco2_D_E_all_reco2.root",
-	     "/uboone/data/users/davidc/searchingfornues/v08_00_00_43/0702/run3/data_extbnb_mcc9.1_v08_00_00_25_reco2_F_G_all_reco2.root"};
+    files.insert(files.end(),{ 
+	"/uboone/data/users/davidc/searchingfornues/v08_00_00_43/0702/run1/data_extbnb_mcc9.1_v08_00_00_25_reco2_C_all_reco2.root",
+	  "/uboone/data/users/davidc/searchingfornues/v08_00_00_43/0702/run2/data_extbnb_mcc9.1_v08_00_00_25_reco2_D_E_all_reco2.root",
+	  "/uboone/data/users/davidc/searchingfornues/v08_00_00_43/0702/run3/data_extbnb_mcc9.1_v08_00_00_25_reco2_F_G_all_reco2.root"});
     pot_weights = {0.552,0.407, 0.284};
     sample = "ext";
 
@@ -1519,9 +1621,9 @@ twoproton_pelee::twoproton_pelee(TTree *tree) : fChain(0)
     Overlay = false;
     Dirt = true;
     number_of_files = 3;
-    files = {"/pnfs/uboone/persistent/users/davidc/searchingfornues/v08_00_00_43/0928/prodgenie_bnb_dirt_overlay_mcc9.1_v08_00_00_26_run1_reco2_reco2.root",
-	     "/pnfs/uboone/persistent/users/davidc/searchingfornues/v08_00_00_43/0928/prodgenie_dirt_overlay_v08_00_00_35_all_run2_reco2_reco2.root",
-	     "/pnfs/uboone/persistent/users/davidc/searchingfornues/v08_00_00_43/0928/prodgenie_bnb_dirt_overlay_mcc9.1_v08_00_00_26_run3_reco2_reco2.root"};
+    files.insert(files.end(),{"/pnfs/uboone/persistent/users/davidc/searchingfornues/v08_00_00_43/0928/prodgenie_bnb_dirt_overlay_mcc9.1_v08_00_00_26_run1_reco2_reco2.root",
+	  "/pnfs/uboone/persistent/users/davidc/searchingfornues/v08_00_00_43/0928/prodgenie_dirt_overlay_v08_00_00_35_all_run2_reco2_reco2.root",
+	  "/pnfs/uboone/persistent/users/davidc/searchingfornues/v08_00_00_43/0928/prodgenie_bnb_dirt_overlay_mcc9.1_v08_00_00_26_run3_reco2_reco2.root"});
     pot_weights = {0.502, 0.276, 0.777};
     sample = "dirt";
 
@@ -1529,10 +1631,16 @@ twoproton_pelee::twoproton_pelee(TTree *tree) : fChain(0)
     std::cout<<"Invalid Response. Please Type 0, 1, 2, or 3 for the Overlay, BNB, EXT, and Dirt samples respectively."<<std::endl;
   }
 
-  for(int i=0; i < number_of_files; i++){
-    file = files[i];
+  for(int i = 0; i < number_of_files; i++){
+    string file0 = files[i];
+    file = const_cast<char*>(file0.c_str());
     directory = directories[i];
     pot_weight = pot_weights[i];
+
+    std::cout<<"Sample: "<<sample<<std::endl;
+    std::cout<<"Directory: "<<directory<<std::endl;
+    std::cout<<"FILE: "<<file<<std::endl;
+    std::cout<<"POT WEIGHT: "<<pot_weight<<std::endl;
 
     if (tree == 0) {
       TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject(Form("%s",file));
@@ -1544,9 +1652,22 @@ twoproton_pelee::twoproton_pelee(TTree *tree) : fChain(0)
     }
     Init(tree);
 
+    Long64_t nentries = fChain->GetEntriesFast();
+    std::cout<<"Nentries: "<<nentries<<std::endl;
+
     //Run the program with the correct file
+    //Be sure to reset the counters
+    //Be sure to set tree = 0 when you are done
     Loop();
+    Reset_Counters();
+    tree = 0;
+
   } //end of for loop
+
+  auto stop = high_resolution_clock::now();
+  auto duration = duration_cast<minutes>(stop - start);
+  std::cout<<"Program Run Time: "<<duration.count()<<std::endl;
+
 }
 
 twoproton_pelee::~twoproton_pelee()
@@ -1558,6 +1679,95 @@ twoproton_pelee::~twoproton_pelee()
 double twoproton_pelee::real_sqrt(double x){
   if ( x < 0. ) return 0.;
   else return std::sqrt( x );
+}
+
+void twoproton_pelee::Reset_Counters(){
+
+  fvcntr = 0; //Number of events with reconstructed vertex within the FV                                      
+  threepfps = 0; //Number of Events with Three PFPs
+  threetrkcntr = 0; //Number of events with three tracks    
+  threetrk_connected = 0; //Number of Events with three tracks attached to the vertex
+  pid = 0; //Number of events with 1 track with PID > 0.6 and 2 tracks with PID < 0.6
+  reco_muon_mom_cut = 0; //Number of events where reco muon momentum is < 0.1 and > 2.5
+  reco_lead_mom_cut = 0; //Number of events where reco lead momentum is < 0.25 and > 1.2  
+  reco_recoil_mom_cut = 0; //Number of events where reco recoil momentum is < 0.25 and > 1.2  
+  //muon_contained[3] = {0}; //are the muon start and end contained?
+  //lead_contained[3] = {0}; //are the lead start and end contained?
+  //recoil_contained[3] = {0}; //are ther ecoil start and end contained?
+  events_remaining = 0; //sanity check for number of events remaining
+  
+  //Neutrino counters                                                                                     
+  neutrinos_0 = 0; //# of 0 neutrino slice events
+  neutrinos_1 = 0; //# of 1 neutrino slice events
+  neutrinos_else = 0; ///# of other neutrino slice events
+
+  //MC Counters
+  ///////////
+  
+  /*  //number of generated event/channel                                                                           
+  cc0p0pi = {}; //number-1 is after pid. number then would be particle specifics...should be same as number-1                                                                                                        
+  cc1p0pi = {};
+  cc2p0pi = {};
+  ccNp0pi = {};
+  ccNp1pi = {};
+  ccNpNpi = {};
+  ccnue = {};
+  outfv = {};
+  nc = {};
+  other = {};
+
+  //number of generated event/channel                                                                             
+  qel = {};
+  res = {};
+  mec = {};
+  coh = {};
+  dis = {};
+  ccnue_raquel = {};
+  outfv_raquel = {};
+  nc_raquel = {};
+  other_raquel = {};
+  res_count = {};
+  */
+  //counters to see what the selected cc2p are in terms of interactions                                           
+  qel_cc2p = 0;
+  coh_cc2p = 0;
+  mec_cc2p = 0;
+  res_cc2p = 0;
+  dis_cc2p = 0;
+  ccnue_cc2p = 0;
+  nc_cc2p = 0;
+  outfv_cc2p = 0;
+  other_cc2p = 0;
+
+  //counters to see what is inside of the ccqe events                                                              
+  cc0p0pi_ccqe = 0;
+  cc1p0pi_ccqe = 0;
+  cc2p0pi_ccqe = 0;
+  ccNp0pi_ccqe = 0;
+  ccNp1pi_ccqe = 0;
+  ccNpNpi_ccqe = 0;
+  ccnue_ccqe = 0;
+  outfv_ccqe = 0;
+  nc_ccqe = 0;
+  other_ccqe = 0;
+
+  //stupid counters used only by overlay
+  nue = 0; //checking the number of nue's
+  uhoh = 0; //helps to diagnose the proton id
+  contained = 0;
+  uncontained = 0;
+  denom_contained =0; //checking number of events that are uncontained and contained
+  denom_uncontained = 0;
+  num_contained = 0;
+  num_uncontained = 0;
+  total_protons = 0;
+  uncontain = 0;
+  contain = 0;
+  other_else = 0;
+  neutron = 0;
+  neutrino = 0;
+  zeros = 0;
+
 }
 
 Int_t twoproton_pelee::GetEntry(Long64_t entry)
