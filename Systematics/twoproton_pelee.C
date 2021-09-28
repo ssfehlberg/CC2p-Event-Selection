@@ -1,19 +1,12 @@
 #define twoproton_pelee_cxx
 #include "twoproton_pelee.h"
-#include "histogram_funcs.h"
-#include "selection.h"
-#include "constants.h"
-using namespace Constants;
 
 void twoproton_pelee::Loop()
 {
-  //auto start = high_resolution_clock::now(); 
 
   //Define objects of classes
   ////////////////////////////
   Selection cuts; //cuts.h: contains all the cuts I will apply
-  histogram_funcs hist; //histograms_funcs.h: contains all the histogram functions
-  //helper_funcs help; //helper_funcs.h: contains things like "In FV"
 
   //Making a new Root File that will contain all the histograms that we will want to plot and files with good RSEs:
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -30,37 +23,18 @@ void twoproton_pelee::Loop()
   myfile.open(Form("lists/%s/%s_selected_events.csv",directory,sample));
   myfile<<"Run"<<" "<<"Subrun"<<" "<<"Event"<<endl;
 
-  ofstream cc2p; //File that will contain good cc2p events                                                                   
-  cc2p.open(Form("lists/%s/selected_cc2p_evets.csv",directory));
+  ofstream cc2p; //File that will contain good cc2p events
+  cc2p.open(Form("lists/%s/%s_selected_cc2p_events.csv",directory,sample));
   cc2p<<"Run"<<" "<<"Subrun"<<" "<<"Event"<<endl;
 
-  //Define all the histograms I am going to fill and the mc_wgt                                
+  //Define all the histograms I am going to Fill
   /////////////////////////////////////////////////////////////
-  hist.Define_Histograms(Form("%s",sample),Overlay);
-  
-  /*  int fvcntr = 0; //Number of events with reconstructed vertex within the FV                                                                                                                                                         
-  int threepfps = 0;
-  int threetrkcntr = 0; //Number of events with three tracks                                                                                                                                                                         
-  int threetrk_connected = 0; //Number of Events with three tracks attached to the vertex                                                                                                                                            
-  int pid = 0; //Number of events with 1 track with PID > 0.6 and 2 tracks with PID < 0.6                                                                                                                                            
-  int reco_muon_mom_cut = 0; //Number of events where reco muon momentum is < 0.1 and > 2.5                                                                                                                                          
-  int reco_lead_mom_cut = 0; //Number of events where reco lead momentum is < 0.25 and > 1.2                                                                                                                                        
-  int reco_recoil_mom_cut = 0; //Number of events where reco recoil momentum is < 0.25 and > 1.2                                                                                                                                     
-  int muon_contained[3] = {0}; //are the muon start and end contained?                                                                                                                                                               
-  int lead_contained[3] = {0}; //are the lead start and end contained?                                                                                                                                                               
-  int recoil_contained[3] = {0}; //are ther ecoil start and end contained?                                                                                                                                                           
-  int events_remaining = 0; //sanity check for number of events remaining
-  */
+  Define_Histograms();
+
+  //Make sure to have the event weight double ready
+  ///////////////////////////////////////////////
   double event_weight; //event weight
-  double mc_wgt; //MC weight. Overlay and Dirt Only
-  int ohshit_denom = 0;
-  int ohshit_num = 0;
-  int total_muon = 0;
-  int flip_muon = 0;
-  int total_lead = 0;
-  int flip_lead = 0;
-  int total_recoil = 0;
-  int flip_recoil = 0;
+  double mc_wgt; //MC weight. Dirt Only
 
   if (fChain == 0) return;
   Long64_t nentries = fChain->GetEntriesFast();
@@ -77,29 +51,66 @@ void twoproton_pelee::Loop()
 
     //Need to set the event weight for samples
     ////////////////////////////////////////////////
+    if(_debug) std::cout<<"GET THE MC WEIGHT"<< std::endl;
 
-    if(_debug) std::cout<<"STARTING TO GET THE MC WEIGHT"<< std::endl;
-
-    //Overlay and Dirt
-    if(Overlay == true || Dirt == true){
-      if(std::isfinite(weightTune) && weightTune <= 100.) {
-	mc_wgt = weightSplineTimesTune;
-      } else {
-	mc_wgt = 1 * weightSpline;
-      }
-
-      event_weight = pot_weight * mc_wgt;
-      if(_debug) std::cout<<"Value of the MC Weight: "<< mc_wgt<< std::endl;
-      if(_debug) std::cout<<"Value of the POT Weight: "<<pot_weight << std::endl;
-      if(_debug) std::cout<<"Value of Event Weight: "<< event_weight << std::endl;
-
-      //BNB & EXT
+    if(std::isfinite(weightTune) && weightTune <= 100.) {
+      mc_wgt = weightSplineTimesTune;
     } else {
-      event_weight = pot_weight;
-      if(_debug) std::cout<<"Value of the POT Weight: "<<pot_weight << std::endl;
-      if(_debug) std::cout<<"Value of Event Weight: "<< std::endl;
+      mc_wgt = 1 * weightSpline;
+    }
 
-    } //end of else
+    event_weight = pot_weight;// * mc_wgt;
+
+    if(_debug) std::cout<<"Value of the MC Weight: "<< mc_wgt<< std::endl;
+    if(_debug) std::cout<<"Value of the POT Weight: "<<pot_weight << std::endl;
+    if(_debug) std::cout<<"Value of Event Weight: "<< event_weight << std::endl;
+
+    //Getting the Number of Threshold Particles:
+    ///////////////////////////////////////////////
+    int mc_n_threshold_muon = 0;
+    int mc_n_threshold_proton = 0;
+    int mc_n_threshold_pion0 = 0;
+    int mc_n_threshold_pionpm = 0;
+
+    for ( size_t p = 0u; p < mc_pdg->size(); ++p ) {
+      int pdg = mc_pdg->at( p );
+      float energy = mc_E->at( p );
+      if ( std::abs(pdg) == 13) {
+	double mom = real_sqrt( std::pow(energy, 2) - std::pow(MASS_MUON, 2) );
+	if(_debug) std::cout<<"Value of the Muon Momentum: "<<mom<<std::endl;
+	if ( mom > MUON_MOM_CUT_LOW && mom < MUON_MOM_CUT_HIGH){
+	  mc_n_threshold_muon++;
+	}
+      } else if (std::abs(pdg) == 2212 ) {
+	double mom = real_sqrt( std::pow(energy, 2) - std::pow(MASS_PROTON, 2) );
+	if(_debug) std::cout<<"Value of the Proton Momentum: "<<mom<<std::endl;
+	if ( mom > PROTON_MOM_CUT_LOW && mom < PROTON_MOM_CUT_HIGH){
+	  mc_n_threshold_proton++;
+	}
+      } else if ( pdg == 111 ) {
+	  mc_n_threshold_pion0++;
+      
+      } else if (std::abs(pdg) == 211 ) {
+	double mom = real_sqrt( std::pow(energy, 2) - std::pow(MASS_PIONPM, 2) );
+	if(_debug) std::cout<<"Value of the PionPM Momentum: "<<mom<<std::endl;
+	if ( mom > CHARGED_PI_MOM_CUT ) {
+	  mc_n_threshold_pionpm++;
+	}
+      }
+    }
+    
+    if(_debug) std::cout<<"Value of Muon Low Mom Cut: "<<MUON_MOM_CUT_LOW<<std::endl;
+    if(_debug) std::cout<<"Value of Muon High Mom Cut: "<<MUON_MOM_CUT_HIGH<<std::endl;
+    if(_debug) std::cout<<"Value of Proton Low Mom Cut: "<<PROTON_MOM_CUT_LOW<<std::endl;
+    if(_debug) std::cout<<"Value of Proton High Mom Cut: "<<PROTON_MOM_CUT_HIGH<<std::endl;
+    if(_debug) std::cout<<"Number of threshold muons: "<<mc_n_threshold_muon<<std::endl;
+    if(_debug) std::cout<<"Number of threshold protons: "<<mc_n_threshold_proton<<std::endl;
+    if(_debug) std::cout<<"Number of threshold pion0: "<<mc_n_threshold_pion0<<std::endl;
+    if(_debug) std::cout<<"Number of threshold pionpm: "<<mc_n_threshold_pionpm<<std::endl;
+
+    //Fill the Overlay FV Bool
+    //////////////////////////
+    cuts.Overlay_In_FV(10,10,10,10,10,10,true_nu_vtx_sce_x,true_nu_vtx_sce_y,true_nu_vtx_sce_z); //overlay FV requirment  
 
     //Checking how many nue's & neutrino slices we have
     /////////////////////////////////
@@ -124,98 +135,16 @@ void twoproton_pelee::Loop()
     if(_debug) std::cout<<"Location of the True Vertex: "<<true_nu_vtx[0] << ", "<< true_nu_vtx[1] << ", " <<true_nu_vtx[2] << std::endl;
     if(_debug) std::cout<<"Location of the True SCE Vertex: "<<true_nu_vtx_sce[0] << ", "<< true_nu_vtx_sce[1] << ", " <<true_nu_vtx_sce[2] << std::endl;
 
-    //Fill the MC thresholds. 
-    //I need to rewrite this, but everytime i try, i fuck it up!
-    /////////////////////////////////////////////////////////
-    if(_debug) std::cout<<"FILLING THE MC GARBAGE"<< std::endl;
-    int mc_n_threshold_muon = 0;
-    int mc_n_threshold_proton = 0;
-    int mc_n_threshold_pion0 = 0;
-    int mc_n_threshold_pionpm = 0;
-    std::vector<int> testVector;
-    std::vector<double> mc_mom_vector;
-
-    if(Overlay == true){
-      
-      for ( size_t p = 0u; p < mc_pdg->size(); ++p ) {
-	int pdg = mc_pdg->at( p );
-	float energy = mc_E->at( p );
-	if ( std::abs(pdg) == 13) {
-	  double mom = real_sqrt( std::pow(energy, 2) - std::pow(MASS_MUON, 2) );
-	  if(_debug) std::cout<<"Value of the Muon Momentum: "<<mom<<std::endl;
-	  if ( mom > MUON_MOM_CUT_LOW && mom < MUON_MOM_CUT_HIGH ) {
-	    mc_n_threshold_muon++;
-	  }
-	} else if (std::abs(pdg) == 2212 ) {
-	  double mom = real_sqrt( std::pow(energy, 2) - std::pow(MASS_PROTON, 2) );
-	  if(_debug) std::cout<<"Value of the Proton Momentum: "<<mom<<std::endl;
-	  if ( mom > PROTON_MOM_CUT_LOW && mom < PROTON_MOM_CUT_HIGH) {
-	    mc_n_threshold_proton++;
-	  }
-	} else if ( pdg == 111 ) {
-	  double mom = real_sqrt( std::pow(energy, 2) - std::pow(MASS_PION0, 2) );
-	  if(_debug) std::cout<<"Value of the Pion0 Momentum: "<<mom<<std::endl;
-	  if ( mom > PION0_MOM_CUT) {
-	    mc_n_threshold_pion0++;
-	  }
-	} else if (std::abs(pdg) == 211 ) {
-	  double mom = real_sqrt( std::pow(energy, 2) - std::pow(MASS_PIONPM, 2) );
-	  if(_debug) std::cout<<"Value of the PionPM Momentum: "<<mom<<std::endl;
-	  if ( mom > CHARGED_PI_MOM_CUT ) {
-	    mc_n_threshold_pionpm++;
-	  }
-	}
-      }
-    
-      if(_debug) std::cout<<"Value of POT_WEIGHT: "<<pot_weight<<std::endl;
-      if(_debug) std::cout<<"Value of MC_Wgt: "<<mc_wgt<<std::endl;
-      if(_debug) std::cout<<"Value of Muon Low Mom Cut: "<<MUON_MOM_CUT_LOW<<std::endl;
-      if(_debug) std::cout<<"Value of Muon High Mom Cut: "<<MUON_MOM_CUT_HIGH<<std::endl;
-      if(_debug) std::cout<<"Value of Proton Low Mom Cut: "<<PROTON_MOM_CUT_LOW<<std::endl;
-      if(_debug) std::cout<<"Value of Proton High Mom Cut: "<<PROTON_MOM_CUT_HIGH<<std::endl;
-      if(_debug) std::cout<<"Number of threshold muons: "<<mc_n_threshold_muon<<std::endl;
-      if(_debug) std::cout<<"Number of threshold protons: "<<mc_n_threshold_proton<<std::endl;
-      if(_debug) std::cout<<"Number of threshold pion0: "<<mc_n_threshold_pion0<<std::endl;
-      if(_debug) std::cout<<"Number of threshold pionpm: "<<mc_n_threshold_pionpm<<std::endl;
-
-
-      //making sure that the mc_pdg and npfps are the same length cause fuck me
-      //////////////////////////////////////////////////////////////////////////
-      for(size_t i = 0u; i < mc_pdg->size(); i++){
-	testVector.push_back(mc_pdg->at(i));
-	TVector3 mom_temp(mc_px->at(i),mc_py->at(i),mc_pz->at(i));
-	mc_mom_vector.push_back(mom_temp.Mag());
-      }
-      for(int i = 0; i < n_pfps; i++){
-	if(i >= mc_pdg->size()){
-	  testVector.resize(i+1);
-	  mc_mom_vector.resize(i+1);
-	}
-      }
-      
-      //Fill the Overlay BOOL
-      cuts.Overlay_In_FV(10,10,10,10,10,10,true_nu_vtx_sce[0],true_nu_vtx_sce[1],true_nu_vtx_sce[2]);
-
-      //What type of event is this?
-      hist.MC_Event_Type(ccnc, interaction, nu_pdg, mc_n_threshold_muon, mc_n_threshold_proton,mc_n_threshold_pion0, mc_n_threshold_pionpm, cuts.true_fv);
-
-    } //end of if Overlay == true
-
     //Now to apply the selection. We require the following:
     // 1) Event must be in the fiducial volume. We define this to be 10 cm from any TPC edge
     // 2) There must be exactly 3 PFPs in the event (npfps == 3), 3 tracks with track score above 0.8, 3 tracks with distance less than 4cm to the vertex, and events with exactly 1 muon and 2 protons (pid)
     //3) The particles must have good momentum. 
     ///////////////////////////////////////////////
 
-    //Fill Histograms Before the Selection
-    if(_debug) std::cout<<"FILLING HISTOGRAMS BEFORE CUTS"<< std::endl;    
-    hist.Fill_Histograms(Overlay,0,reco_nu_vtx,true_nu_vtx,true_nu_vtx_sce,CosmicIP,topological_score,event_weight);
-
     //1) Event must be in the FV, defined to be 10cm from any TPC edge 
-    if(_debug) std::cout<<"FILLING HISTOGRAMS AFTER FV CUT"<< std::endl;
+    if(_debug) std::cout<<"APPLY FV CUT"<< std::endl;
     cuts.In_FV(10,10,10,10,10,10,reco_nu_vtx[0],reco_nu_vtx[1],reco_nu_vtx[2]); //returns fv bool
     if(cuts.reco_fv != true) continue;    
-    hist.Fill_Histograms(Overlay,1,reco_nu_vtx,true_nu_vtx,true_nu_vtx_sce,CosmicIP,topological_score,event_weight);
     fvcntr++;
 
     //2)  There must be exactly 3 PFPs in the event (npfps == 3), 3 tracks with track score above 0.8, 3 tracks with distance less than 4cm to the vertex, and events with exactly 1 muon and 2 protons (pid)
@@ -243,33 +172,30 @@ void twoproton_pelee::Loop()
 
     //Here is the function that calculates this.
     cuts.Event_Selection(n_pfps, tracks_w_good_score, tracks_w_good_distance, muons, protons); //returns bool for the pfp selection + pid
-
-    if(_debug) std::cout<<"FILLING HISTOGRAMS AFTER 3 PFPs"<< std::endl;
+    
+    //3 PFPs
+    ///////////////////////////////////
+    if(_debug) std::cout<<"APPLY 3 PFPs"<< std::endl;
     if(cuts.three_pfps == false) continue;
-    hist.Fill_Histograms(Overlay,2,reco_nu_vtx,true_nu_vtx,true_nu_vtx_sce,CosmicIP,topological_score,event_weight);
     threepfps++;
-    /*for(int i=0; i < n_pfps; i++){
-      hist.Fill_Track_Plots(0, Overlay, trk_score_v, trk_distance_v, trk_len_v,trk_llr_pid_score_v, event_weight);
-    }
-    */
 
-    if(_debug) std::cout<<"FILLING HISTOGRAMS AFTER 3 Tracks"<< std::endl;
+    //3 Tracks
+    ////////////////////////////////
+    if(_debug) std::cout<<"APPLY 3 Tracks"<< std::endl;
     if(cuts.three_tracks == false) continue;
-    hist.Fill_Histograms(Overlay,3,reco_nu_vtx,true_nu_vtx,true_nu_vtx_sce,CosmicIP,topological_score,event_weight);
     threetrkcntr++;
-    //hist.Fill_Track_Plots(); //fil the track plots with the track ids and such
 
-    if(_debug) std::cout<<"FILLING HISTOGRAMS AFTER 3 4cm TRACKS"<< std::endl;
+    //3 Connected Tracks
+    ////////////////////////
+    if(_debug) std::cout<<"APPLY 3 4cm TRACKS"<< std::endl;
     if(cuts.three_tracks_4cm_vertex == false) continue;
-    hist.Fill_Histograms(Overlay,4,reco_nu_vtx,true_nu_vtx,true_nu_vtx_sce,CosmicIP,topological_score,event_weight);
     threetrk_connected++;
-    //hist.Fill_Track_Plots(); //fil the track plots with the track ids and such
 
+    //PID
+    /////////////////////
     if(_debug) std::cout<<"FILLING HISTOGRAMS AFTER PID"<< std::endl;
     if(cuts.good_pid == false) continue;
-    hist.Fill_Histograms(Overlay,5,reco_nu_vtx,true_nu_vtx,true_nu_vtx_sce,CosmicIP,topological_score,event_weight);
     pid++;
-    //hist.Fill_Track_Plots(); //fil the track plots with the track ids and such
 
     /////////////////////////////////////////////////////////////
     //Okay. Now we have to identify the leading and recoil proton
@@ -326,15 +252,6 @@ void twoproton_pelee::Loop()
     TVector3 vMuon(1,1,1);
     vMuon.SetMag(trk_range_muon_mom_v->at(muon_id));
     double EMuon = std::sqrt(std::pow(trk_range_muon_mom_v->at(muon_id),2)+std::pow(MASS_MUON,2)) - MASS_MUON;
-    /* double EMuon = 0;
-    if(muon_start_contained == true && muon_end_contained == true){
-      EMuon = std::sqrt(std::pow(trk_range_muon_mom_v->at(muon_id),2)+std::pow(MASS_MUON,2)) - MASS_MUON;
-      vMuon.SetMag(trk_range_muon_mom_v->at(muon_id));
-    } else if (muon_start_contained == true && muon_end_contained == false)//{
-      EMuon = std::sqrt(std::pow(trk_mcs_muon_mom_v->at(muon_id),2)+std::pow(MASS_MUON,2)) - MASS_MUON;
-      vMuon.SetMag(trk_mcs_muon_mom_v->at(muon_id));
-      }
-    */
     vMuon.SetTheta(trk_theta_v->at(muon_id));
     vMuon.SetPhi(trk_phi_v->at(muon_id));
     TLorentzVector muon(vMuon[0],vMuon[1],vMuon[2],EMuon);
@@ -434,12 +351,6 @@ void twoproton_pelee::Loop()
     }
     if(_debug) std::cout<<"After Flipping: Recoil Proton 4 Vector: ("<<rec[0]<<","<<rec[1]<<","<<rec[2]<<","<<rec[3]<<")"<<std::endl;
 
-    ///////////////////////////////////
-    // The containment was applied in the above sections. 
-    // Below we plot the result of containment for all three particles
-    ///////////////////////////////////////////
-    hist.Fill_Histograms(Overlay,6,reco_nu_vtx,true_nu_vtx,true_nu_vtx_sce,CosmicIP,topological_score,event_weight);
-
     /////////////////////////////////////////////////////////////////////////////////////
     //3) Require the muon, leading proton, and recoil proton to be within Momentum Limits
     ////////////////////////////////////////////////////////////////////////////////////
@@ -450,32 +361,21 @@ void twoproton_pelee::Loop()
     reco_lead_mom_cut++;
     if(cuts.good_recoil_mom == false) continue;
     reco_recoil_mom_cut++;
-    hist.Fill_Histograms(Overlay,7,reco_nu_vtx,true_nu_vtx,true_nu_vtx_sce,CosmicIP,topological_score,event_weight);
-    hist.Fill_Particles(Overlay, vMuon,muon,vLead,lead,vRec,rec,event_weight);
+
+    Fill_Histograms_Particles(mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0, mc_n_threshold_pionpm, cuts.true_fv, vMuon, muon, vLead, lead, vRec, rec, event_weight);
+    Fill_Histograms_Particles_Raquel(vMuon, muon, vLead, lead, vRec, rec, event_weight, cuts.true_fv);
 
     //////////////////////////////////////////////////////////////////
     //Now to fill the Reco_Event Boolean, and fill the final counters
     /////////////////////////////////////////////////////////////////
     cuts.Reco_Event(); 
-    //cuts.Fill_Counters(Overlay, true_nu_vtx_sce[0],true_nu_vtx_sce[1],true_nu_vtx_sce[2],ccnc, nu_pdg, mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0, mc_n_threshold_pionpm,interaction); //fills the counters
 
     /////////////////////////////////////////
     //Making sure to save the RSE in the Myfile
-    //Also save the CC2p stuff for the overlay
-    // Also, Also, clean up the vectors
+    //Also get number of remaining events
     ////////////////////////////////////
     myfile << run << " " << sub << " " << evt << " " ;
     myfile << endl;
-
-    if(Overlay == true){
-      if(cuts.true_cc2p == true){
-	cc2p << run << " " << sub << " " << evt << " " ;
-	cc2p << endl;
-      }
-      proton_id_vector.clear();
-      testVector.clear();
-    }
-
     events_remaining++;
     
   } //END OF LOOP OVER EVENTS
@@ -514,149 +414,124 @@ void twoproton_pelee::Loop()
     std::cout <<"-----CLOSING TIME. YOU DON'T HAVE TO GO HOME, BUT YOU CAN'T STAY HERE-----"<<std::endl;
   }
 
+  //Create CSV file with the selected event information, MC Breakdowns
+  /////////////////////////////////////////////////////////////////////
   std::ofstream overlay_csv_file;
   overlay_csv_file.open(Form("lists/%s/%s.csv",directory,sample));
-  if(Overlay == true){
-  
-    //Before we finish the overlay, we need to make the efficiency and purity plots:
-    ///////////////////////////////////////////////////////////////////
-    std::vector<int> cut_values = {static_cast<int>(nentries),fvcntr,threepfps,threetrkcntr, threetrk_connected, pid, reco_recoil_mom_cut};
-    std::vector<pair<double,double>> eff_pur; 
-    for(int i = 0; i < cut_values.size(); i++){
-      double eff = double(cc2p0pi[i]) / double(cc2p0pi[0]);
-      double purity = double(cc2p0pi[i]) / double(cut_values[i]);
-      if(print_module_summary) std::cout<<"Value of Efficinecy After Cut "<<i<<": "<<eff<<std::endl;
-      if(print_module_summary) std::cout<<"Value of Purity After Cut "<<i<<": "<<purity<<std::endl;
-      hist.eff_graph->SetPoint(i,i+1,eff);
-      hist.pur_graph->SetPoint(i,i+1,purity);
-      eff_pur.push_back(std::make_pair(eff,purity));
-    }
 
-    hist.eff_graph->Write("hist.eff_graph");
-    hist.pur_graph->Write("pur_graph");
-
-    //create CSV file with the selected event information
-    overlay_csv_file << "EFFICIENCY AND PURITY VALUES \n";
-    overlay_csv_file <<"CUT, EFFICIENCY, PURITY\n";
-    overlay_csv_file << Form("No Cuts, %f, %f \n", eff_pur[0].first, eff_pur[0].second);
-    overlay_csv_file << Form("FV, %f, %f \n", eff_pur[1].first, eff_pur[1].second);
-    overlay_csv_file << Form("3 PFPs, %f, %f \n", eff_pur[2].first, eff_pur[2].second);
-    overlay_csv_file << Form("3 Tracks, %f, %f \n", eff_pur[3].first, eff_pur[3].second);
-    overlay_csv_file << Form("3 Connected Tracks, %f, %f \n", eff_pur[4].first, eff_pur[4].second);
-    overlay_csv_file << Form("1 Muon, 2 Protons, %f, %f \n", eff_pur[5].first, eff_pur[5].second);
-    overlay_csv_file << Form("All Threshold Cuts Applied, %f, %f \n", eff_pur[6].first, eff_pur[6].second);
-
-    overlay_csv_file << "GENERATED EVENTS: RAQUEL \n";
-    overlay_csv_file << Form("Initial Number of Events, %lld, Fraction of Total, %f \n",nentries,float(100.*float(nentries)/float(nentries)));
-    overlay_csv_file << Form("Number of CCQEL Events, %d, Fraction of Total, %f \n",qel[0],float(100.*(float(qel[0])/float(nentries))));
-    overlay_csv_file << Form("Number of CCRES Events, %d, Fraction of Total, %f \n",res[0],float(100.*(float(res[0])/float(nentries))));
-    overlay_csv_file << Form("Number of CCDIS Events, %d, Fraction of Total, %f \n",dis[0],float(100.*(float(dis[0])/float(nentries))));
-    overlay_csv_file << Form("Number of CCCOH Events, %d, Fraction of Total, %f \n",coh[0],float(100.*(float(coh[0])/float(nentries))));
-    overlay_csv_file << Form("Number of CCNuE Events, %d, Fraction of Total, %f \n",ccnue_raquel[0],float(100.*(float(ccnue_raquel[0])/float(nentries))));
-    overlay_csv_file << Form("Number of NC Events, %d, Fraction of Total, %f \n",nc_raquel[0],float(100.*(float(nc_raquel[0])/float(nentries))));
-    overlay_csv_file << Form("Number of OOFV Events, %d, Fraction of Total, %f \n",outfv_raquel[0],float(100.*(float(outfv_raquel[0])/float(nentries))));
-    overlay_csv_file << Form("Number of Else Events, %d, Fraction of Total, %f \n",other_raquel[0],float(100.*(float(other_raquel[0])/float(nentries))));
-    overlay_csv_file << "\n";
+  overlay_csv_file << "GENERATED EVENTS: RAQUEL \n";
+  overlay_csv_file << "Cut, Number of Events, Fraction of Total (%) \n";
+  overlay_csv_file << Form("Initial Number of Events, %lld, %f \n",nentries,float(100.*float(nentries)/float(nentries)));
+  overlay_csv_file << Form("Number of CCQEL Events, %d, %f \n",qel_0,float(100.*(float(qel_0)/float(nentries))));
+  overlay_csv_file << Form("Number of CCRES Events, %d, %f \n",res_0,float(100.*(float(res_0)/float(nentries))));
+  overlay_csv_file << Form("Number of CCDIS Events, %d, %f \n",dis_0,float(100.*(float(dis_0)/float(nentries))));
+  overlay_csv_file << Form("Number of CCCOH Events, %d, %f \n",coh_0,float(100.*(float(coh_0)/float(nentries))));
+  overlay_csv_file << Form("Number of CCNuE Events, %d, %f \n",ccnue_raquel_0,float(100.*(float(ccnue_raquel_0)/float(nentries))));
+  overlay_csv_file << Form("Number of NC Events, %d, %f \n",nc_raquel_0,float(100.*(float(nc_raquel_0)/float(nentries))));
+  overlay_csv_file << Form("Number of OOFV Events, %d, %f \n",outfv_raquel_0,float(100.*(float(outfv_raquel_0)/float(nentries))));
+  overlay_csv_file << Form("Number of Else Events, %d, %f \n",other_raquel_0,float(100.*(float(other_raquel_0)/float(nentries))));
+  overlay_csv_file << "\n";
       
-    overlay_csv_file << "SELECTED EVENTS: RAQUEL \n";
-    overlay_csv_file << Form("Number of Selected Events, %d, Fraction of Total, %f \n",events_remaining,float(100.*float(events_remaining)/float(events_remaining)));
-    overlay_csv_file << Form("Number of CCQEL Events, %d, Fraction of Total, %f \n",qel[number-1],float(100.*(float(qel[number-1])/float(events_remaining))));
-    overlay_csv_file << Form("Number of CCRES Events, %d, Fraction of Total, %f \n",res[number-1],float(100.*(float(res[number-1])/float(events_remaining))));
-    overlay_csv_file << Form("Number of CCDIS Events, %d, Fraction of Total, %f \n",dis[number-1],float(100.*(float(dis[number-1])/float(events_remaining))));
-    overlay_csv_file << Form("Number of CCCOH Events, %d, Fraction of Total, %f \n",coh[number-1],float(100.*(float(coh[number-1])/float(events_remaining))));
-    overlay_csv_file << Form("Number of CCNuE Events, %d, Fraction of Total, %f \n",ccnue_raquel[number-1],float(100.*(float(ccnue_raquel[number-1])/float(events_remaining))));
-    overlay_csv_file << Form("Number of NC Events, %d, Fraction of Total, %f \n",nc_raquel[number-1],float(100.*(float(nc_raquel[number-1])/float(events_remaining))));
-    overlay_csv_file << Form("Number of OOFV Events, %d, Fraction of Total, %f \n",outfv_raquel[number-1],float(100.*(float(outfv_raquel[number-1])/float(events_remaining))));
-    overlay_csv_file << Form("Number of Else Events, %d, Fraction of Total, %f \n",other_raquel[number-1],float(100.*(float(other_raquel[number-1])/float(events_remaining))));
-    overlay_csv_file << "\n";
+  overlay_csv_file << "SELECTED EVENTS: RAQUEL \n";
+  overlay_csv_file << "Cut, Number of Events, Fraction of Total (%) \n";
+  overlay_csv_file << Form("Number of Selected Events, %d, %f \n",events_remaining,float(100.*float(events_remaining)/float(events_remaining)));
+  overlay_csv_file << Form("Number of CCQEL Events, %d, %f \n",qel,float(100.*(float(qel)/float(events_remaining))));
+  overlay_csv_file << Form("Number of CCRES Events, %d, %f \n",res,float(100.*(float(res)/float(events_remaining))));
+  overlay_csv_file << Form("Number of CCDIS Events, %d, %f \n",dis,float(100.*(float(dis)/float(events_remaining))));
+  overlay_csv_file << Form("Number of CCCOH Events, %d, %f \n",coh,float(100.*(float(coh)/float(events_remaining))));
+  overlay_csv_file << Form("Number of CCNuE Events, %d, %f \n",ccnue_raquel,float(100.*(float(ccnue_raquel)/float(events_remaining))));
+  overlay_csv_file << Form("Number of NC Events, %d, %f \n",nc_raquel,float(100.*(float(nc_raquel)/float(events_remaining))));
+  overlay_csv_file << Form("Number of OOFV Events, %d, %f \n",outfv_raquel,float(100.*(float(outfv_raquel)/float(events_remaining))));
+  overlay_csv_file << Form("Number of Else Events, %d, %f \n",other_raquel,float(100.*(float(other_raquel)/float(events_remaining))));
+  overlay_csv_file << "\n";
 
-    overlay_csv_file << "GENERATED EVENTS: MINE \n";
-    overlay_csv_file << Form("Initial Number of Events, %lld, Fraction of Total, %f \n",nentries,float(100.*float(nentries)/float(nentries)));
-    overlay_csv_file << Form("Number of CC0p0pi Events, %d, Fraction of Total, %f \n",cc0p0pi[0],float(100.*float(cc0p0pi[0])/float(nentries)));
-    overlay_csv_file << Form("Number of CC1p0pi Events, %d, Fraction of Total, %f \n",cc1p0pi[0],float(100.*float(cc1p0pi[0])/float(nentries)));
-    overlay_csv_file << Form("Number of CC2p0pi Events, %d, Fraction of Total, %f \n",cc2p0pi[0],float(100.*float(cc2p0pi[0])/float(nentries)));
-    overlay_csv_file << Form("Number of CCNp0pi Events, %d, Fraction of Total, %f \n",ccNp0pi[0],float(100.*float(ccNp0pi[0])/float(nentries)));
-    overlay_csv_file << Form("Number of CCNp1pi Events, %d, Fraction of Total, %f \n",ccNp1pi[0],float(100.*float(ccNp1pi[0])/float(nentries)));
-    overlay_csv_file << Form("Number of CCNpNpi Events, %d, Fraction of Total, %f \n",ccNpNpi[0],float(100.*float(ccNpNpi[0])/float(nentries)));
-    overlay_csv_file << Form("Number of CCNue Events, %d, Fraction of Total, %f \n",ccnue[0], float(100.*float(ccnue[0])/float(nentries)));
-    overlay_csv_file << Form("Number of NC Events, %d, Fraction of Total, %f \n",nc[0], float(100.*float(nc[0])/float(nentries)));
-    overlay_csv_file << Form("Number of OOFV Events, %d, Fraction of Total, %f \n",outfv[0], float(100.*float(outfv[0])/float(nentries)));
-    overlay_csv_file << Form("Number of Other Events, %d, Fraction of Total, %f \n",other[0], float(100.*float(other[0])/float(nentries)));
-    overlay_csv_file << "\n";
+  overlay_csv_file << "GENERATED EVENTS: MINE \n";
+  overlay_csv_file << "Cut, Number of Events, Fraction of Total (%) \n";
+  overlay_csv_file << Form("Initial Number of Events, %lld, %f \n",nentries,float(100.*float(nentries)/float(nentries)));
+  overlay_csv_file << Form("Number of CC0p0pi Events, %d, %f \n",cc0p0pi_0,float(100.*float(cc0p0pi_0)/float(nentries)));
+  overlay_csv_file << Form("Number of CC1p0pi Events, %d, %f \n",cc1p0pi_0,float(100.*float(cc1p0pi_0)/float(nentries)));
+  overlay_csv_file << Form("Number of CC2p0pi Events, %d, %f \n",cc2p0pi_0,float(100.*float(cc2p0pi_0)/float(nentries)));
+  overlay_csv_file << Form("Number of CCNp0pi Events, %d, %f \n",ccNp0pi_0,float(100.*float(ccNp0pi_0)/float(nentries)));
+  overlay_csv_file << Form("Number of CCNp1pi Events, %d, %f \n",ccNp1pi_0,float(100.*float(ccNp1pi_0)/float(nentries)));
+  overlay_csv_file << Form("Number of CCNpNpi Events, %d, %f \n",ccNpNpi_0,float(100.*float(ccNpNpi_0)/float(nentries)));
+  overlay_csv_file << Form("Number of CCNue Events, %d, %f \n",ccnue_0, float(100.*float(ccnue_0)/float(nentries)));
+  overlay_csv_file << Form("Number of NC Events, %d, %f \n",nc_0, float(100.*float(nc_0)/float(nentries)));
+  overlay_csv_file << Form("Number of OOFV Events, %d, %f \n",outfv_0, float(100.*float(outfv_0)/float(nentries)));
+  overlay_csv_file << Form("Number of Other Events, %d, %f \n",other_0, float(100.*float(other_0)/float(nentries)));
+  overlay_csv_file << "\n";
 
-    overlay_csv_file << "SELECTED EVENTS: MINE \n";
-    overlay_csv_file << Form("Number of Selected Events, %d, Fraction of Total, %f \n",events_remaining,float(100.*float(events_remaining)/float(events_remaining)));
-    overlay_csv_file << Form("Number of CC0p0pi Events, %d, Fraction of Total, %f \n",cc0p0pi[number-1],float(100.*float(cc0p0pi[number-1])/float(events_remaining)));
-    overlay_csv_file << Form("Number of CC1p0pi Events, %d, Fraction of Total, %f \n",cc1p0pi[number-1],float(100.*float(cc1p0pi[number-1])/float(events_remaining)));
-    overlay_csv_file << Form("Number of CC2p0pi Events, %d, Fraction of Total, %f \n",cc2p0pi[number-1],float(100.*float(cc2p0pi[number-1])/float(events_remaining)));
-    overlay_csv_file << Form("Number of CCNp0pi Events, %d, Fraction of Total, %f \n",ccNp0pi[number-1],float(100.*float(ccNp0pi[number-1])/float(events_remaining)));
-    overlay_csv_file << Form("Number of CCNp1pi Events, %d, Fraction of Total, %f \n",ccNp1pi[number-1],float(100.*float(ccNp1pi[number-1])/float(events_remaining)));
-    overlay_csv_file << Form("Number of CCNpNpi Events, %d, Fraction of Total, %f \n",ccNpNpi[number-1],float(100.*float(ccNpNpi[number-1])/float(events_remaining)));
-    overlay_csv_file << Form("Number of CCNue Events, %d, Fraction of Total, %f \n",ccnue[number-1], float(100.*float(ccnue[number-1])/float(events_remaining)));
-    overlay_csv_file << Form("Number of NC Events, %d, Fraction of Total, %f \n",nc[number-1], float(100.*float(nc[number-1])/float(events_remaining)));
-    overlay_csv_file << Form("Number of OOFV Events, %d, Fraction of Total, %f \n",outfv[number-1], float(100.*float(outfv[number-1])/float(events_remaining)));
-    overlay_csv_file << Form("Number of Other Events, %d, Fraction of Total, %f \n",other[0], float(100.*float(other[0])/float(events_remaining)));
-    overlay_csv_file << "\n";
+  overlay_csv_file << "SELECTED EVENTS: MINE \n";
+  overlay_csv_file << "Cut, Number of Events, Fraction of Total (%) \n";
+  overlay_csv_file << Form("Number of Selected Events, %d, %f \n",events_remaining,float(100.*float(events_remaining)/float(events_remaining)));
+  overlay_csv_file << Form("Number of CC0p0pi Events, %d, %f \n",cc0p0pi,float(100.*float(cc0p0pi)/float(events_remaining)));
+  overlay_csv_file << Form("Number of CC1p0pi Events, %d, %f \n",cc1p0pi,float(100.*float(cc1p0pi)/float(events_remaining)));
+  overlay_csv_file << Form("Number of CC2p0pi Events, %d, %f \n",cc2p0pi,float(100.*float(cc2p0pi)/float(events_remaining)));
+  overlay_csv_file << Form("Number of CCNp0pi Events, %d, %f \n",ccNp0pi,float(100.*float(ccNp0pi)/float(events_remaining)));
+  overlay_csv_file << Form("Number of CCNp1pi Events, %d, %f \n",ccNp1pi,float(100.*float(ccNp1pi)/float(events_remaining)));
+  overlay_csv_file << Form("Number of CCNpNpi Events, %d, %f \n",ccNpNpi,float(100.*float(ccNpNpi)/float(events_remaining)));
+  overlay_csv_file << Form("Number of CCNue Events, %d, %f \n",ccnue, float(100.*float(ccnue)/float(events_remaining)));
+  overlay_csv_file << Form("Number of NC Events, %d, %f \n",nc, float(100.*float(nc)/float(events_remaining)));
+  overlay_csv_file << Form("Number of OOFV Events, %d, %f \n",outfv, float(100.*float(outfv)/float(events_remaining)));
+  overlay_csv_file << Form("Number of Other Events, %d, %f \n",other_0, float(100.*float(other_0)/float(events_remaining)));
+  overlay_csv_file << "\n";
+ 
+  if(print_module_summary){
 
-    //overlay_csv_file.close();
-   
-    if(print_module_summary){
+    std::cout<<"-----MC GENERATED SUMMARY: RAQUEL-----"<<std::endl;
+    std::cout << "[MC_RAQUEL] Initial Number of Events: "<<nentries<<std::endl;
+    std::cout << "[MC_RAQUEL] Number of CCQEL Events: "<<qel_0<<" Fraction of the Total: "<<float(100.*(float(qel_0)/float(nentries)))<<"%"<<std::endl;
+    std::cout << "[MC_RAQUEL] Number of CCRES Events: "<<res_0<<" Fraction of the Total: "<<float(100.*(float(res_0)/float(nentries)))<<"%"<<std::endl;
+    std::cout << "[MC_RAQUEL] Number of CCMEC Events: "<<mec_0<<" Fraction of the Total: "<<float(100.*(float(mec_0)/float(nentries)))<<"%"<<std::endl;
+    std::cout << "[MC_RAQUEL] Number of CCCOH Events: "<<coh_0<<" Fraction of the Total: "<<float(100.*(float(coh_0)/float(nentries)))<<"%"<<std::endl;
+    std::cout << "[MC_RAQUEL] Number of CCDIS Events: "<<dis_0<<" Fraction of the Total: "<<float(100.*(float(dis_0)/float(nentries)))<<"%"<<std::endl;
+    std::cout << "[MC_RAQUEL] Number of CCNue Events: "<<ccnue_raquel_0<<" Fraction of the Total: "<<float(100.*(float(ccnue_raquel_0)/float(nentries)))<<"%"<<std::endl;
+    std::cout << "[MC_RAQUEL] Number of OUTFV Events: "<<outfv_raquel_0<<" Fraction of the Total: "<<float(100.*(float(outfv_raquel_0)/float(nentries)))<<"%"<<std::endl;
+    std::cout << "[MC_RAQUEL] Number of NC Events: "<<nc_raquel_0<<" Fraction of the Total: "<<float(100.*(float(nc_raquel_0)/float(nentries)))<<"%"<<std::endl;
+    std::cout << "[MC_RAQUEL] Number of Else Events: "<<other_raquel_0<<" Fraction of the Total: "<<float(100.*(float(other_raquel_0)/float(nentries)))<<"%"<<std::endl;
+    std::cout <<"-----MR. SAXOBEAT-----"<<std::endl;
+    
+    std::cout<<"-----MC GENERATED SUMMARY-----"<<std::endl;
+    std::cout << "[MC] Initial Number of Events: "<<nentries<<std::endl;
+    std::cout << "[MC] Number of CCOpOpi Events: "<<cc0p0pi_0<<" Fraction of the Total: "<<float(100.*(float(cc0p0pi_0)/float(nentries)))<<"%"<<std::endl;
+    std::cout << "[MC] Number of CC1p0pi Events: "<<cc1p0pi_0<<" Fraction of the Total: "<<float(100.*(float(cc1p0pi_0)/float(nentries)))<<"%"<<std::endl;
+    std::cout << "[MC] Number of CC2p0pi Events: "<<cc2p0pi_0<<" Fraction of the Total: "<<float(100.*(float(cc2p0pi_0)/float(nentries)))<<"%"<<std::endl;
+    std::cout << "[MC] Number of CCNp0pi Events: "<<ccNp0pi_0<<" Fraction of the Total: "<<float(100.*(float(ccNp0pi_0)/float(nentries)))<<"%"<<std::endl;
+    std::cout << "[MC] Number of CCNp1pi Events: "<<ccNp1pi_0<<" Fraction of the Total: "<<float(100.*(float(ccNp1pi_0)/float(nentries)))<<"%"<<std::endl;
+    std::cout << "[MC] Number of CCNpNpi Events: "<<ccNpNpi_0<<" Fraction of the Total: "<<float(100.*(float(ccNpNpi_0)/float(nentries)))<<"%"<<std::endl;
+    std::cout << "[MC] Number of CCNue Events: "<<ccnue_0<<" Fraction of the Total: "<<float(100.*(float(ccnue_0)/float(nentries)))<<"%"<<std::endl;
+    std::cout << "[MC] Number of OUTFV Events: "<<outfv_0<<" Fraction of the Total: "<<float(100.*(float(outfv_0)/float(nentries)))<<"%"<<std::endl; 
+    std::cout << "[MC] Number of NC Events: "<<nc_0<<" Fraction of the Total: "<<float(100.*(float(nc_0)/float(nentries)))<<"%"<<std::endl;
+    std::cout << "[MC] Number of Else Events: "<<other_0<<" Fraction of the Total: "<<float(100.*(float(other_0)/float(nentries)))<<"%"<<std::endl;
+    std::cout <<"-----OPEN UP MY EAGER EYES! CAUSE I'M MR. BRIGHTSIDE-----"<<std::endl;
 
-      std::cout<<"-----MC GENERATED SUMMARY: RAQUEL-----"<<std::endl;
-      std::cout << "[MC_RAQUEL] Initial Number of Events: "<<nentries<<std::endl;
-      std::cout << "[MC_RAQUEL] Number of CCQEL Events: "<<qel[0]<<" Fraction of the Total: "<<float(100.*(float(qel[0])/float(nentries)))<<"%"<<std::endl;
-      std::cout << "[MC_RAQUEL] Number of CCRES Events: "<<res[0]<<" Fraction of the Total: "<<float(100.*(float(res[0])/float(nentries)))<<"%"<<std::endl;
-      std::cout << "[MC_RAQUEL] Number of CCMEC Events: "<<mec[0]<<" Fraction of the Total: "<<float(100.*(float(mec[0])/float(nentries)))<<"%"<<std::endl;
-      std::cout << "[MC_RAQUEL] Number of CCCOH Events: "<<coh[0]<<" Fraction of the Total: "<<float(100.*(float(coh[0])/float(nentries)))<<"%"<<std::endl;
-      std::cout << "[MC_RAQUEL] Number of CCDIS Events: "<<dis[0]<<" Fraction of the Total: "<<float(100.*(float(dis[0])/float(nentries)))<<"%"<<std::endl;
-      std::cout << "[MC_RAQUEL] Number of CCNue Events: "<<ccnue_raquel[0]<<" Fraction of the Total: "<<float(100.*(float(ccnue_raquel[0])/float(nentries)))<<"%"<<std::endl;
-      std::cout << "[MC_RAQUEL] Number of OUTFV Events: "<<outfv_raquel[0]<<" Fraction of the Total: "<<float(100.*(float(outfv_raquel[0])/float(nentries)))<<"%"<<std::endl;
-      std::cout << "[MC_RAQUEL] Number of NC Events: "<<nc_raquel[0]<<" Fraction of the Total: "<<float(100.*(float(nc_raquel[0])/float(nentries)))<<"%"<<std::endl;
-      std::cout << "[MC_RAQUEL] Number of Else Events: "<<other_raquel[0]<<" Fraction of the Total: "<<float(100.*(float(other_raquel[0])/float(nentries)))<<"%"<<std::endl;
-      std::cout <<"-----MR. SAXOBEAT-----"<<std::endl;
+    std::cout<<"-----MC RECO'D SUMMARY: RAQUEL-----"<<std::endl;
+    std::cout << "[MC_RECO_RAQUEL] Initial Number of Events That were Reconstructed: "<<events_remaining<<std::endl;
+    std::cout << "[MC_RECO_RAQUEL] Number of CCQEL Events: "<<qel<<" Fraction of the Total: "<<float(100.*(float(qel)/float(events_remaining)))<<"%"<<std::endl;
+    std::cout << "[MC_RECO_RAQUEL] Number of CCRES Events: "<<res<<" Fraction of the Total: "<<float(100.*(float(res)/float(events_remaining)))<<"%"<<std::endl;
+    std::cout << "[MC_RECO_RAQUEL] Number of CCMEC Events: "<<mec<<" Fraction of the Total: "<<float(100.*(float(mec)/float(events_remaining)))<<"%"<<std::endl;
+    std::cout << "[MC_RECO_RAQUEL] Number of CCCOH Events: "<<coh<<" Fraction of the Total: "<<float(100.*(float(coh)/float(events_remaining)))<<"%"<<std::endl;
+    std::cout << "[MC_RECO_RAQUEL] Number of CCDIS Events: "<<dis<<" Fraction of the Total: "<<float(100.*(float(dis)/float(events_remaining)))<<"%"<<std::endl;
+    std::cout << "[MC_RECO_RAQUEL] Number of CCNue Events: "<<ccnue_raquel<<" Fraction of the Total: "<<float(100.*(float(ccnue_raquel)/float(events_remaining)))<<"%"<<std::endl;
+    std::cout << "[MC_RECO_RAQUEL] Number of OUTFV Events: "<<outfv_raquel<<" Fraction of the Total: "<<float(100.*(float(outfv_raquel)/float(events_remaining)))<<"%"<<std::endl;
+    std::cout << "[MC_RECO_RAQUEL] Number of NC Events: "<<nc_raquel<<" Fraction of the Total: "<<float(100.*(float(nc_raquel)/float(events_remaining)))<<"%"<<std::endl;
+    std::cout << "[MC_RECO_RAQUEL] Number of Else Events: "<<other_raquel<<" Fraction of the Total: "<<float(100.*(float(other_raquel)/float(events_remaining)))<<"%"<<std::endl;
+    std::cout <<"-----ONE FOR THE DAGGER, AND ONE FOR THE ONE YOU BELIEVE!!-----"<<std::endl;
+    
+    std::cout<<"-----MC RECO'D SUMMARY-----"<<std::endl;
+    std::cout << "[MC_RECO] Initial Number of Events That were Reconstructed: "<<events_remaining<<std::endl;
+    std::cout << "[MC_RECO] Number of CCOpOpi Events: "<<cc0p0pi<<" Fraction of the Total: "<<float(100.*(float(cc0p0pi)/float(events_remaining)))<<"%"<<std::endl;
+    std::cout << "[MC_RECO] Number of CC1p0pi Events: "<<cc1p0pi<<" Fraction of the Total: "<<float(100.*(float(cc1p0pi)/float(events_remaining)))<<"%"<<std::endl;
+    std::cout << "[MC_RECO] Number of CC2p0pi Events: "<<cc2p0pi<<" Fraction of the Total: "<<float(100.*(float(cc2p0pi)/float(events_remaining)))<<"%"<<std::endl;
+    std::cout << "[MC_RECO] Number of CCNp0pi Events: "<<ccNp0pi<<" Fraction of the Total: "<<float(100.*(float(ccNp0pi)/float(events_remaining)))<<"%"<<std::endl;
+    std::cout << "[MC_RECO] Number of CCNp1pi Events: "<<ccNp1pi<<" Fraction of the Total: "<<float(100.*(float(ccNp1pi)/float(events_remaining)))<<"%"<<std::endl;
+    std::cout << "[MC_RECO] Number of CCNpNpi Events: "<<ccNpNpi<<" Fraction of the Total: "<<float(100.*(float(ccNpNpi)/float(events_remaining)))<<"%"<<std::endl;
+    std::cout << "[MC_RECO] Number of CCNue Events: "<<ccnue<<" Fraction of the Total: "<<float(100.*(float(ccnue)/float(events_remaining)))<<"%"<<std::endl;
+    std::cout << "[MC_RECO] Number of OUTFV Events: "<<outfv<<" Fraction of the Total: "<<float(100.*(float(outfv)/float(events_remaining)))<<"%"<<std::endl;
+    std::cout << "[MC_RECO] Number of NC Events: "<<nc<<" Fraction of the Total: "<<float(100.*(float(nc)/float(events_remaining)))<<"%"<<std::endl;
+    std::cout << "[MC_RECO] Number of Else Events: "<<other<<" Fraction of the Total: "<<float(100.*(float(other)/float(events_remaining)))<<"%"<<std::endl;
+    std::cout <<"-----NOTHING REALLY MATTERS. ANYONE CAN SEE. NOTHING REALLY MATTERS. NOTHING REALLY MATTERS TO ME-----"<<std::endl;
   
-      std::cout<<"-----MC GENERATED SUMMARY-----"<<std::endl;
-      std::cout << "[MC] Initial Number of Events: "<<nentries<<std::endl;
-      std::cout << "[MC] Number of CCOpOpi Events: "<<cc0p0pi[0]<<" Fraction of the Total: "<<float(100.*(float(cc0p0pi[0])/float(nentries)))<<"%"<<std::endl;
-      std::cout << "[MC] Number of CC1p0pi Events: "<<cc1p0pi[0]<<" Fraction of the Total: "<<float(100.*(float(cc1p0pi[0])/float(nentries)))<<"%"<<std::endl;
-      std::cout << "[MC] Number of CC2p0pi Events: "<<cc2p0pi[0]<<" Fraction of the Total: "<<float(100.*(float(cc2p0pi[0])/float(nentries)))<<"%"<<std::endl;
-      std::cout << "[MC] Number of CCNp0pi Events: "<<ccNp0pi[0]<<" Fraction of the Total: "<<float(100.*(float(ccNp0pi[0])/float(nentries)))<<"%"<<std::endl;
-      std::cout << "[MC] Number of CCNp1pi Events: "<<ccNp1pi[0]<<" Fraction of the Total: "<<float(100.*(float(ccNp1pi[0])/float(nentries)))<<"%"<<std::endl;
-      std::cout << "[MC] Number of CCNpNpi Events: "<<ccNpNpi[0]<<" Fraction of the Total: "<<float(100.*(float(ccNpNpi[0])/float(nentries)))<<"%"<<std::endl;
-      std::cout << "[MC] Number of CCNue Events: "<<ccnue[0]<<" Fraction of the Total: "<<float(100.*(float(ccnue[0])/float(nentries)))<<"%"<<std::endl;
-      std::cout << "[MC] Number of OUTFV Events: "<<outfv[0]<<" Fraction of the Total: "<<float(100.*(float(outfv[0])/float(nentries)))<<"%"<<std::endl; 
-      std::cout << "[MC] Number of NC Events: "<<nc[0]<<" Fraction of the Total: "<<float(100.*(float(nc[0])/float(nentries)))<<"%"<<std::endl;
-      std::cout << "[MC] Number of Else Events: "<<other[0]<<" Fraction of the Total: "<<float(100.*(float(other[0])/float(nentries)))<<"%"<<std::endl;
-      std::cout <<"-----OPEN UP MY EAGER EYES! CAUSE I'M MR. BRIGHTSIDE-----"<<std::endl;
-
-      std::cout<<"-----MC RECO'D SUMMARY: RAQUEL-----"<<std::endl;
-      std::cout << "[MC_RECO_RAQUEL] Initial Number of Events That were Reconstructed: "<<events_remaining<<std::endl;
-      std::cout << "[MC_RECO_RAQUEL] Number of CCQEL Events: "<<qel[number-1]<<" Fraction of the Total: "<<float(100.*(float(qel[number-1])/float(events_remaining)))<<"%"<<std::endl;
-      std::cout << "[MC_RECO_RAQUEL] Number of CCRES Events: "<<res[number-1]<<" Fraction of the Total: "<<float(100.*(float(res[number-1])/float(events_remaining)))<<"%"<<std::endl;
-      std::cout << "[MC_RECO_RAQUEL] Number of CCMEC Events: "<<mec[number-1]<<" Fraction of the Total: "<<float(100.*(float(mec[number-1])/float(events_remaining)))<<"%"<<std::endl;
-      std::cout << "[MC_RECO_RAQUEL] Number of CCCOH Events: "<<coh[number-1]<<" Fraction of the Total: "<<float(100.*(float(coh[number-1])/float(events_remaining)))<<"%"<<std::endl;
-      std::cout << "[MC_RECO_RAQUEL] Number of CCDIS Events: "<<dis[number-1]<<" Fraction of the Total: "<<float(100.*(float(dis[number-1])/float(events_remaining)))<<"%"<<std::endl;
-      std::cout << "[MC_RECO_RAQUEL] Number of CCNue Events: "<<ccnue_raquel[number-1]<<" Fraction of the Total: "<<float(100.*(float(ccnue_raquel[number-1])/float(events_remaining)))<<"%"<<std::endl;
-      std::cout << "[MC_RECO_RAQUEL] Number of OUTFV Events: "<<outfv_raquel[number-1]<<" Fraction of the Total: "<<float(100.*(float(outfv_raquel[number-1])/float(events_remaining)))<<"%"<<std::endl;
-      std::cout << "[MC_RECO_RAQUEL] Number of NC Events: "<<nc_raquel[number-1]<<" Fraction of the Total: "<<float(100.*(float(nc_raquel[number-1])/float(events_remaining)))<<"%"<<std::endl;
-      std::cout << "[MC_RECO_RAQUEL] Number of Else Events: "<<other_raquel[number-1]<<" Fraction of the Total: "<<float(100.*(float(other_raquel[number-1])/float(events_remaining)))<<"%"<<std::endl;
-      std::cout <<"-----ONE FOR THE DAGGER, AND ONE FOR THE ONE YOU BELIEVE!!-----"<<std::endl;
-
-      std::cout<<"-----MC RECO'D SUMMARY-----"<<std::endl;
-      std::cout << "[MC_RECO] Initial Number of Events That were Reconstructed: "<<events_remaining<<std::endl;
-      std::cout << "[MC_RECO] Number of CCOpOpi Events: "<<cc0p0pi[number-1]<<" Fraction of the Total: "<<float(100.*(float(cc0p0pi[number-1])/float(events_remaining)))<<"%"<<std::endl;
-      std::cout << "[MC_RECO] Number of CC1p0pi Events: "<<cc1p0pi[number-1]<<" Fraction of the Total: "<<float(100.*(float(cc1p0pi[number-1])/float(events_remaining)))<<"%"<<std::endl;
-      std::cout << "[MC_RECO] Number of CC2p0pi Events: "<<cc2p0pi[number-1]<<" Fraction of the Total: "<<float(100.*(float(cc2p0pi[number-1])/float(events_remaining)))<<"%"<<std::endl;
-      std::cout << "[MC_RECO] Number of CCNp0pi Events: "<<ccNp0pi[number-1]<<" Fraction of the Total: "<<float(100.*(float(ccNp0pi[number-1])/float(events_remaining)))<<"%"<<std::endl;
-      std::cout << "[MC_RECO] Number of CCNp1pi Events: "<<ccNp1pi[number-1]<<" Fraction of the Total: "<<float(100.*(float(ccNp1pi[number-1])/float(events_remaining)))<<"%"<<std::endl;
-      std::cout << "[MC_RECO] Number of CCNpNpi Events: "<<ccNpNpi[number-1]<<" Fraction of the Total: "<<float(100.*(float(ccNpNpi[number-1])/float(events_remaining)))<<"%"<<std::endl;
-      std::cout << "[MC_RECO] Number of CCNue Events: "<<ccnue[number-1]<<" Fraction of the Total: "<<float(100.*(float(ccnue[number-1])/float(events_remaining)))<<"%"<<std::endl;
-      std::cout << "[MC_RECO] Number of OUTFV Events: "<<outfv[number-1]<<" Fraction of the Total: "<<float(100.*(float(outfv[number-1])/float(events_remaining)))<<"%"<<std::endl;
-      std::cout << "[MC_RECO] Number of NC Events: "<<nc[number-1]<<" Fraction of the Total: "<<float(100.*(float(nc[number-1])/float(events_remaining)))<<"%"<<std::endl;
-      std::cout << "[MC_RECO] Number of Else Events: "<<other[number-1]<<" Fraction of the Total: "<<float(100.*(float(other[number-1])/float(events_remaining)))<<"%"<<std::endl;
-      std::cout <<"-----NOTHING REALLY MATTERS. ANYONE CAN SEE. NOTHING REALLY MATTERS. NOTHING REALLY MATTERS TO ME-----"<<std::endl;
-    } //end of debug
-  }//end of if overlay
+  } //end of print module summary
 
   if(_debug){
     std::cout<<"Neutrinos 0: "<<neutrinos_0<<std::endl;
@@ -673,19 +548,12 @@ void twoproton_pelee::Loop()
     std::cout<<"Uncontained Protons: "<<uncontain<<std::endl;
     std::cout<<"UhOh: "<<uhoh<<std::endl;
     
-    std::cout<<"cc2p0pi 0: "<<cc2p0pi[0]<<std::endl;
-    std::cout<<"cc2p0pi 1: "<<cc2p0pi[1]<<std::endl;
-    std::cout<<"cc2p0pi 2: "<<cc2p0pi[2]<<std::endl;
-    
     std::cout<<"Contained: "<<contained<<std::endl;
     std::cout<<"Uncontained: "<<uncontained<<std::endl;
     std::cout<<"Denom Contained: "<<denom_contained<<std::endl;
     std::cout<<"Denom Uncontained: "<<denom_uncontained<<std::endl;
     std::cout<<"Num Contained: "<<num_contained<<std::endl;
     std::cout<<"Num Uncontained: "<<num_uncontained<<std::endl;
-
-    std::cout<<"Ohshit_denom: "<<ohshit_denom<<std::endl;
-    std::cout<<"OHSHIT_num: "<<ohshit_num<<std::endl;
 
     std::cout<<"Total Number of Muon: "<<total_muon<<std::endl;
     std::cout<<"Flip Muon: "<<flip_muon<<std::endl;
@@ -699,17 +567,11 @@ void twoproton_pelee::Loop()
   //Don't forget to write all of your histograms before you leave!                                                                 
   ////////////////////////////////////////////////////////////////                                                              
   tfile->cd();
-  hist.Write_Histograms(); //function that writes all our histograms                                                      
+  Write_Histograms(); //function that writes all our histograms                                                      
   tfile->Close(); //write the root file that contains our histograms                                                    
   myfile.close(); //Write the file that contains the RSE of good events                                                 
+  cc2p.close();
   csv_file.close(); //Write the file that contains the module summary
-  if(Overlay == true){
-    cc2p.close(); //Write the file that contains the RSE of good 1mu2p events
-    overlay_csv_file.close(); //Write the file that contains the module summary
-  }
-
-  //auto stop = high_resolution_clock::now();
-  //auto duration = duration_cast<minutes>(stop - start); 
-  //std::cout<<"Program Run Time: "<<duration.count()<<std::endl;
+  overlay_csv_file.close();
   
 } //end of progrm
