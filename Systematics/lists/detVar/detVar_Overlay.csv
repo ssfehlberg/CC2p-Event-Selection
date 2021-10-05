@@ -1,6 +1,6 @@
 GENERATED EVENTS: RAQUEL 
 Cut, Number of Events, Fraction of Total (%) 
-Initial Number of Events, 463418, 100.000000 
+Initial Number of Events, 10, 100.000000 
 Number of CCQEL Events, 0, 0.000000 
 Number of CCRES Events, 0, 0.000000 
 Number of CCDIS Events, 0, 0.000000 
@@ -12,19 +12,19 @@ Number of Else Events, 0, 0.000000
 
 SELECTED EVENTS: RAQUEL 
 Cut, Number of Events, Fraction of Total (%) 
-Number of Selected Events, 2151, 100.000000 
-Number of CCQEL Events, 491, 22.826593 
-Number of CCRES Events, 747, 34.728031 
-Number of CCDIS Events, 53, 2.463970 
-Number of CCCOH Events, 0, 0.000000 
-Number of CCNuE Events, 0, 0.000000 
-Number of NC Events, 110, 5.113901 
-Number of OOFV Events, 61, 2.835890 
-Number of Else Events, 0, 0.000000 
+Number of Selected Events, 0, -nan 
+Number of CCQEL Events, 0, -nan 
+Number of CCRES Events, 0, -nan 
+Number of CCDIS Events, 0, -nan 
+Number of CCCOH Events, 0, -nan 
+Number of CCNuE Events, 0, -nan 
+Number of NC Events, 0, -nan 
+Number of OOFV Events, 0, -nan 
+Number of Else Events, 0, -nan 
 
 GENERATED EVENTS: MINE 
 Cut, Number of Events, Fraction of Total (%) 
-Initial Number of Events, 463418, 100.000000 
+Initial Number of Events, 10, 100.000000 
 Number of CC0p0pi Events, 0, 0.000000 
 Number of CC1p0pi Events, 0, 0.000000 
 Number of CC2p0pi Events, 0, 0.000000 
@@ -38,15 +38,15 @@ Number of Other Events, 0, 0.000000
 
 SELECTED EVENTS: MINE 
 Cut, Number of Events, Fraction of Total (%) 
-Number of Selected Events, 2151, 100.000000 
-Number of CC0p0pi Events, 18, 0.836820 
-Number of CC1p0pi Events, 102, 4.741981 
-Number of CC2p0pi Events, 1454, 67.596466 
-Number of CCNp0pi Events, 152, 7.066481 
-Number of CCNp1pi Events, 135, 6.276151 
-Number of CCNpNpi Events, 7, 0.325430 
-Number of CCNue Events, 1, 0.046490 
-Number of NC Events, 110, 5.113901 
-Number of OOFV Events, 61, 2.835890 
-Number of Other Events, 0, 0.000000 
+Number of Selected Events, 0, -nan 
+Number of CC0p0pi Events, 0, -nan 
+Number of CC1p0pi Events, 0, -nan 
+Number of CC2p0pi Events, 0, -nan 
+Number of CCNp0pi Events, 0, -nan 
+Number of CCNp1pi Events, 0, -nan 
+Number of CCNpNpi Events, 0, -nan 
+Number of CCNue Events, 0, -nan 
+Number of NC Events, 0, -nan 
+Number of OOFV Events, 0, -nan 
+Number of Other Events, 0, -nan 
 

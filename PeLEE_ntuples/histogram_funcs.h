@@ -129,21 +129,21 @@ void histogram_funcs::Define_Histograms(const char* sample){
     if(use_xsec_binning == true){
       if(j == 0){ //momentum
 	//muon
-	const Int_t bins_muon = 6;
-	Double_t edges_muon[bins_muon+1] = {0.1,0.2,0.3,0.5,0.7,1.3,2.5};
+	const Int_t bins_muon = 5;
+	Double_t edges_muon[bins_muon+1] = {0.1,0.3,0.5,0.7,0.9,1.2};
 	h_muon[j] = new TH1D(Form("h_muon%s_%s",var[j],sample),Form(" h_muon%s_%s ;%s; Counts",var[j],xlabel[j],sample),bins_muon,edges_muon);
 	//recoil
-	const Int_t bins_recoil = 5;
-	Double_t edges_recoil[bins_recoil+1] = {0.25,0.35,0.45,0.55,0.65,1.2};
+	const Int_t bins_recoil = 6;
+	Double_t edges_recoil[bins_recoil+1] = {0.3,0.4,0.5,0.6,0.7,0.8,1.0};
 	h_recoil[j] = new TH1D(Form("h_recoil%s_%s",var[j],sample),Form("h_recoil%s_%s ;%s; Counts",var[j],xlabel[j],sample),bins_recoil,edges_recoil);
 	//leading
 	const Int_t bins_leading = 6;
-	Double_t edges_leading[bins_leading+1] = {0.25,0.35,0.45,0.55,0.65,0.75,1.2};
+	Double_t edges_leading[bins_leading+1] = {0.3,0.4,0.5,0.6,0.7,0.8,1.0};
 	h_leading[j] = new TH1D(Form("h_leading%s_%s",var[j],sample),Form("h_leading%s_%s ;%s; Counts",var[j],xlabel[j],sample),bins_leading,edges_leading);
 
       }else if (j == 2){ //theta
-	const Int_t bins_theta = 10;
-        Double_t edges_theta[bins_theta+1] = {-1.0,-0.8,-0.6,-0.4,-0.2,0.0,0.2,0.4,0.6,0.8,1.0};
+	const Int_t bins_theta = 8;
+        Double_t edges_theta[bins_theta+1] = {-1.0,-0.75,-0.5,-0.25,0.0,0.25,0.5,0.75,1.0};
 	h_muon[j] = new TH1D(Form("h_muon%s_%s",var[j],sample),Form(" h_muon%s_%s ;%s; Counts",var[j],xlabel[j],sample),bins_theta,edges_theta);
         h_recoil[j] = new TH1D(Form("h_recoil%s_%s",var[j],sample),Form("h_recoil%s_%s ;%s; Counts",var[j],xlabel[j],sample),bins_theta,edges_theta);
         h_leading[j] = new TH1D(Form("h_leading%s_%s",var[j],sample),Form("h_leading%s_%s ;%s; Counts",var[j],xlabel[j],sample),bins_theta,edges_theta);
@@ -163,15 +163,15 @@ void histogram_funcs::Define_Histograms(const char* sample){
   } //end of loop over variables
 
   if(use_xsec_binning == true){
-    const Int_t bins = 10;
-    Double_t edges[bins+1] = {-1.0,-0.8,-0.6,-0.4,-0.2,0.0,0.2,0.4,0.6,0.8,1.0};
+    const Int_t bins = 8;
+    Double_t edges[bins+1] = {-1.0,-0.75,-0.5,-0.25,0.0,0.25,0.5,0.75,1.0};
     h_opening_angle_protons_lab = new TH1D(Form("h_opening_angle_protons_lab_%s",sample),Form("h_opening_angle_protons_lab_%s; Opening Angle btwn Two Protons; Counts",sample),bins,edges);  
     h_opening_angle_protons_com = new TH1D(Form("h_opening_angle_protons_com_%s",sample),Form("h_opening_angle_protons_com_%s;cos(#gamma_{COM});Counts",sample),bins,edges);
     h_opening_angle_mu_leading = new TH1D(Form("h_opening_angle_mu_leading_%s",sample),Form("h_opening_angle_mu_leading_%s;Opening Angle btwn Muon and Leading Proton; Counts",sample),bins,edges);
     h_opening_angle_mu_both = new TH1D(Form("h_opening_angle_mu_both_%s",sample),Form("h_opening_angle_mu_both_%s; Opening Angle btwn Muon and Total Proton Momentum; Counts",sample),bins,edges);
 
-    const Int_t bins_stv_mom = 4;
-    Double_t edges_stv_mom[bins_stv_mom+1] = {0,0.2,0.4,0.6,1.0};
+    const Int_t bins_stv_mom = 7;
+    Double_t edges_stv_mom[bins_stv_mom+1] = {0,0.1,0.2,0.3,0.4,0.5,0.6,1.0};
     h_delta_PT = new TH1D(Form("h_delta_PT_%s",sample),Form("h_deltaPT_%s;#delta P_{T} [GeV/c];Counts",sample),bins_stv_mom,edges_stv_mom);
 
     const Int_t bins_stv_angles = 6;
@@ -179,12 +179,12 @@ void histogram_funcs::Define_Histograms(const char* sample){
     h_delta_alphaT = new TH1D(Form("h_delta_alphaT_%s",sample),Form("h_delta_alphaT_%s; #delta #alpha_{T} [Deg.];Counts",sample),bins_stv_angles,edges_stv_angles); 
     h_delta_phiT = new TH1D(Form("h_delta_phiT_%s",sample),Form("h_delta_phiT_%s; #delta #phi_{T} [Deg.];Counts",sample),bins_stv_angles,edges_stv_angles);
 
-    const Int_t bins_neutron = 20;
-    Double_t edges_neutron[bins_neutron+1] = {0.0,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0};
+    const Int_t bins_neutron = 8;
+    Double_t edges_neutron[bins_neutron+1] = {0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.8,1.0};
     h_pn = new TH1D(Form("h_pn_%s",sample),Form("h_pn_%s; p_{n} [GeV/c];Counts",sample),bins_neutron,edges_neutron);
   
-    const Int_t bins_nuE = 6;
-    Double_t edges_nuE[bins_nuE+1] = {0,0.3,0.5,0.7,0.9,1.2,4.0};
+    const Int_t bins_nuE = 4;
+    Double_t edges_nuE[bins_nuE+1] = {0,0.4,0.8,1.2,1.8};
     h_nu_E = new TH1D(Form("h_nu_E_%s",sample),Form("h_nu_E_%s; Total Energy; Counts;",sample),bins_nuE,edges_nuE);
 
     //basic bitches
@@ -203,7 +203,7 @@ void histogram_funcs::Define_Histograms(const char* sample){
     h_delta_alphaT = new TH1D(Form("h_delta_alphaT_%s",sample),Form("h_delta_alphaT_%s; #delta #alpha_{T} [Deg.];Counts",sample),10,0,180); //0,180                                                                            
     h_delta_phiT = new TH1D(Form("h_delta_phiT_%s",sample),Form("h_delta_phiT_%s; #delta #phi_{T} [Deg.];Counts",sample),10,0,180); //0,180                                                                                     
     h_pn = new TH1D(Form("h_pn_%s",sample),Form("h_pn_%s; p_{n} [GeV/c];Counts",sample),50,0,1.0);
-    h_nu_E = new TH1D(Form("h_nu_E_%s",sample),Form("h_nu_E_%s; Total Energy; Counts;",sample),50,0,2.5);
+    h_nu_E = new TH1D(Form("h_nu_E_%s",sample),Form("h_nu_E_%s; Total Energy; Counts;",sample),50,0,20);
     h_mom_struck_nuc = new TH1D(Form("h_mom_struck_nuc_%s",sample),Form("h_mom_struck_nuc_%s; P_{Init}; Counts", sample),30, 0, 1);
     h_tot_pz = new TH1D(Form("h_tot_pz_%s",sample),Form("h_tot_pz_%s; P_{Z}^{Total}; Counts",sample), 20, 0, 2);
     h_tot_E = new TH1D(Form("h_tot_E_%s",sample),Form("h_tot_E_%s; Total Energy; Counts;",sample),50,0,2.5);

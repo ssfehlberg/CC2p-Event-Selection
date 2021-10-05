@@ -1,6 +1,6 @@
 GENERATED EVENTS: RAQUEL 
 Cut, Number of Events, Fraction of Total (%) 
-Initial Number of Events, 1000309, 100.000000 
+Initial Number of Events, 10, 100.000000 
 Number of CCQEL Events, 0, 0.000000 
 Number of CCRES Events, 0, 0.000000 
 Number of CCDIS Events, 0, 0.000000 
@@ -12,19 +12,19 @@ Number of Else Events, 0, 0.000000
 
 SELECTED EVENTS: RAQUEL 
 Cut, Number of Events, Fraction of Total (%) 
-Number of Selected Events, 4605, 100.000000 
-Number of CCQEL Events, 1080, 23.452768 
-Number of CCRES Events, 1556, 33.789360 
-Number of CCDIS Events, 102, 2.214984 
+Number of Selected Events, 1, 100.000000 
+Number of CCQEL Events, 0, 0.000000 
+Number of CCRES Events, 0, 0.000000 
+Number of CCDIS Events, 0, 0.000000 
 Number of CCCOH Events, 0, 0.000000 
 Number of CCNuE Events, 0, 0.000000 
-Number of NC Events, 258, 5.602606 
-Number of OOFV Events, 142, 3.083605 
+Number of NC Events, 1, 100.000000 
+Number of OOFV Events, 0, 0.000000 
 Number of Else Events, 0, 0.000000 
 
 GENERATED EVENTS: MINE 
 Cut, Number of Events, Fraction of Total (%) 
-Initial Number of Events, 1000309, 100.000000 
+Initial Number of Events, 10, 100.000000 
 Number of CC0p0pi Events, 0, 0.000000 
 Number of CC1p0pi Events, 0, 0.000000 
 Number of CC2p0pi Events, 0, 0.000000 
@@ -38,15 +38,15 @@ Number of Other Events, 0, 0.000000
 
 SELECTED EVENTS: MINE 
 Cut, Number of Events, Fraction of Total (%) 
-Number of Selected Events, 4605, 100.000000 
-Number of CC0p0pi Events, 49, 1.064061 
-Number of CC1p0pi Events, 263, 5.711184 
-Number of CC2p0pi Events, 2981, 64.733986 
-Number of CCNp0pi Events, 336, 7.296417 
-Number of CCNp1pi Events, 323, 7.014115 
-Number of CCNpNpi Events, 16, 0.347448 
+Number of Selected Events, 1, 100.000000 
+Number of CC0p0pi Events, 0, 0.000000 
+Number of CC1p0pi Events, 0, 0.000000 
+Number of CC2p0pi Events, 0, 0.000000 
+Number of CCNp0pi Events, 0, 0.000000 
+Number of CCNp1pi Events, 0, 0.000000 
+Number of CCNpNpi Events, 0, 0.000000 
 Number of CCNue Events, 0, 0.000000 
-Number of NC Events, 258, 5.602606 
-Number of OOFV Events, 142, 3.083605 
+Number of NC Events, 1, 100.000000 
+Number of OOFV Events, 0, 0.000000 
 Number of Other Events, 0, 0.000000 
 

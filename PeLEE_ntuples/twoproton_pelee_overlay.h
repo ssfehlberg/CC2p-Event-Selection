@@ -1873,21 +1873,21 @@ void twoproton_pelee_overlay::Define_Histograms(){
 	if(use_xsec_binning == true){
 	  if(j == 0){//momentum
 	    //muon
-	    const Int_t bins_muon = 6; 
-	    Double_t edges_muon[bins_muon+1] = {0.1,0.2,0.3,0.5,0.7,1.3,2.5};
+	    const Int_t bins_muon = 5; 
+	    Double_t edges_muon[bins_muon+1] = {0.1, 0.3, 0.5, 0.7, 0.9, 1.2};
 	    h_muon_overlay[j][k] = new TH1D(Form("h_muon%s%s",var[j],channel[k]),Form(" h_muon%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),bins_muon,edges_muon);
 	    //recoil
-	    const Int_t bins_recoil = 5;
-            Double_t edges_recoil[bins_recoil+1] = {0.25,0.35,0.45,0.55,0.65,1.2};
+	    const Int_t bins_recoil = 6;
+            Double_t edges_recoil[bins_recoil+1] = {0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0};
 	    h_recoil_overlay[j][k] = new TH1D(Form("h_recoil%s%s",var[j],channel[k]),Form("h_recoil%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),bins_recoil,edges_recoil);
 	    //leading
 	    const Int_t bins_leading = 6;
-            Double_t edges_leading[bins_leading+1] = {0.25,0.35,0.45,0.55,0.65,0.75,1.2};
+            Double_t edges_leading[bins_leading+1] = {0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0};
 	    h_leading_overlay[j][k] = new TH1D(Form("h_leading%s%s",var[j],channel[k]),Form("h_leading%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),bins_leading,edges_leading);
 
 	  }else if (j == 2){//costheta
-	    const Int_t bins_theta = 10;
-	    Double_t edges_theta[bins_theta+1] = {-1.0,-0.8,-0.6,-0.4,-0.2,0.0,0.2,0.4,0.6,0.8,1.0};
+	    const Int_t bins_theta = 8;
+	    Double_t edges_theta[bins_theta+1] = {-1.0,-0.75,-0.5,-0.25,0.0,0.25,0.5,0.75,1.0};
 	    h_muon_overlay[j][k] = new TH1D(Form("h_muon%s%s",var[j],channel[k]),Form(" h_muon%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),bins_theta,edges_theta);
 	    h_recoil_overlay[j][k] = new TH1D(Form("h_recoil%s%s",var[j],channel[k]),Form("h_recoil%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),bins_theta,edges_theta);
 	    h_leading_overlay[j][k] = new TH1D(Form("h_leading%s%s",var[j],channel[k]),Form("h_leading%s%s ;%s; Counts",var[j],channel[k],xlabel[j]),bins_theta,edges_theta);
@@ -1915,21 +1915,21 @@ void twoproton_pelee_overlay::Define_Histograms(){
 	if(use_xsec_binning == true){
 	  if(j == 0){ //momentum
 	    //muon
-	    const Int_t bins_muon = 6;
-            Double_t edges_muon[bins_muon+1] = {0.1,0.2,0.3,0.5,0.7,1.3,2.5};
+	    const Int_t bins_muon = 5;
+            Double_t edges_muon[bins_muon+1] = {0.1, 0.3, 0.5, 0.7, 0.9, 1.2};
 	    h_muon_raquel[j][k] = new TH1D(Form("h_muon_raquel%s%s",var[j],channel2[k]),Form(" h_muon_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),bins_muon,edges_muon);
 	    //recoil
-	    const Int_t bins_recoil = 5;
-            Double_t edges_recoil[bins_recoil+1] = {0.25,0.35,0.45,0.55,0.65,1.2};
+	    const Int_t bins_recoil = 6;
+            Double_t edges_recoil[bins_recoil+1] = {0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0};
 	    h_recoil_raquel[j][k] = new TH1D(Form("h_recoil_raquel%s%s",var[j],channel2[k]),Form("h_recoil_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),bins_recoil,edges_recoil);
 	    //leading
 	    const Int_t bins_leading = 6;
-            Double_t edges_leading[bins_leading+1] = {0.25,0.35,0.45,0.55,0.65,0.75,1.2};
+            Double_t edges_leading[bins_leading+1] = {0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0};
 	    h_leading_raquel[j][k] = new TH1D(Form("h_leading_raquel%s%s",var[j],channel2[k]),Form("h_leading_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),bins_leading,edges_leading);
 
 	  } else if (j == 2){ //theta
-	    const Int_t bins_theta = 10;
-            Double_t edges_theta[bins_theta+1] = {-1.0,-0.8,-0.6,-0.4,-0.2,0.0,0.2,0.4,0.6,0.8,1.0};
+	    const Int_t bins_theta = 8;
+            Double_t edges_theta[bins_theta+1] = {-1.0,-0.75,-0.5,-0.25,0.0,0.25,0.5,0.75,1.0};
 	    h_muon_raquel[j][k] = new TH1D(Form("h_muon_raquel%s%s",var[j],channel2[k]),Form(" h_muon_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),bins_theta,edges_theta);
 	    h_recoil_raquel[j][k] = new TH1D(Form("h_recoil_raquel%s%s",var[j],channel2[k]),Form("h_recoil_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),bins_theta,edges_theta);
 	    h_leading_raquel[j][k] = new TH1D(Form("h_leading_raquel%s%s",var[j],channel2[k]),Form("h_leading_raquel%s%s ;%s; Counts",var[j],channel2[k],xlabel[j]),bins_theta,edges_theta);
@@ -1955,28 +1955,27 @@ void twoproton_pelee_overlay::Define_Histograms(){
     //more particle specific plots
     for(int i = 0; i < number2; i++){
       if(use_xsec_binning == true){
-	const Int_t bins = 10;
-	Double_t edges[bins+1] = {-1.0,-0.8,-0.6,-0.4,-0.2,0.0,0.2,0.4,0.6,0.8,1.0};
+        const Int_t bins = 8;
+        Double_t edges[bins+1] = {-1.0,-0.75,-0.5,-0.25,0.0,0.25,0.5,0.75,1.0};
 	h_opening_angle_protons_lab_overlay[i] = new TH1D(Form("h_opening_angle_protons_lab%s",channel[i]),Form("h_opening_angle_protons_lab%s; Opening Angle btwn Two Protons; Counts",channel[i]),bins,edges); //50, 0, 1.5                           
 	h_opening_angle_protons_com_overlay[i] = new TH1D(Form("h_opening_angle_protons_com%s",channel[i]),Form("h_opening_angle_protons_com%s; cos(#gamma_{COM}); Counts",channel[i]),bins,edges);
 	h_opening_angle_mu_leading_overlay[i] = new TH1D(Form("h_opening_angle_mu_leading%s",channel[i]),Form("h_opening_angle_mu_leading%s;Opening Angle btwn Muon and Leading Proton; Counts",channel[i]),bins,edges);
 	h_opening_angle_mu_both_overlay[i] = new TH1D(Form("h_opening_angle_mu_both%s",channel[i]),Form("h_opening_angle_mu_both%s; Opening Angle btwn Muon and Total Proton Momentum; Counts",channel[i]),bins,edges);
 
-	const Int_t bins_stv_mom = 4;
-        Double_t edges_stv_mom[bins_stv_mom+1] = {0,0.2,0.4,0.6,1.0};
-	h_delta_PT_overlay[i] = new TH1D(Form("h_delta_PT%s",channel[i]),Form("h_deltaPT%s;#delta P_{T} [GeV/c];Counts",channel[i]),bins_stv_mom,edges_stv_mom);  
-	
+	const Int_t bins_stv_mom = 7;
+        Double_t edges_stv_mom[bins_stv_mom+1] = {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 1.0};
+	h_delta_PT_overlay[i] = new TH1D(Form("h_delta_PT%s",channel[i]),Form("h_deltaPT%s;#delta P_{T} [GeV/c];Counts",channel[i]),bins_stv_mom,edges_stv_mom);  	
 	const Int_t bins_stv_angles = 6;
         Double_t edges_stv_angles[bins_stv_angles+1] = {0,30,60,90,120,150,180};
 	h_delta_alphaT_overlay[i] = new TH1D(Form("h_delta_alphaT%s",channel[i]),Form("h_delta_alphaT%s; #delta #alpha_{T} [Deg.];Counts",channel[i]),bins_stv_angles,edges_stv_angles); //0,180                     
 	h_delta_phiT_overlay[i] = new TH1D(Form("h_delta_phiT%s",channel[i]),Form("h_delta_phiT%s; #delta #phi_{T} [Deg.];Counts",channel[i]),bins_stv_angles,edges_stv_angles);                                                               
 
-	const Int_t bins_neutron = 20;
-	Double_t edges_neutron[bins_neutron+1] = {0.0,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0};
+	const Int_t bins_neutron = 8;
+	Double_t edges_neutron[bins_neutron+1] = {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0};
 	h_pn_overlay[i] = new TH1D(Form("h_pn%s",channel[i]),Form("h_pn%s; p_{n} [GeV/c];Counts",channel[i]),bins_neutron,edges_neutron);
   
-	const Int_t bins_nuE = 6;
-        Double_t edges_nuE[bins_nuE+1] = {0,0.3,0.5,0.7,0.9,1.2,4.0};
+	const Int_t bins_nuE = 4;
+        Double_t edges_nuE[bins_nuE+1] = {0.0, 0.4, 0.8, 1.2, 1.8};
 	h_nu_E_overlay[i] =  new TH1D(Form("h_nu_E%s",channel[i]),Form("h_nu_E%s; Total Energy; Counts;",channel[i]),bins_nuE,edges_nuE);
 
 	//basic bitches
@@ -1997,7 +1996,7 @@ void twoproton_pelee_overlay::Define_Histograms(){
 	h_delta_alphaT_overlay[i] = new TH1D(Form("h_delta_alphaT%s",channel[i]),Form("h_delta_alphaT%s; #delta #alpha_{T} [Deg.];Counts",channel[i]),10,0,180); //0,180                 
 	h_delta_phiT_overlay[i] = new TH1D(Form("h_delta_phiT%s",channel[i]),Form("h_delta_phiT%s; #delta #phi_{T} [Deg.];Counts",channel[i]),10,0,180); //0,180                   
 	h_pn_overlay[i] = new TH1D(Form("h_pn%s",channel[i]),Form("h_pn%s; p_{n} [GeV/c];Counts",channel[i]),50,0,1.0);
-	h_nu_E_overlay[i] =  new TH1D(Form("h_nu_E%s",channel[i]),Form("h_nu_E%s; Total Energy; Counts;",channel[i]),50,0,2.5);
+	h_nu_E_overlay[i] =  new TH1D(Form("h_nu_E%s",channel[i]),Form("h_nu_E%s; Total Energy; Counts;",channel[i]),50,0,2.0);
 	h_mom_struck_nuc_overlay[i] = new TH1D(Form("h_mom_struck_nuc%s",channel[i]),Form("h_mom_struck_nuc%s; P_{Init}; Counts", channel[i]),30, 0, 1);
 	h_tot_pz_overlay[i] = new TH1D(Form("h_tot_pz%s",channel[i]),Form("h_tot_pz%s; P_{Z}^{Total}; Counts",channel[i]), 20, 0, 2);
 	h_tot_E_overlay[i] = new TH1D(Form("h_tot_E%s",channel[i]),Form("h_tot_E%s; Total Energy; Counts;",channel[i]),50,0,2.5);
@@ -2029,15 +2028,15 @@ void twoproton_pelee_overlay::Define_Histograms(){
     for(int i = 0; i < number3; i++){
       if(use_xsec_binning == true){
 
-	const Int_t bins = 10;
-        Double_t edges[bins+1] = {-1.0,-0.8,-0.6,-0.4,-0.2,0.0,0.2,0.4,0.6,0.8,1.0};
+	const Int_t bins = 8;
+        Double_t edges[bins+1] = {-1.0,-0.75,-0.5,-0.25,0.0,0.25,0.5,0.75,1.0};
 	h_opening_angle_protons_lab_raquel[i] = new TH1D(Form("h_opening_angle_protons_lab_raquel%s",channel2[i]),Form("h_opening_angle_protons_lab_raquel%s; Opening Angle btwn Two Protons; Counts",channel2[i]),bins,edges); 
 	h_opening_angle_protons_com_raquel[i] = new TH1D(Form("h_opening_angle_protons_com_raquel%s",channel2[i]),Form("h_opening_angle_protons_com_raquel%s; cos(#gamma_{COM}); Counts",channel2[i]),bins,edges);
         h_opening_angle_mu_leading_raquel[i] = new TH1D(Form("h_opening_angle_mu_leading_raquel%s",channel2[i]),Form("h_opening_angle_mu_leading_raquel%s;Opening Angle btwn Muon and Leading Proton; Counts",channel2[i]),bins,edges);
         h_opening_angle_mu_both_raquel[i] = new TH1D(Form("h_opening_angle_mu_both_raquel%s",channel2[i]),Form("h_opening_angle_mu_both_raquel%s; Opening Angle btwn Muon and Total Proton Momentum; Counts",channel2[i]),bins,edges);
         
-	const Int_t bins_stv_mom = 4;
-        Double_t edges_stv_mom[bins_stv_mom+1] = {0,0.2,0.4,0.6,1.0};
+	const Int_t bins_stv_mom = 7;
+        Double_t edges_stv_mom[bins_stv_mom+1] = {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 1.0};
 	h_delta_PT_raquel[i] = new TH1D(Form("h_delta_PT_raquel%s",channel2[i]),Form("h_deltaPT_raquel%s;#delta P_{T} [GeV/c];Counts",channel2[i]),bins_stv_mom,edges_stv_mom);                
  
 	const Int_t bins_stv_angles = 6;
@@ -2045,12 +2044,12 @@ void twoproton_pelee_overlay::Define_Histograms(){
         h_delta_alphaT_raquel[i] = new TH1D(Form("h_delta_alphaT_raquel%s",channel2[i]),Form("h_delta_alphaT_raquel%s; #delta #alpha_{T} [Deg.];Counts",channel2[i]),bins_stv_angles,edges_stv_angles);
 	h_delta_phiT_raquel[i] = new TH1D(Form("h_delta_phiT_raquel%s",channel2[i]),Form("h_delta_phiT_raquel%s; #delta #phi_{T} [Deg.];Counts",channel2[i]),bins_stv_angles,edges_stv_angles);                                            
 
-	const Int_t bins_neutron = 20;
-	Double_t edges_neutron[bins_neutron+1] = {0.0,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0};
+	const Int_t bins_neutron = 8;
+	Double_t edges_neutron[bins_neutron+1] = {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0};
 	h_pn_raquel[i] = new TH1D(Form("h_pn_raquel%s",channel2[i]),Form("h_pn_raquel%s; p_{n} [GeV/c];Counts",channel2[i]),bins_neutron,edges_neutron);
 
-	const Int_t bins_nuE = 6;
-        Double_t edges_nuE[bins_nuE+1] = {0,0.3,0.5,0.7,0.9,1.2,4.0};
+	const Int_t bins_nuE = 4;
+        Double_t edges_nuE[bins_nuE+1] = {0.0, 0.4, 0.8, 1.2, 1.8};
 	h_nu_E_raquel[i] =  new TH1D(Form("h_nu_E_raquel%s",channel2[i]),Form("h_nu_E_raquel%s; Total Energy; Counts;",channel2[i]),bins_nuE,edges_nuE);
 
 	//basic bitches
@@ -2070,7 +2069,7 @@ void twoproton_pelee_overlay::Define_Histograms(){
 	h_delta_alphaT_raquel[i] = new TH1D(Form("h_delta_alphaT_raquel%s",channel2[i]),Form("h_delta_alphaT_raquel%s; #delta #alpha_{T} [Deg.];Counts",channel2[i]),10,0,180); //0,180                                                           
 	h_delta_phiT_raquel[i] = new TH1D(Form("h_delta_phiT_raquel%s",channel2[i]),Form("h_delta_phiT_raquel%s; #delta #phi_{T} [Deg.];Counts",channel2[i]),10,0,180); //0,180                                                                   
 	h_pn_raquel[i] = new TH1D(Form("h_pn_raquel%s",channel2[i]),Form("h_pn_raquel%s; p_{n} [GeV/c];Counts",channel2[i]),50,0,1.0);
-	h_nu_E_raquel[i] =  new TH1D(Form("h_nu_E_raquel%s",channel2[i]),Form("h_nu_E_raquel%s; Total Energy; Counts;",channel2[i]),50,0,2.5);
+	h_nu_E_raquel[i] =  new TH1D(Form("h_nu_E_raquel%s",channel2[i]),Form("h_nu_E_raquel%s; Total Energy; Counts;",channel2[i]),50,0,2.0);
 	h_mom_struck_nuc_raquel[i] = new TH1D(Form("h_mom_struck_nuc_raquel%s",channel2[i]),Form("h_mom_struck_nuc_raquel%s; P_{Init}; Counts", channel2[i]),30, 0, 1);
 	h_tot_pz_raquel[i] = new TH1D(Form("h_tot_pz_raquel%s",channel2[i]),Form("h_tot_pz_raquel%s; P_{Z}^{Total}; Counts",channel2[i]), 20, 0, 2);
 	h_tot_E_raquel[i] = new TH1D(Form("h_tot_E_raquel%s",channel2[i]),Form("h_tot_E_raquel%s; Total Energy; Counts;",channel2[i]),50,0,2.5);

@@ -9,7 +9,7 @@ namespace Constants{
   bool add_protons = true;
 
   //Are we using the xsecc binning
-  bool use_xsec_binning = false;
+  bool use_xsec_binning = true;
 
   //Cut Values
   double TRACK_SCORE_CUT = 0.8;

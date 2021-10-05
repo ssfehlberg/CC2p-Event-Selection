@@ -47,6 +47,16 @@ void twoproton_pelee_overlay::Loop()
     std::cout<<"BEGINNING TO PROCESS RUN: " <<run << "  SUBRUN: "<< sub << "  EVENT: " << evt <<std::endl;
     std::cout<<"-----------------------------------"<<std::endl;
 
+    /*    for(map<string, vector<double>>::const_iterator it = weights->begin(); it != weights->end(); ++it){
+      cout << (*it).first << ": ";
+      vector <double> inVect = (*it).second;
+      std::cout<<"Vector Size: "<<inVect.size()<<std::endl;
+      for (unsigned j=0; j<inVect.size(); j++){
+        cout << inVect[j] << " ";
+      }
+      cout << endl;
+    }
+    */
     //Checking how many nue's & neutrino slices we have
     /////////////////////////////////
     if(nu_pdg == 12) nue++;

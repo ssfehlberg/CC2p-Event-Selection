@@ -1621,8 +1621,8 @@ void mc_efficiency::Define_Histograms(){
 	h_list_2D.push_back(h_particle_matrices[i][j]);
 	
       } else if( (i==0 && j==0) || (i==1 && j==0) || (i==2 && j==0) ){ //muon momentum
-	const Int_t bins = 4;
-	Double_t edges[bins+1] = {0.1,0.6,0.85,1.0,1.2};
+	const Int_t bins = 5;
+	Double_t edges[bins+1] = {0.1,0.3,0.5,0.7,0.9,1.2};
 	//const Int_t bins = 30;
 	//Double_t edges[bins+1] = {0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,2.9,3.0};
 	h_particle_num[i][j] = new TH1D(Form("h_particle_num%s%s",particles_eff[i],particles_eff_variables[j]),Form("h_particle_num%s%s",particles_eff[i],particles_eff_variables[j]),bins,edges);
@@ -1646,7 +1646,7 @@ void mc_efficiency::Define_Histograms(){
 	
       } else if(i == 3 && j == 0){ //lead proton mom
 	const Int_t bins = 6;
-	Double_t edges[bins+1] = {0.3,0.47,0.53,0.6,0.7,0.77,1.0};
+	Double_t edges[bins+1] = {0.3,0.4,0.5,0.6,0.7,0.8,1.0};
 	h_particle_num[i][j] = new TH1D(Form("h_particle_num%s%s",particles_eff[i],particles_eff_variables[j]),Form("h_particle_num%s%s",particles_eff[i],particles_eff_variables[j]),bins,edges);
 	h_particle_denom[i][j] = new TH1D(Form("h_particle_denom%s%s",particles_eff[i],particles_eff_variables[j]),Form("h_particle_denom%s%s",particles_eff[i],particles_eff_variables[j]),bins,edges);
 	h_list.push_back(h_particle_num[i][j]);
@@ -1666,7 +1666,7 @@ void mc_efficiency::Define_Histograms(){
 
       } else if(i == 4 && j == 0){//recoil proton mom
 	const Int_t bins = 6;
-	Double_t edges[bins+1] = {0.3,0.4,0.47,0.52,0.57,0.62,1.0};
+	Double_t edges[bins+1] = {0.3,0.4,0.5,0.6,0.7,0.8,1.0};
 	h_particle_num[i][j] = new TH1D(Form("h_particle_num%s%s",particles_eff[i],particles_eff_variables[j]),Form("h_particle_num%s%s",particles_eff[i],particles_eff_variables[j]),bins,edges);
 	h_particle_denom[i][j] = new TH1D(Form("h_particle_denom%s%s",particles_eff[i],particles_eff_variables[j]),Form("h_particle_denom%s%s",particles_eff[i],particles_eff_variables[j]),bins,edges);
 	h_list.push_back(h_particle_num[i][j]);
@@ -1742,8 +1742,8 @@ void mc_efficiency::Define_Histograms(){
       h_list_2D.push_back(h_other_matrices[i]);
       
     } else if (i == 4){ //delta pt
-      const Int_t bins = 4;
-      Double_t edges[bins+1] = {0,0.18,0.38,0.6,1.0};
+      const Int_t bins = 7;
+      Double_t edges[bins+1] = {0.0,0.1,0.2,0.3,0.4,0.5,0.6,1.0};
       //const Int_t bins = 10;
       //Double_t edges[bins+1] = {0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0};
       h_other_eff_num[i] = new TH1D(Form("h_other_eff_num%s",other_eff[i]),Form("h_other_eff_num%s",other_eff[i]),bins,edges);
@@ -1778,8 +1778,8 @@ void mc_efficiency::Define_Histograms(){
       h_list_2D.push_back(h_other_matrices[i]);
 
     } else if (i == 7){ //pn
-      const Int_t bins = 4;
-      Double_t edges[bins+1] = {0.0,0.23,0.42,0.7,1.0};
+      const Int_t bins = 8;
+      Double_t edges[bins+1] = {0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.8,1.0};
       h_other_eff_num[i] = new TH1D(Form("h_other_eff_num%s",other_eff[i]),Form("h_other_eff_num%s",other_eff[i]),bins,edges);
       h_other_eff_denom[i] = new TH1D(Form("h_other_eff_denom%s",other_eff[i]),Form("h_other_eff_denom%s",other_eff[i]),bins,edges);
       h_list.push_back(h_other_eff_num[i]);
@@ -1788,8 +1788,8 @@ void mc_efficiency::Define_Histograms(){
       h_list_2D.push_back(h_other_matrices[i]);
 
     } else if (i == 8){ //neutrino energy
-      const Int_t bins = 5;
-      Double_t edges[bins+1] = {0,0.85,1.25,1.5,1.75,2.0};
+      const Int_t bins = 4;
+      Double_t edges[bins+1] = {0.0,0.4,0.8,1.2,1.8};
       //const Int_t bins = 25;
       //Double_t edges[bins+1] = {0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5};
       h_other_eff_num[i] = new TH1D(Form("h_other_eff_num%s",other_eff[i]),Form("h_other_eff_num%s",other_eff[i]),bins,edges);
