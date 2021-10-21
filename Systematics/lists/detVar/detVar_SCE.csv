@@ -1,52 +1,11 @@
-GENERATED EVENTS: RAQUEL 
 Cut, Number of Events, Fraction of Total (%) 
-Initial Number of Events, 10, 100.000000 
-Number of CCQEL Events, 0, 0.000000 
-Number of CCRES Events, 0, 0.000000 
-Number of CCDIS Events, 0, 0.000000 
-Number of CCCOH Events, 0, 0.000000 
-Number of CCNuE Events, 0, 0.000000 
-Number of NC Events, 0, 0.000000 
-Number of OOFV Events, 0, 0.000000 
-Number of Else Events, 0, 0.000000 
-
-SELECTED EVENTS: RAQUEL 
-Cut, Number of Events, Fraction of Total (%) 
-Number of Selected Events, 0, -nan 
-Number of CCQEL Events, 0, -nan 
-Number of CCRES Events, 0, -nan 
-Number of CCDIS Events, 0, -nan 
-Number of CCCOH Events, 0, -nan 
-Number of CCNuE Events, 0, -nan 
-Number of NC Events, 0, -nan 
-Number of OOFV Events, 0, -nan 
-Number of Else Events, 0, -nan 
-
-GENERATED EVENTS: MINE 
-Cut, Number of Events, Fraction of Total (%) 
-Initial Number of Events, 10, 100.000000 
-Number of CC0p0pi Events, 0, 0.000000 
-Number of CC1p0pi Events, 0, 0.000000 
-Number of CC2p0pi Events, 0, 0.000000 
-Number of CCNp0pi Events, 0, 0.000000 
-Number of CCNp1pi Events, 0, 0.000000 
-Number of CCNpNpi Events, 0, 0.000000 
-Number of CCNue Events, 0, 0.000000 
-Number of NC Events, 0, 0.000000 
-Number of OOFV Events, 0, 0.000000 
-Number of Other Events, 0, 0.000000 
-
-SELECTED EVENTS: MINE 
-Cut, Number of Events, Fraction of Total (%) 
-Number of Selected Events, 0, -nan 
-Number of CC0p0pi Events, 0, -nan 
-Number of CC1p0pi Events, 0, -nan 
-Number of CC2p0pi Events, 0, -nan 
-Number of CCNp0pi Events, 0, -nan 
-Number of CCNp1pi Events, 0, -nan 
-Number of CCNpNpi Events, 0, -nan 
-Number of CCNue Events, 0, -nan 
-Number of NC Events, 0, -nan 
-Number of OOFV Events, 0, -nan 
-Number of Other Events, 0, -nan 
-
+Number of Events to Begin With, 501280,  100.000000 
+Number of Events with Vertex in FV, 150548 , 30.032717 
+Number of Events with 3 PFPs , 34844 , 6.951005 
+Number of Events with 3 Tracks , 10458 , 2.086259 
+Number of Events with 3 Tracks Connected to the Vertex, 5921 , 1.181176 
+Number of Events with 1 Muon and 2 Protons, 3912 , 0.780402 
+Number of Events with Reco. Muon Momentum above 0.100000 and below 1.200000 GeV/c, 3400 , 0.678264 
+Number of Events with Reco. Leading Momentum above 0.300000 and below 1.000000 GeV/c, 3305 , 0.659312 
+Number of Events with Reco. Recoil Momentum above 0.300000 and below 1.000000 GeV/c, 2491 , 0.496928 
+Sanity Check of the  Total Number of Events Remaining, 2491 

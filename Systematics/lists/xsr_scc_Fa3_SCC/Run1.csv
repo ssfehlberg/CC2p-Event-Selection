@@ -1,0 +1,52 @@
+GENERATED EVENTS: RAQUEL 
+Cut, Number of Events, Fraction of Total (%) 
+Initial Number of Events, 1043325, 100.000000 
+Number of CCQEL Events, 0, 0.000000 
+Number of CCRES Events, 0, 0.000000 
+Number of CCDIS Events, 0, 0.000000 
+Number of CCCOH Events, 0, 0.000000 
+Number of CCNuE Events, 0, 0.000000 
+Number of NC Events, 0, 0.000000 
+Number of OOFV Events, 0, 0.000000 
+Number of Else Events, 0, 0.000000 
+
+SELECTED EVENTS: RAQUEL 
+Cut, Number of Events, Fraction of Total (%) 
+Number of Selected Events, 4507, 100.000000 
+Number of CCQEL Events, 10050, 222.986465 
+Number of CCRES Events, 15630, 346.793854 
+Number of CCDIS Events, 1220, 27.069002 
+Number of CCCOH Events, 0, 0.000000 
+Number of CCNuE Events, 0, 0.000000 
+Number of NC Events, 2170, 48.147327 
+Number of OOFV Events, 1430, 31.728422 
+Number of Else Events, 0, 0.000000 
+
+GENERATED EVENTS: MINE 
+Cut, Number of Events, Fraction of Total (%) 
+Initial Number of Events, 1043325, 100.000000 
+Number of CC0p0pi Events, 0, 0.000000 
+Number of CC1p0pi Events, 0, 0.000000 
+Number of CC2p0pi Events, 0, 0.000000 
+Number of CCNp0pi Events, 0, 0.000000 
+Number of CCNp1pi Events, 0, 0.000000 
+Number of CCNpNpi Events, 0, 0.000000 
+Number of CCNue Events, 0, 0.000000 
+Number of NC Events, 0, 0.000000 
+Number of OOFV Events, 0, 0.000000 
+Number of Other Events, 0, 0.000000 
+
+SELECTED EVENTS: MINE 
+Cut, Number of Events, Fraction of Total (%) 
+Number of Selected Events, 4507, 100.000000 
+Number of CC0p0pi Events, 520, 11.537608 
+Number of CC1p0pi Events, 2820, 62.569336 
+Number of CC2p0pi Events, 29350, 651.209229 
+Number of CCNp0pi Events, 2870, 63.678722 
+Number of CCNp1pi Events, 3370, 74.772575 
+Number of CCNpNpi Events, 110, 2.440648 
+Number of CCNue Events, 20, 0.443754 
+Number of NC Events, 2170, 48.147327 
+Number of OOFV Events, 1430, 31.728422 
+Number of Other Events, 0, 0.000000 
+

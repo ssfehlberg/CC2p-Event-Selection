@@ -11,11 +11,11 @@ void twoproton_pelee::Loop()
   //Making a new Root File that will contain all the histograms that we will want to plot and files with good RSEs:
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
   TFile* tfile;
-  if(use_xsec_binning == true){
-     tfile = new TFile(Form("root_files/%s/histograms_pelee_xsec_%s.root",directory,sample),"RECREATE");
-  } else {
-    tfile = new TFile(Form("root_files/%s/histograms_pelee_%s.root",directory,sample),"RECREATE");
-  }
+  //if(use_xsec_binning == true){ tfile = new TFile(Form("root_files/%s/histograms_pelee_xsec_%s.root",directory,sample),"RECREATE"); //yes xsec binning
+  //} else { tfile = new TFile(Form("root_files/%s/histograms_pelee_%s.root",directory,sample),"RECREATE");} //no xsec binning
+
+  if(use_xsec_binning == true){ tfile = new TFile(Form("/uboone/data/users/sfehlber/Systematics/%s/histograms_pelee_xsec_%s.root",directory,sample),"RECREATE"); //yes xsec binning
+  } else { tfile = new TFile(Form("/uboone/data/users/sfehlber/Systematics/%s/histograms_pelee_%s.root",directory,sample),"RECREATE");} //no xsec binning
 
   //Open files to contain the RSE of Good events
   ////////////////////////////////////////////////
@@ -31,11 +31,6 @@ void twoproton_pelee::Loop()
   /////////////////////////////////////////////////////////////
   Define_Histograms();
 
-  //Make sure to have the event weight double ready
-  ///////////////////////////////////////////////
-  double event_weight; //event weight
-  double mc_wgt; //MC weight. Dirt Only
-
   if (fChain == 0) return;
   Long64_t nentries = fChain->GetEntriesFast();
   std::cout<<"Total Number of Entries: "<<nentries<<std::endl;
@@ -48,65 +43,6 @@ void twoproton_pelee::Loop()
     std::cout<<"-----------------------------------"<<std::endl;
     std::cout<<"BEGINNING TO PROCESS RUN: " <<run << "  SUBRUN: "<< sub << "  EVENT: " << evt <<std::endl;
     std::cout<<"-----------------------------------"<<std::endl;
-
-    //Need to set the event weight for samples
-    ////////////////////////////////////////////////
-    if(_debug) std::cout<<"GET THE MC WEIGHT"<< std::endl;
-
-    if(std::isfinite(weightTune) && weightTune <= 100.) {
-      mc_wgt = weightSplineTimesTune;
-    } else {
-      mc_wgt = 1 * weightSpline;
-    }
-
-    event_weight = pot_weight;// * mc_wgt;
-
-    if(_debug) std::cout<<"Value of the MC Weight: "<< mc_wgt<< std::endl;
-    if(_debug) std::cout<<"Value of the POT Weight: "<<pot_weight << std::endl;
-    if(_debug) std::cout<<"Value of Event Weight: "<< event_weight << std::endl;
-
-    //Getting the Number of Threshold Particles:
-    ///////////////////////////////////////////////
-    int mc_n_threshold_muon = 0;
-    int mc_n_threshold_proton = 0;
-    int mc_n_threshold_pion0 = 0;
-    int mc_n_threshold_pionpm = 0;
-
-    for ( size_t p = 0u; p < mc_pdg->size(); ++p ) {
-      int pdg = mc_pdg->at( p );
-      float energy = mc_E->at( p );
-      if ( std::abs(pdg) == 13) {
-	double mom = real_sqrt( std::pow(energy, 2) - std::pow(MASS_MUON, 2) );
-	if(_debug) std::cout<<"Value of the Muon Momentum: "<<mom<<std::endl;
-	if ( mom > MUON_MOM_CUT_LOW && mom < MUON_MOM_CUT_HIGH){
-	  mc_n_threshold_muon++;
-	}
-      } else if (std::abs(pdg) == 2212 ) {
-	double mom = real_sqrt( std::pow(energy, 2) - std::pow(MASS_PROTON, 2) );
-	if(_debug) std::cout<<"Value of the Proton Momentum: "<<mom<<std::endl;
-	if ( mom > PROTON_MOM_CUT_LOW && mom < PROTON_MOM_CUT_HIGH){
-	  mc_n_threshold_proton++;
-	}
-      } else if ( pdg == 111 ) {
-	  mc_n_threshold_pion0++;
-      
-      } else if (std::abs(pdg) == 211 ) {
-	double mom = real_sqrt( std::pow(energy, 2) - std::pow(MASS_PIONPM, 2) );
-	if(_debug) std::cout<<"Value of the PionPM Momentum: "<<mom<<std::endl;
-	if ( mom > CHARGED_PI_MOM_CUT ) {
-	  mc_n_threshold_pionpm++;
-	}
-      }
-    }
-    
-    if(_debug) std::cout<<"Value of Muon Low Mom Cut: "<<MUON_MOM_CUT_LOW<<std::endl;
-    if(_debug) std::cout<<"Value of Muon High Mom Cut: "<<MUON_MOM_CUT_HIGH<<std::endl;
-    if(_debug) std::cout<<"Value of Proton Low Mom Cut: "<<PROTON_MOM_CUT_LOW<<std::endl;
-    if(_debug) std::cout<<"Value of Proton High Mom Cut: "<<PROTON_MOM_CUT_HIGH<<std::endl;
-    if(_debug) std::cout<<"Number of threshold muons: "<<mc_n_threshold_muon<<std::endl;
-    if(_debug) std::cout<<"Number of threshold protons: "<<mc_n_threshold_proton<<std::endl;
-    if(_debug) std::cout<<"Number of threshold pion0: "<<mc_n_threshold_pion0<<std::endl;
-    if(_debug) std::cout<<"Number of threshold pionpm: "<<mc_n_threshold_pionpm<<std::endl;
 
     //Fill the Overlay FV Bool
     //////////////////////////
@@ -156,10 +92,14 @@ void twoproton_pelee::Loop()
       float track_score = trk_score_v->at(i);
       float track_distance = trk_distance_v->at(i);
       float track_pid = trk_llr_pid_score_v->at(i);
+      TVector3 track_end(trk_sce_end_x_v->at(i),trk_sce_end_y_v->at(i),trk_sce_end_z_v->at(i)); //leading track end reco    
+      track_end -= reco_nu_vtx;
+      double track_end_distance = track_end.Mag();
+
       if(track_score >= TRACK_SCORE_CUT){
         tracks_w_good_score++;
       }
-      if(track_distance <= TRACK_DIST_CUT){
+      if(track_distance <= TRACK_DIST_CUT || track_end_distance  <= TRACK_DIST_CUT){
         tracks_w_good_distance++;
       }
       if(track_pid >= PID_CUT && track_pid < 1 && track_pid > -1){
@@ -362,8 +302,84 @@ void twoproton_pelee::Loop()
     if(cuts.good_recoil_mom == false) continue;
     reco_recoil_mom_cut++;
 
-    Fill_Histograms_Particles(mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0, mc_n_threshold_pionpm, cuts.true_fv, vMuon, muon, vLead, lead, vRec, rec, event_weight);
-    Fill_Histograms_Particles_Raquel(vMuon, muon, vLead, lead, vRec, rec, event_weight, cuts.true_fv);
+
+    ////////////////////////////////////////////////
+    // NOW WE CAN FILL THE HISTOGRAMS WE CARE ABOUT
+    //////////////////////////////////////////////
+
+    //Getting the Number of Threshold Particles:
+    ///////////////////////////////////////////////
+    int mc_n_threshold_muon = 0;
+    int mc_n_threshold_proton = 0;
+    int mc_n_threshold_pion0 = 0;
+    int mc_n_threshold_pionpm = 0;
+
+    for ( size_t p = 0u; p < mc_pdg->size(); ++p ) {
+      int pdg = mc_pdg->at( p );
+      float energy = mc_E->at( p );
+      if ( std::abs(pdg) == 13) {
+	double mom = real_sqrt( std::pow(energy, 2) - std::pow(MASS_MUON, 2) );
+	if(_debug) std::cout<<"Value of the Muon Momentum: "<<mom<<std::endl;
+	if ( mom > MUON_MOM_CUT_LOW && mom < MUON_MOM_CUT_HIGH){
+	  mc_n_threshold_muon++;
+	}
+      } else if (std::abs(pdg) == 2212 ) {
+	double mom = real_sqrt( std::pow(energy, 2) - std::pow(MASS_PROTON, 2) );
+	if(_debug) std::cout<<"Value of the Proton Momentum: "<<mom<<std::endl;
+	if ( mom > PROTON_MOM_CUT_LOW && mom < PROTON_MOM_CUT_HIGH){
+	  mc_n_threshold_proton++;
+	}
+      } else if ( pdg == 111 ) {
+	  mc_n_threshold_pion0++;
+      
+      } else if (std::abs(pdg) == 211 ) {
+	double mom = real_sqrt( std::pow(energy, 2) - std::pow(MASS_PIONPM, 2) );
+	if(_debug) std::cout<<"Value of the PionPM Momentum: "<<mom<<std::endl;
+	if ( mom > CHARGED_PI_MOM_CUT ) {
+	  mc_n_threshold_pionpm++;
+	}
+      }
+    }
+    
+    if(_debug) std::cout<<"Value of Muon Low Mom Cut: "<<MUON_MOM_CUT_LOW<<std::endl;
+    if(_debug) std::cout<<"Value of Muon High Mom Cut: "<<MUON_MOM_CUT_HIGH<<std::endl;
+    if(_debug) std::cout<<"Value of Proton Low Mom Cut: "<<PROTON_MOM_CUT_LOW<<std::endl;
+    if(_debug) std::cout<<"Value of Proton High Mom Cut: "<<PROTON_MOM_CUT_HIGH<<std::endl;
+    if(_debug) std::cout<<"Number of threshold muons: "<<mc_n_threshold_muon<<std::endl;
+    if(_debug) std::cout<<"Number of threshold protons: "<<mc_n_threshold_proton<<std::endl;
+    if(_debug) std::cout<<"Number of threshold pion0: "<<mc_n_threshold_pion0<<std::endl;
+    if(_debug) std::cout<<"Number of threshold pionpm: "<<mc_n_threshold_pionpm<<std::endl;
+    
+
+    //Now to get the correct weight from the map and to fill the map
+    //If we are looking at the detector variations, then the weight is simply just the POT Weight
+    //We can also just directly fill the histograms
+    ///////////////////////////////////////////////////////////////////
+    double map_weight;
+    double event_weight;
+
+    //DetVar
+    if(response == 0){
+      event_weight = apply_cv_correction_weights(pot_weight, 1.0);
+      Fill_Histograms_Particles(0,mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0, mc_n_threshold_pionpm, cuts.true_fv, vMuon, muon, vLead, lead, vRec, rec, event_weight);
+      Fill_Histograms_Particles_Raquel(0,vMuon, muon, vLead, lead, vRec, rec, event_weight, cuts.true_fv);
+
+    } else {
+
+      auto it = weights->find(Form("%s",directory));
+      std::cout<<"it"<<(*it).first<<std::endl;
+      
+      vector <double> inVect = (*it).second; //vector that contins all the values of the systematic.  
+      double number_of_universes = inVect.size();//the size of the vector indicates if it is a multisim or a unisim. 500-1000 is a multisim. 1-2 is a unisim 
+      
+      for (unsigned j=0; j < number_of_universes; j++){                                                                                                                                                                       
+	map_weight = inVect[j];
+	event_weight = apply_cv_correction_weights(pot_weight, map_weight);
+	Fill_Histograms_Particles(j,mc_n_threshold_muon, mc_n_threshold_proton, mc_n_threshold_pion0, mc_n_threshold_pionpm, cuts.true_fv, vMuon, muon, vLead, lead, vRec, rec, event_weight);
+	Fill_Histograms_Particles_Raquel(j,vMuon, muon, vLead, lead, vRec, rec, event_weight, cuts.true_fv);
+
+      } //end of loop over the number of universes                                                                                                                                                                                                                      
+    } //end of the else loop
 
     //////////////////////////////////////////////////////////////////
     //Now to fill the Reco_Event Boolean, and fill the final counters
@@ -417,7 +433,7 @@ void twoproton_pelee::Loop()
   //Create CSV file with the selected event information, MC Breakdowns
   /////////////////////////////////////////////////////////////////////
   std::ofstream overlay_csv_file;
-  overlay_csv_file.open(Form("lists/%s/%s.csv",directory,sample));
+  overlay_csv_file.open(Form("lists/%s/%s_overlay.csv",directory,sample));
 
   overlay_csv_file << "GENERATED EVENTS: RAQUEL \n";
   overlay_csv_file << "Cut, Number of Events, Fraction of Total (%) \n";

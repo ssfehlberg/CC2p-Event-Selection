@@ -1,0 +1,11 @@
+Cut, Number of Events, Fraction of Total (%) 
+Number of Events to Begin With, 812705,  100.000000 
+Number of Events with Vertex in FV, 240785 , 29.627602 
+Number of Events with 3 PFPs , 55330 , 6.808128 
+Number of Events with 3 Tracks , 16922 , 2.082182 
+Number of Events with 3 Tracks Connected to the Vertex, 9575 , 1.178164 
+Number of Events with 1 Muon and 2 Protons, 6335 , 0.779496 
+Number of Events with Reco. Muon Momentum above 0.100000 and below 1.200000 GeV/c, 4983 , 0.613138 
+Number of Events with Reco. Leading Momentum above 0.300000 and below 1.000000 GeV/c, 4825 , 0.593696 
+Number of Events with Reco. Recoil Momentum above 0.300000 and below 1.000000 GeV/c, 3632 , 0.446903 
+Sanity Check of the  Total Number of Events Remaining, 3632 

@@ -19,13 +19,16 @@ namespace Constants{
   double TRACK_DIST_CUT = 4;
   double PID_CUT = 0.2;
 
+  //Systematic weight stuff
+  constexpr double MIN_WEIGHT = 0.;
+  constexpr double MAX_WEIGHT = 30.;
+
   //Momentum Cut Values (only used by the overlay)
   double MUON_MOM_CUT_LOW = 0.1;
   double MUON_MOM_CUT_HIGH = 1.2;
   double PROTON_MOM_CUT_LOW = 0.3;
   double PROTON_MOM_CUT_HIGH = 1.0;
   double CHARGED_PI_MOM_CUT = 0.065;
-  double PION0_MOM_CUT = 0.065;
 
   //Argon 40 properties
   double MASS_TARGET = 37.215526; //GeV
