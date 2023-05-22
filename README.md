@@ -20,7 +20,7 @@ of events that remain after each selection cut,
 
 To run one of the scripts, do the following (after having setup you favorite version of uboonecode):
 ```
-  root -l twoproton_pelee_IDENTIFIER.C
+  root -b twoproton_pelee_IDENTIFIER.C
   twoproton_pelee_IDENTIFIER s
   s.Loop()
   USER INPUT PROMPT
@@ -28,7 +28,7 @@ To run one of the scripts, do the following (after having setup you favorite ver
   In addition to these scripts there is a set of mc_efficiency scripts. These calculate the efficiency curves from the Overlay sample. It will also ask the user which run they want to process. To run this script, do the following
   (after having setup your favorite version of uboonecode):
   ```
-    root -l mc_efficiency.C
+    root -b mc_efficiency.C
     mc_efficiency s
     s.Loop()
     USER INPUT PROMPT
